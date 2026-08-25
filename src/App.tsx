@@ -1,13 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
-import { DEFAULT_VOTES, PEOPLE, type Person, type Rank } from './data';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { EMPTY_VOTES, PEOPLE, type Person, type Rank } from './data';
 import './styles.css';
 
 type VoteSummary = { counts: number[]; total: number; leader: number };
 
-function mode(counts: number[]) {
-  let best = 0;
-  for (let i = 1; i < counts.length; i++) if (counts[i] > counts[best]) best = i;
-  return best;
+const NEUTRAL_RANK = 2;
+
+function leader(counts: number[]) {
+  const max = Math.max(...counts);
+  if (max <= 0) return NEUTRAL_RANK;
+  return counts
+    .map((count, rank) => ({ count, rank }))
+    .filter((item) => item.count === max)
+    .sort((a, b) => Math.abs(a.rank - NEUTRAL_RANK) - Math.abs(b.rank - NEUTRAL_RANK) || a.rank - b.rank)[0].rank;
+}
+
+function emptySummary(personId: string): VoteSummary {
+  const counts = EMPTY_VOTES[personId] || [0, 0, 0, 0, 0, 0];
+  return { counts, total: 0, leader: NEUTRAL_RANK };
 }
 
 function shareCardBase64(person: Person, selected: Rank, rank: number) {
@@ -63,12 +73,10 @@ export default function App() {
   const initialId = params.get('who') || 'liang';
   const [personId, setPersonId] = useState(PEOPLE.some((p) => p.id === initialId) ? initialId : 'liang');
   const person = PEOPLE.find((p) => p.id === personId)!;
-  const initialRank = Number(params.get('rank') || 2);
-  const [rank, setRank] = useState(Number.isInteger(initialRank) && initialRank >= 0 && initialRank <= 5 ? initialRank : 2);
-  const [summary, setSummary] = useState<VoteSummary>(() => {
-    const counts = DEFAULT_VOTES[person.id];
-    return { counts, total: counts.reduce((a, b) => a + b, 0), leader: mode(counts) };
-  });
+  const initialRank = Number(params.get('rank') || NEUTRAL_RANK);
+  const [rank, setRank] = useState(Number.isInteger(initialRank) && initialRank >= 0 && initialRank <= 5 ? initialRank : NEUTRAL_RANK);
+  const [summary, setSummary] = useState<VoteSummary>(() => emptySummary(personId));
+  const [liveResults, setLiveResults] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState(() => params.get('shared') === '1' ? 'Shared to X — your vote was counted.' : params.get('shareError') ? 'X sharing did not complete. No vote was counted.' : '');
 
@@ -81,18 +89,37 @@ export default function App() {
     history.replaceState(null, '', url);
   }, [person.id, rank]);
 
-  useEffect(() => {
-    fetch(`/api/people/${person.id}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data) => setSummary(data))
-      .catch(() => {
-        const counts = DEFAULT_VOTES[person.id];
-        setSummary({ counts, total: counts.reduce((a, b) => a + b, 0), leader: mode(counts) });
-      });
-  }, [person.id, notice]);
+  const refreshSummary = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/people/${person.id}`, { headers: { accept: 'application/json' } });
+      if (!response.ok) throw new Error('vote API unavailable');
+      const data = await response.json() as VoteSummary;
+      if (!Array.isArray(data.counts) || data.counts.length !== 6) throw new Error('invalid vote payload');
+      setSummary({ counts: data.counts.map(Number), total: Number(data.total) || 0, leader: Number(data.leader) });
+      setLiveResults(true);
+    } catch {
+      setSummary(emptySummary(person.id));
+      setLiveResults(false);
+    }
+  }, [person.id]);
 
-  const current = person.ranks[summary.leader] || person.ranks[2];
-  const selected = person.ranks[rank] || person.ranks[2];
+  useEffect(() => {
+    void refreshSummary();
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') void refreshSummary();
+    }, 30_000);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') void refreshSummary();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [refreshSummary, notice]);
+
+  const current = person.ranks[summary.leader] || person.ranks[NEUTRAL_RANK];
+  const selected = person.ranks[rank] || person.ranks[NEUTRAL_RANK];
   const shareText = useMemo(() => `My vote for ${person.name}: ${selected.zh} (${selected.en})`, [person, selected]);
 
   async function shareAndVote() {
@@ -107,6 +134,7 @@ export default function App() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.authUrl) {
+        sessionStorage.setItem('slide-rheostat-return', `${person.id}:${rank}`);
         location.href = data.authUrl;
         return;
       }
@@ -142,7 +170,7 @@ export default function App() {
 
       <nav className="people" aria-label="People">
         {PEOPLE.map((p) => (
-          <button key={p.id} className={p.id === person.id ? 'active' : ''} onClick={() => { setPersonId(p.id); setRank(2); }}>
+          <button key={p.id} className={p.id === person.id ? 'active' : ''} onClick={() => { setPersonId(p.id); setRank(NEUTRAL_RANK); }}>
             <span className="mini-avatar">{p.accent}</span><span>{p.nameZh}</span>
           </button>
         ))}
@@ -151,7 +179,7 @@ export default function App() {
       <section className="instrument">
         <div className="plate-top">
           <div><span className="label">SUBJECT</span><strong>{person.nameZh}</strong><small>{person.name} · {person.role}</small></div>
-          <div className="community"><span className="label">COMMUNITY NOW</span><strong>{current.zh}</strong><small>{summary.total} votes</small></div>
+          <div className="community"><span className="label">COMMUNITY NOW</span><strong>{current.zh}</strong><small>{liveResults ? `${summary.total} verified voter${summary.total === 1 ? '' : 's'}` : 'live results unavailable'}</small></div>
         </div>
 
         <div className="track-wrap">
@@ -170,14 +198,18 @@ export default function App() {
         <p className="fine">Your vote is recorded only after X confirms that the authenticated image post was created successfully. One X account keeps one active vote per person.</p>
       </section>
 
-      <section className="results">
-        <h2>Current vote distribution</h2>
+      <section className="results" aria-live="polite">
+        <div className="results-heading">
+          <h2>Current vote distribution</h2>
+          <span className={liveResults ? 'live-dot live' : 'live-dot'}>{liveResults ? 'LIVE' : 'OFFLINE'}</span>
+        </div>
         <div className="bars">
           {person.ranks.map((r, i) => {
             const pct = summary.total ? Math.round((summary.counts[i] / summary.total) * 100) : 0;
             return <div className="bar-row" key={r.id}><span>{r.zh}</span><div className="bar"><i style={{ width: `${pct}%` }} /></div><b>{pct}%</b></div>;
           })}
         </div>
+        {!liveResults && <p className="results-note">Live voting data could not be loaded. No sample votes are shown.</p>}
       </section>
 
       <footer>Parody / internet sentiment toy. Not affiliated with the people or companies shown.</footer>
