@@ -19,6 +19,27 @@ npm run cf:dev
 
 ## Cloudflare deployment
 
+### Recommended: GitHub Actions
+
+The repository includes `.github/workflows/deploy.yml`. After creating the D1 database and X Developer App, configure these GitHub Actions repository secrets:
+
+- `CF_API_TOKEN` — Cloudflare API token with Worker/D1 deployment access
+- `CF_ACCOUNT_ID` — Cloudflare account ID
+- `CF_D1_DATABASE_ID` — ID of `slide-rheostat-db`
+- `APP_ORIGIN` — final public origin, for example `https://slide-rheostat.example.com`
+- `X_CLIENT_ID` — X OAuth 2.0 client ID
+- `X_CLIENT_SECRET` — X OAuth 2.0 client secret
+
+Then run the **Deploy** workflow manually. It validates required secrets, builds the React app, injects the production D1 ID/origin into the runner-only Wrangler config, applies all remote migrations, deploys the Worker/static assets, writes the X OAuth Worker secrets, and smoke-tests `/api/health` plus `/api/ready`.
+
+The exact callback configured in the X Developer Console must be:
+
+```text
+${APP_ORIGIN}/api/auth/x/callback
+```
+
+### Manual Wrangler path
+
 1. Create a D1 database named `slide-rheostat-db`.
 2. Replace `REPLACE_AFTER_D1_CREATE` in `wrangler.jsonc` with the D1 database ID.
 3. Apply all migrations:
@@ -34,12 +55,7 @@ npx wrangler secret put X_CLIENT_ID
 npx wrangler secret put X_CLIENT_SECRET
 ```
 
-5. Set `APP_ORIGIN` in `wrangler.jsonc` to the final Worker/custom-domain origin and configure this exact X OAuth callback in the X Developer Console:
-
-```text
-${APP_ORIGIN}/api/auth/x/callback
-```
-
+5. Set `APP_ORIGIN` in `wrangler.jsonc` to the final Worker/custom-domain origin.
 6. Deploy:
 
 ```bash
