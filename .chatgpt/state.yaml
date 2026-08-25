@@ -1,13 +1,26 @@
 project: slide-rheostat
-status: initialized
-phase: discovery
+status: active
+phase: product-definition
 repository: mattamior/slide-rheostat
 updated_at: 2026-08-26
 summary: >-
-  RPM initialized. No product requirements, implementation details, or architecture
-  decisions have been recorded yet.
-current_focus: Define the project goal and initial implementation scope.
+  slide-rheostat is a simple React frontend meme/parody application inspired by the
+  梁文锋“滑动变阻器/滑动变祖器” meme. The product should support many recognizable
+  public figures rather than a single Liang Wenfeng page, and is intended to be
+  shared on X so people can play with it. Research found two adjacent open-source
+  implementations: cholf5/liang-slider (Liang-only) and makerjackie/bianzu (generalized
+  multi-person version with six ranks, bilingual copy, timelines, audio, and custom-character tooling).
+current_focus: >-
+  Define a differentiated MVP and a strong X sharing loop before implementation.
+confirmed_constraints:
+  - Simple frontend application.
+  - React.
+  - Multiple famous/public figures.
+  - Designed for sharing and play via X.
 open_questions:
-  - What problem should slide-rheostat solve?
-  - What is the intended user workflow?
-  - What technology stack should be used?
+  - What public-facing product name/brand should be used?
+  - What is the initial launch roster?
+  - What makes this project distinct from existing liang-slider and bianzu projects?
+  - Should shared links encode the selected person and slider rank?
+  - Should result images be generated for X sharing, and how should OG previews be handled?
+  - What visual treatment should be used for public-figure portraits?
