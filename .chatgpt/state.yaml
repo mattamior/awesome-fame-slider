@@ -8,13 +8,14 @@ summary: >-
   six-rank rheostat UI, aggregate vote display, Cloudflare Worker backend, D1 persistence,
   and an implemented X-native Share & Vote flow. The browser renders a 1200x675 PNG result
   card; the Worker uses OAuth 2.0 PKCE, uploads the image, creates the X Post, and records or
-  updates the vote only after X returns a successful Post ID. Pre-launch hardening now includes
-  D1-backed share-start rate limiting and a production readiness endpoint that checks migrations,
-  APP_ORIGIN, and X credentials.
+  updates the vote only after X returns a successful Post ID. Pre-launch hardening includes
+  D1-backed share-start rate limiting, a production readiness endpoint, honest no-fabrication
+  behavior when live vote data is unavailable, 30-second visible-tab vote refresh, and improved
+  mobile/X-in-app-browser ergonomics.
 current_focus: >-
   Create the production D1 database, configure Cloudflare deployment and X Developer App
   credentials, deploy the Worker, run all three migrations, and verify the end-to-end live
-  auth/media/post/vote loop; continue mobile/share-card polish while account-side deployment
+  auth/media/post/vote loop; continue visual/share-card polish while account-side deployment
   prerequisites remain unavailable.
 confirmed_constraints:
   - Vite + React + TypeScript frontend.
@@ -25,6 +26,7 @@ confirmed_constraints:
   - A vote is recorded only after X confirms that the Post was successfully created.
   - One active vote per X account per person; later successful shares update that vote.
   - Each person page displays aggregate voting distribution and the modal community rank.
+  - Community results must never fall back to fabricated sample votes.
 implemented:
   - React/Vite/TypeScript project scaffold and eight-person data-driven roster.
   - Six-position rheostat interaction, rank labels, community vote distribution, and leader display.
@@ -37,16 +39,20 @@ implemented:
   - Verified Share & Vote persistence: insert share event and upsert one active vote per X user/person only after Post success.
   - Success/failure return states in the React UI; Web Intent fallback never records a vote.
   - Real localized verdict labels in verified X post text.
-  - Neutral rank for zero-vote community state and neutral-biased tie-breaking.
+  - Neutral rank for zero-vote community state and neutral-biased tie-breaking in Worker and client.
+  - No fabricated fallback vote counts; failed API loads display explicit offline state and zero bars.
+  - Aggregate vote polling every 30 seconds while visible plus refresh on foreground/person/share-result changes.
   - Opportunistic cleanup of expired OAuth pending rows and stale rate-limit rows.
   - D1-backed per-network share-start rate limiting: 8 attempts per 10-minute window using a hashed network identifier, with UI handling for HTTP 429.
   - /api/ready returns 200 only when required D1 tables, APP_ORIGIN, and X credentials are present.
+  - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
   - GitHub Actions CI workflow for npm install, build, and Wrangler type generation.
 blockers:
-  - No Cloudflare account integration/plugin is available in this environment, so D1 creation and production deploy cannot yet be executed here.
+  - No usable Cloudflare account integration/plugin is available in this environment; plugin discovery did not surface a Cloudflare deployment connector, so D1 creation and production deploy cannot yet be executed here.
   - Production X Developer App Client ID/Secret and exact callback configuration are not available yet.
   - X API production use requires sufficient Developer Console credits.
 validation_notes:
   - GitHub Actions CI provides the networked validation environment unavailable to this runtime.
   - Earlier CI exposed and resolved workflow caching and Vite typing issues.
-  - CI run 11 succeeded after adding rate limiting/readiness hardening: npm install, npm run build, and npm run cf:types all passed on Node 22.
+  - CI run 11 succeeded after rate limiting/readiness hardening.
+  - Latest live-data/mobile-hardening commits triggered fresh CI runs; their final status should be checked before further production changes.
