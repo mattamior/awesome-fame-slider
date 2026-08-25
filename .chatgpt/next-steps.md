@@ -1,12 +1,12 @@
 # Next Steps
 
-1. Scaffold the React application and data-driven character schema for the initial eight-person roster.
-2. Define each person's rank labels and initial visual assets, starting with Liang Wenfeng, Elon Musk, Sam Altman, and Tibo.
-3. Choose the minimal backend stack for X OAuth, media upload, post creation, and vote persistence.
-4. Implement X OAuth 2.0 Authorization Code with PKCE using the minimum required scopes (`tweet.read`, `tweet.write`, `users.read`, `media.write`; add `offline.access` only if persistent sessions are needed).
-5. Implement the `Share & Vote` transaction: validate person/rank, upload the result image, create the X post, then record/update the user's vote only after the X API returns success.
-6. Implement one-active-vote-per-X-account-per-person semantics and store the created X post ID for audit/deduplication.
-7. Show the community vote distribution on each person page and derive a current community rank from the votes.
-8. Generate or pre-render share cards for every person/rank pair and include a deep link back to that exact person/rank state.
-9. Add parody/disclaimer copy and bilingual share text.
-10. Deploy a first playable build and validate the complete X auth -> image post -> vote -> aggregate-status loop.
+1. Create the Cloudflare D1 database `slide-rheostat-db`, replace the placeholder database ID in `wrangler.jsonc`, and apply both migrations.
+2. Configure the final `APP_ORIGIN` and deploy the Worker + React static assets to Cloudflare Workers.
+3. Create/configure the X Developer App as a confidential Web App, set the exact callback `${APP_ORIGIN}/api/auth/x/callback`, and add `X_CLIENT_ID` / `X_CLIENT_SECRET` as Worker secrets.
+4. Ensure X API credits are available for pay-per-use media upload and Post creation.
+5. Verify the complete live flow: choose person/rank -> generate PNG -> OAuth PKCE -> media upload -> Post creation -> D1 share event -> vote upsert -> aggregate status refresh.
+6. Add production-grade portrait/character artwork and make the share card visually match the on-page rheostat while keeping the current browser-generated PNG mechanism.
+7. Replace generic English `rank N/6` Post copy with each person's actual localized verdict label while preserving a short deep link.
+8. Add build/Worker validation in CI when workflow-write capability is available; until then verify with `npm run build`, `wrangler types`, and a deploy dry run in a networked environment.
+9. Add abuse controls after the first live test (pending OAuth cleanup, basic request throttling, and telemetry around failed X transactions).
+10. Verify mobile layout and X in-app browser behavior before announcing the MVP publicly.
