@@ -1,0 +1,13 @@
+project: slide-rheostat
+status: initialized
+phase: discovery
+repository: mattamior/slide-rheostat
+updated_at: 2026-08-26
+summary: >-
+  RPM initialized. No product requirements, implementation details, or architecture
+  decisions have been recorded yet.
+current_focus: Define the project goal and initial implementation scope.
+open_questions:
+  - What problem should slide-rheostat solve?
+  - What is the intended user workflow?
+  - What technology stack should be used?
