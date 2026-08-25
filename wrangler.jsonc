@@ -3,10 +3,12 @@
   "name": "slide-rheostat",
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-26",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
   },
   "d1_databases": [
     {
@@ -17,5 +19,9 @@
   ],
   "vars": {
     "APP_ORIGIN": "https://slide-rheostat.workers.dev"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
   }
 }
