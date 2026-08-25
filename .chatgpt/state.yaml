@@ -49,5 +49,4 @@ blockers:
 validation_notes:
   - GitHub Actions CI provides the networked validation environment unavailable to this runtime.
   - Earlier CI exposed and resolved workflow caching and Vite typing issues.
-  - CI previously completed successfully for npm install, npm run build, and npm run cf:types on Node 22.
-  - A new CI run was triggered after adding rate limiting/readiness hardening and is pending validation.
+  - CI run 11 succeeded after adding rate limiting/readiness hardening: npm install, npm run build, and npm run cf:types all passed on Node 22.
