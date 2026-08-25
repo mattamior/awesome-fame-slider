@@ -39,3 +39,10 @@
 - Verified X posts use the person's actual verdict label (for example `牢梁` or `Tibo神`) instead of generic `rank N/6` copy.
 - Expired pending OAuth share rows are opportunistically removed when a new share begins, and cancelled OAuth callbacks remove their pending transaction without recording a vote.
 - GitHub Actions CI is used for remote build/type validation because the ChatGPT runtime cannot currently install npm dependencies directly.
+
+## 2026-08-26 — Pre-launch hardening
+
+- `/api/x/share/start` is protected by a lightweight D1-backed per-network rate limit: eight attempts per ten-minute window.
+- The limiter stores a short SHA-256-derived identifier rather than a raw request IP; rows older than one day are removed opportunistically.
+- Add `/api/ready` separately from `/api/health`: liveness remains a simple process check, while readiness returns HTTP 200 only when the required D1 tables exist and `APP_ORIGIN` plus X client credentials are configured.
+- Production deployment verification must check `/api/ready` before testing the live OAuth/media/post/vote transaction.
