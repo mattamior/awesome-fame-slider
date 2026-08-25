@@ -31,3 +31,11 @@
 - `APP_ORIGIN` is the canonical production origin. The OAuth callback defaults to `${APP_ORIGIN}/api/auth/x/callback`, so it must exactly match the callback configured in the X Developer Console.
 - Cloudflare Workers Static Assets must use `run_worker_first: ["/api/*"]` so API/navigation routing cannot accidentally bypass the Worker.
 - X API production use is pay-per-use/credit based as of 2026-08-26, so the launch budget must account for API writes in addition to Cloudflare hosting.
+
+## 2026-08-26 — Community-state and share-copy behavior
+
+- A person with zero votes defaults to the neutral third rank (`子` / rank index 2), rather than accidentally appearing in the lowest rank.
+- Vote ties are broken toward the rank closest to neutral, making early low-volume results less arbitrarily extreme.
+- Verified X posts use the person's actual verdict label (for example `牢梁` or `Tibo神`) instead of generic `rank N/6` copy.
+- Expired pending OAuth share rows are opportunistically removed when a new share begins, and cancelled OAuth callbacks remove their pending transaction without recording a vote.
+- GitHub Actions CI is used for remote build/type validation because the ChatGPT runtime cannot currently install npm dependencies directly.
