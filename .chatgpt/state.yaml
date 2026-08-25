@@ -6,13 +6,14 @@ updated_at: 2026-08-26
 summary: >-
   slide-rheostat is a React + TypeScript meme/parody app with an eight-person roster,
   six-rank rheostat UI, aggregate vote display, Cloudflare Worker backend, D1 persistence,
-  and an implemented X-native Share & Vote flow. The browser now renders a 1200x675 PNG
-  result card; the Worker uses OAuth 2.0 PKCE, uploads the image, creates the X Post, and
-  records/updates the vote only after X returns a successful Post ID.
+  and an implemented X-native Share & Vote flow. The browser renders a 1200x675 PNG result
+  card; the Worker uses OAuth 2.0 PKCE, uploads the image, creates the X Post, and records or
+  updates the vote only after X returns a successful Post ID. Verified X copy now contains
+  the person's actual verdict label, and zero-vote community state defaults to the neutral rank.
 current_focus: >-
-  Create the production D1 database, configure Cloudflare deployment and X Developer App credentials,
-  deploy the Worker, run migrations, verify the end-to-end live auth/media/post/vote loop, then refine
-  public-figure portrait assets and production copy.
+  Finish remote CI validation, then create the production D1 database, configure Cloudflare
+  deployment and X Developer App credentials, deploy the Worker, run migrations, and verify
+  the end-to-end live auth/media/post/vote loop.
 confirmed_constraints:
   - Vite + React + TypeScript frontend.
   - Cloudflare Workers is the unified deployment target.
@@ -33,12 +34,18 @@ implemented:
   - X media upload and POST /2/tweets integration.
   - Verified Share & Vote persistence: insert share event and upsert one active vote per X user/person only after Post success.
   - Success/failure return states in the React UI; Web Intent fallback never records a vote.
+  - Real localized verdict labels in verified X post text.
+  - Neutral rank for zero-vote community state and neutral-biased tie-breaking.
+  - Opportunistic cleanup of expired OAuth pending rows and explicit cancellation cleanup.
+  - GitHub Actions CI workflow for npm install, build, and Wrangler type generation.
+  - Vite client type declaration added after CI exposed the missing CSS module typing.
   - Deployment and OAuth setup documentation in README.
 blockers:
-  - No Cloudflare account integration is currently exposed to this environment; plugin discovery returned no Cloudflare connection, so D1 creation and production deploy cannot yet be executed here.
+  - No Cloudflare account integration/plugin is available in this environment, so D1 creation and production deploy cannot yet be executed here.
   - Production X Developer App Client ID/Secret and exact callback configuration are not available yet.
-  - X API now uses pay-per-use credits; production posting requires credits in the X Developer Console.
+  - X API production use requires sufficient Developer Console credits.
 validation_notes:
-  - Cloudflare and X API behavior was checked against current official documentation on 2026-08-26.
-  - This runtime still cannot resolve external hosts from the container, so local npm install/build could not be executed.
-  - Attempting to add a GitHub Actions workflow through the GitHub connector was blocked, so remote build validation is still pending.
+  - GitHub Actions CI is now active and provides the networked build environment unavailable to this runtime.
+  - CI run 1 failed because npm cache was enabled without a lockfile; the workflow was corrected.
+  - CI run 2 reached TypeScript and found the missing Vite client CSS declaration; src/vite-env.d.ts was added.
+  - A subsequent CI run is validating the corrected frontend and Wrangler configuration.
