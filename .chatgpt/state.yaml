@@ -55,4 +55,4 @@ validation_notes:
   - GitHub Actions CI provides the networked validation environment unavailable to this runtime.
   - Earlier CI exposed and resolved workflow caching and Vite typing issues.
   - CI run 11 succeeded after rate limiting/readiness hardening.
-  - Latest live-data/mobile-hardening commits triggered fresh CI runs; their final status should be checked before further production changes.
+  - CI run 18 (commit be4542b6687c9f60c5ba7d96bc38729f43378750) succeeded after removing fabricated fallback votes, adding live polling, and mobile hardening; npm install, Vite build, and Wrangler type generation passed.
