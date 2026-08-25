@@ -16,8 +16,13 @@ const PEOPLE: Record<string, PersonMeta> = {
 
 const SCOPES = 'tweet.read tweet.write users.read media.write';
 const NEUTRAL_RANK = 2;
+const SHARE_START_LIMIT = 8;
 
-function json(data: unknown, init: ResponseInit = {}) { return Response.json(data, init); }
+function json(data: unknown, init: ResponseInit = {}) {
+  const headers = new Headers(init.headers);
+  headers.set('cache-control', 'no-store');
+  return Response.json(data, { ...init, headers });
+}
 function validRank(value: unknown) { const n = Number(value); return Number.isInteger(n) && n >= 0 && n <= 5 ? n : null; }
 function b64url(bytes: Uint8Array) { let s=''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
 function randomToken(size = 32) { const bytes = new Uint8Array(size); crypto.getRandomValues(bytes); return b64url(bytes); }
@@ -55,7 +60,44 @@ function postText(personId: string, rank: number, env: Env) {
 }
 
 async function cleanupExpiredPending(env: Env) {
-  await env.DB.prepare("DELETE FROM oauth_pending WHERE expires_at <= datetime('now')").run();
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM oauth_pending WHERE expires_at <= datetime('now')"),
+    env.DB.prepare("DELETE FROM rate_limits WHERE window_start <= datetime('now','-1 day')"),
+  ]);
+}
+
+async function rateLimitKey(request: Request, env: Env) {
+  const forwarded = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${canonicalOrigin(env)}|${forwarded}`)));
+  return b64url(bytes).slice(0, 32);
+}
+
+async function allowShareStart(request: Request, env: Env) {
+  const key = await rateLimitKey(request, env);
+  const row = await env.DB.prepare(`
+    INSERT INTO rate_limits (key, window_start, count)
+    VALUES (?, datetime('now'), 1)
+    ON CONFLICT(key) DO UPDATE SET
+      count = CASE WHEN window_start <= datetime('now','-10 minutes') THEN 1 ELSE count + 1 END,
+      window_start = CASE WHEN window_start <= datetime('now','-10 minutes') THEN datetime('now') ELSE window_start END
+    RETURNING count
+  `).bind(key).first<{ count: number }>();
+  return Number(row?.count || 0) <= SHARE_START_LIMIT;
+}
+
+async function readiness(env: Env) {
+  try {
+    const rows = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('votes','share_events','oauth_pending','rate_limits')").all<{name:string}>();
+    const tables = new Set(rows.results.map((row) => row.name));
+    const required = ['votes','share_events','oauth_pending','rate_limits'];
+    const missingTables = required.filter((name) => !tables.has(name));
+    const xConfigured = Boolean(env.X_CLIENT_ID && env.X_CLIENT_SECRET);
+    const appOriginConfigured = Boolean(env.APP_ORIGIN && !env.APP_ORIGIN.includes('example'));
+    const ready = missingTables.length === 0 && xConfigured && appOriginConfigured;
+    return json({ ok: ready, database: { ok: missingTables.length === 0, missingTables }, x: { configured: xConfigured }, appOrigin: { configured: appOriginConfigured, value: canonicalOrigin(env) } }, { status: ready ? 200 : 503 });
+  } catch (error) {
+    return json({ ok: false, database: { ok: false, error: error instanceof Error ? error.message : String(error) } }, { status: 503 });
+  }
 }
 
 async function beginShare(request: Request, env: Env) {
@@ -67,6 +109,8 @@ async function beginShare(request: Request, env: Env) {
   if (body.mediaBase64.length > 2_000_000) return json({error:'share image too large'},{status:413});
 
   await cleanupExpiredPending(env);
+  if (!(await allowShareStart(request, env))) return json({ error: 'too many share attempts; try again shortly' }, { status: 429, headers: { 'retry-after': '600' } });
+
   const state=randomToken(24), verifier=randomToken(48), codeChallenge=await challenge(verifier);
   await env.DB.prepare(`INSERT INTO oauth_pending (state,code_verifier,person_id,rank,media_base64,expires_at) VALUES (?,?,?,?,?,datetime('now','+10 minutes'))`)
     .bind(state,verifier,personId,rank,body.mediaBase64).run();
@@ -123,7 +167,8 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url=new URL(request.url);
     if(url.pathname==='/api/health') return json({ok:true,service:'slide-rheostat'});
-    if(url.pathname.startsWith('/api/people/')) {
+    if(url.pathname==='/api/ready') return readiness(env);
+    if(url.pathname.startsWith('/api/people/') && request.method==='GET') {
       const id=url.pathname.split('/').pop()||'';
       return personExists(id)?json(await voteSummary(env,id)):json({error:'unknown person'},{status:404});
     }
