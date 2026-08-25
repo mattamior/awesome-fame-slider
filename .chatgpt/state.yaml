@@ -4,23 +4,29 @@ phase: product-definition
 repository: mattamior/slide-rheostat
 updated_at: 2026-08-26
 summary: >-
-  slide-rheostat is a simple React frontend meme/parody application inspired by the
-  梁文锋“滑动变阻器/滑动变祖器” meme. The product should support many recognizable
-  public figures rather than a single Liang Wenfeng page, and is intended to be
-  shared on X so people can play with it. Research found two adjacent open-source
-  implementations: cholf5/liang-slider (Liang-only) and makerjackie/bianzu (generalized
-  multi-person version with six ranks, bilingual copy, timelines, audio, and custom-character tooling).
+  slide-rheostat is a React meme/parody app inspired by the 梁文锋“滑动变阻器/滑动变祖器” meme.
+  It supports multiple recognizable public figures and is designed around an X-native share-and-vote loop:
+  a user selects a rank for a person, shares that verdict to X with an image, and a successful API-created
+  post records a vote. Each person page shows the aggregate community voting state (for example 梁子).
 current_focus: >-
-  Define a differentiated MVP and a strong X sharing loop before implementation.
+  Specify and implement the X-authenticated share-and-vote architecture, aggregate voting UI, and initial roster.
 confirmed_constraints:
-  - Simple frontend application.
-  - React.
+  - React frontend.
   - Multiple famous/public figures.
-  - Designed for sharing and play via X.
+  - X is the primary distribution surface.
+  - Initial roster includes Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo.
+  - Sharing must include the user's selected rank/verdict and an image.
+  - A vote is recorded only after X confirms that the post was successfully created.
+  - Each person's page displays the aggregate voting distribution and current community rank.
+architecture_implications:
+  - A pure static frontend is insufficient for verified share-success voting.
+  - X OAuth user context is required for posting on the user's behalf.
+  - A small server-side/API component is required to keep credentials, exchange OAuth tokens, upload media, create X posts, and record votes.
+  - Prefer one active vote per X account per person; a later successful share updates that user's vote rather than adding unlimited duplicate votes.
 open_questions:
-  - What public-facing product name/brand should be used?
-  - What is the initial launch roster?
-  - What makes this project distinct from existing liang-slider and bianzu projects?
-  - Should shared links encode the selected person and slider rank?
-  - Should result images be generated for X sharing, and how should OG previews be handled?
-  - What visual treatment should be used for public-figure portraits?
+  - Public-facing product name/brand.
+  - Exact rank vocabulary for each launch person.
+  - Backend choice (for example Cloudflare Workers + D1 versus another small serverless stack).
+  - Whether result cards are pre-rendered per person/rank or generated dynamically.
+  - Exact aggregate ranking rule and tie behavior.
+  - Portrait/art asset strategy and parody/disclaimer policy.
