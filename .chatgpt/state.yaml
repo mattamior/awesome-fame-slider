@@ -1,32 +1,37 @@
 project: slide-rheostat
 status: active
-phase: product-definition
+phase: implementation
 repository: mattamior/slide-rheostat
 updated_at: 2026-08-26
 summary: >-
-  slide-rheostat is a React meme/parody app inspired by the 梁文锋“滑动变阻器/滑动变祖器” meme.
-  It supports multiple recognizable public figures and is designed around an X-native share-and-vote loop:
-  a user selects a rank for a person, shares that verdict to X with an image, and a successful API-created
-  post records a vote. Each person page shows the aggregate community voting state (for example 梁子).
+  slide-rheostat is a React + TypeScript meme/parody app inspired by the 梁文锋“滑动变阻器/滑动变祖器” meme.
+  The MVP codebase now includes an 8-person roster, six-rank rheostat UI, aggregate vote display,
+  Cloudflare Worker API scaffold, D1 vote schema, and a Share-to-X entry point. The product is designed around
+  an X-native share-and-vote loop where a successful authenticated X post records or updates one vote per X user/person.
 current_focus: >-
-  Specify and implement the X-authenticated share-and-vote architecture, aggregate voting UI, and initial roster.
+  Complete authenticated X OAuth/media posting, create Cloudflare D1 resources, deploy the Worker, verify the live site,
+  then refine portraits/share cards and production copy.
 confirmed_constraints:
-  - React frontend.
-  - Multiple famous/public figures.
-  - X is the primary distribution surface.
-  - Initial roster includes Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo.
+  - Vite + React + TypeScript frontend.
+  - Cloudflare Workers is the unified deployment target.
+  - Cloudflare D1 stores current votes and share events.
+  - Initial roster: Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo Sottiaux.
   - Sharing must include the user's selected rank/verdict and an image.
   - A vote is recorded only after X confirms that the post was successfully created.
-  - Each person's page displays the aggregate voting distribution and current community rank.
-architecture_implications:
-  - A pure static frontend is insufficient for verified share-success voting.
-  - X OAuth user context is required for posting on the user's behalf.
-  - A small server-side/API component is required to keep credentials, exchange OAuth tokens, upload media, create X posts, and record votes.
-  - Prefer one active vote per X account per person; a later successful share updates that user's vote rather than adding unlimited duplicate votes.
-open_questions:
-  - Public-facing product name/brand.
-  - Exact rank vocabulary for each launch person.
-  - Backend choice (for example Cloudflare Workers + D1 versus another small serverless stack).
-  - Whether result cards are pre-rendered per person/rank or generated dynamically.
-  - Exact aggregate ranking rule and tie behavior.
-  - Portrait/art asset strategy and parody/disclaimer policy.
+  - One active vote per X account per person; later successful shares update that vote.
+  - Each person page displays aggregate voting distribution and the modal community rank.
+implemented:
+  - React/Vite/TypeScript project scaffold.
+  - Eight-person data-driven roster.
+  - Six-position rheostat interaction and rank labels.
+  - Community vote distribution UI and leader display.
+  - D1 migrations for votes and share_events.
+  - Worker health endpoint and aggregate vote API.
+  - X share/auth API placeholders that refuse to count unverified shares.
+  - Wrangler configuration for a Worker serving both API and SPA assets.
+blockers:
+  - No connected Cloudflare account/tool is currently available to create D1 resources or deploy the Worker.
+  - X Developer App credentials and OAuth callback configuration are not yet available.
+  - Authenticated X media upload + post creation still needs implementation and verification against current X API behavior.
+validation_notes:
+  - Local npm install/build validation could not complete in the current runtime because npm install timed out; repository code is committed but build verification remains pending.
