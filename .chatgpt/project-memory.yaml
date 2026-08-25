@@ -1,0 +1,16 @@
+version: 1
+project:
+  name: slide-rheostat
+  repository: mattamior/slide-rheostat
+canonical_source: github
+files:
+  state: .chatgpt/state.yaml
+  next_steps: .chatgpt/next-steps.md
+  decisions: .chatgpt/decisions.md
+checkpoint:
+  triggers:
+    - 收尾
+    - 结束
+    - 先到这里
+    - checkpoint
+    - save progress
