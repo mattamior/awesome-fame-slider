@@ -10,6 +10,7 @@ function b64url(bytes: Uint8Array) { let s=''; for (const b of bytes) s += Strin
 function randomToken(size = 32) { const bytes = new Uint8Array(size); crypto.getRandomValues(bytes); return b64url(bytes); }
 async function challenge(verifier: string) { return b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)))); }
 function leader(counts: number[]) { let best=0; for(let i=1;i<counts.length;i++) if(counts[i]>counts[best]) best=i; return best; }
+function redirectUri(env: Env) { return env.X_REDIRECT_URI || `${env.APP_ORIGIN.replace(/\/$/,'')}/api/auth/x/callback`; }
 
 async function voteSummary(env: Env, personId: string) {
   const rows = await env.DB.prepare('SELECT rank, COUNT(*) AS count FROM votes WHERE person_id = ? GROUP BY rank').bind(personId).all<{rank:number;count:number}>();
@@ -29,7 +30,7 @@ function postText(personId: string, rank: number, origin: string) {
 }
 
 async function beginShare(request: Request, env: Env) {
-  if (!env.X_CLIENT_ID || !env.X_REDIRECT_URI) return json({error:'X OAuth is not configured'},{status:503});
+  if (!env.X_CLIENT_ID) return json({error:'X OAuth is not configured'},{status:503});
   const body = await request.json<{personId?:string;rank?:unknown;mediaBase64?:string}>().catch(()=>({}));
   const personId = body.personId || ''; const rank = validRank(body.rank);
   if (!PEOPLE.has(personId) || rank === null || !body.mediaBase64) return json({error:'invalid share payload'},{status:400});
@@ -38,20 +39,20 @@ async function beginShare(request: Request, env: Env) {
   await env.DB.prepare(`INSERT INTO oauth_pending (state,code_verifier,person_id,rank,media_base64,expires_at) VALUES (?,?,?,?,?,datetime('now','+10 minutes'))`)
     .bind(state,verifier,personId,rank,body.mediaBase64).run();
   const u=new URL('https://x.com/i/oauth2/authorize');
-  u.searchParams.set('response_type','code'); u.searchParams.set('client_id',env.X_CLIENT_ID); u.searchParams.set('redirect_uri',env.X_REDIRECT_URI);
+  u.searchParams.set('response_type','code'); u.searchParams.set('client_id',env.X_CLIENT_ID); u.searchParams.set('redirect_uri',redirectUri(env));
   u.searchParams.set('scope',SCOPES); u.searchParams.set('state',state); u.searchParams.set('code_challenge',codeChallenge); u.searchParams.set('code_challenge_method','S256');
   return json({authUrl:u.toString()});
 }
 
 async function oauthCallback(request: Request, env: Env) {
-  if (!env.X_CLIENT_ID || !env.X_CLIENT_SECRET || !env.X_REDIRECT_URI) return new Response('X OAuth is not configured',{status:503});
+  if (!env.X_CLIENT_ID || !env.X_CLIENT_SECRET) return new Response('X OAuth is not configured',{status:503});
   const url=new URL(request.url), state=url.searchParams.get('state')||'', code=url.searchParams.get('code')||'';
   if (!state || !code) return Response.redirect(`${env.APP_ORIGIN}/?shareError=oauth_cancelled`,302);
   const pending = await env.DB.prepare(`SELECT state,code_verifier,person_id,rank,media_base64 FROM oauth_pending WHERE state=? AND expires_at > datetime('now')`).bind(state).first<PendingShare>();
   if (!pending) return Response.redirect(`${env.APP_ORIGIN}/?shareError=expired`,302);
   await env.DB.prepare('DELETE FROM oauth_pending WHERE state=?').bind(state).run();
   try {
-    const form=new URLSearchParams({grant_type:'authorization_code',code,redirect_uri:env.X_REDIRECT_URI,code_verifier:pending.code_verifier});
+    const form=new URLSearchParams({grant_type:'authorization_code',code,redirect_uri:redirectUri(env),code_verifier:pending.code_verifier});
     const basic=btoa(`${env.X_CLIENT_ID}:${env.X_CLIENT_SECRET}`);
     const token=await xJson<{access_token:string}>('https://api.x.com/2/oauth2/token',{method:'POST',headers:{authorization:`Basic ${basic}`,'content-type':'application/x-www-form-urlencoded'},body:form});
     const auth={authorization:`Bearer ${token.access_token}`};
