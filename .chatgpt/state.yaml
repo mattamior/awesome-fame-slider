@@ -8,12 +8,13 @@ summary: >-
   six-rank rheostat UI, aggregate vote display, Cloudflare Worker backend, D1 persistence,
   and an implemented X-native Share & Vote flow. The browser renders a 1200x675 PNG result
   card; the Worker uses OAuth 2.0 PKCE, uploads the image, creates the X Post, and records or
-  updates the vote only after X returns a successful Post ID. Verified X copy now contains
-  the person's actual verdict label, and zero-vote community state defaults to the neutral rank.
+  updates the vote only after X returns a successful Post ID. Verified X copy contains the
+  person's actual verdict label, and zero-vote community state defaults to the neutral rank.
 current_focus: >-
-  Finish remote CI validation, then create the production D1 database, configure Cloudflare
-  deployment and X Developer App credentials, deploy the Worker, run migrations, and verify
-  the end-to-end live auth/media/post/vote loop.
+  Create the production D1 database, configure Cloudflare deployment and X Developer App
+  credentials, deploy the Worker, run migrations, and verify the end-to-end live
+  auth/media/post/vote loop; continue polishing mobile/share-card UX while account-side
+  deployment prerequisites remain unavailable.
 confirmed_constraints:
   - Vite + React + TypeScript frontend.
   - Cloudflare Workers is the unified deployment target.
@@ -45,7 +46,7 @@ blockers:
   - Production X Developer App Client ID/Secret and exact callback configuration are not available yet.
   - X API production use requires sufficient Developer Console credits.
 validation_notes:
-  - GitHub Actions CI is now active and provides the networked build environment unavailable to this runtime.
-  - CI run 1 failed because npm cache was enabled without a lockfile; the workflow was corrected.
-  - CI run 2 reached TypeScript and found the missing Vite client CSS declaration; src/vite-env.d.ts was added.
-  - A subsequent CI run is validating the corrected frontend and Wrangler configuration.
+  - GitHub Actions CI provides the networked validation environment unavailable to this runtime.
+  - CI run 1 exposed an invalid npm-cache assumption without a lockfile; the workflow was corrected.
+  - CI run 2 exposed the missing Vite CSS type declaration; src/vite-env.d.ts was added.
+  - CI run 4 completed successfully: npm install, npm run build, and npm run cf:types all passed on Node 22.
