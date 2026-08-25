@@ -16,11 +16,18 @@
 
 ## 2026-08-26 — X-native voting loop
 
-- Add Tibo to the initial public-figure roster. The launch roster is currently Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo.
-- The primary conversion action is `Share & Vote`: the user chooses a person's rank (for example `牢梁`) and publishes that verdict to X.
-- The shared X post should contain the user's selected verdict, a deep link back to that state, and an attached result image.
-- A vote is counted only after X confirms successful post creation. Opening a share composer or clicking a Web Intent is not sufficient evidence of a vote.
-- Because X Web Intents do not provide the required verified media-post success flow, the product will use authenticated X API posting for the voting action.
-- This requires a minimal backend/API layer despite the UI remaining a simple React application. The backend owns X OAuth token exchange, media upload, post creation, and vote persistence.
-- Recommended vote integrity rule: one active vote per X account per person. A later successful share changes that account's current vote instead of incrementing unlimited duplicate votes. Raw successful-share count may be tracked separately if desired.
-- Each person page will show the vote distribution and a derived community/current rank such as `梁子`.
+- Add Tibo to the initial public-figure roster. The launch roster is Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo Sottiaux.
+- The primary conversion action is `Share & Vote`: the user chooses a person's rank and publishes that verdict to X.
+- The shared X post contains the user's selected verdict, a deep link back to that state, and an attached result image.
+- A vote is counted only after X confirms successful Post creation. Opening a share composer or clicking a Web Intent is not sufficient evidence of a vote.
+- One active vote per X account per person. A later successful share changes that account's current vote instead of incrementing unlimited duplicate voters. Raw successful-share events are stored separately.
+- Each person page shows the vote distribution and a derived community/current rank.
+
+## 2026-08-26 — Share transaction implementation
+
+- Use X OAuth 2.0 Authorization Code with PKCE as a confidential Web App flow. Required scopes are `tweet.read`, `tweet.write`, `users.read`, and `media.write`; no refresh token/offline access is required for the one-shot sharing transaction.
+- Generate the initial 1200x675 result card in the browser with Canvas and send its PNG base64 into a short-lived D1 `oauth_pending` row. This avoids adding an image-rendering service to the MVP while still giving X a real attached image.
+- The OAuth callback immediately exchanges the code, resolves `/2/users/me`, uploads the pending PNG using the X v2 media endpoint, creates the Post, then inserts `share_events` and upserts `votes` only after the Post succeeds.
+- `APP_ORIGIN` is the canonical production origin. The OAuth callback defaults to `${APP_ORIGIN}/api/auth/x/callback`, so it must exactly match the callback configured in the X Developer Console.
+- Cloudflare Workers Static Assets must use `run_worker_first: ["/api/*"]` so API/navigation routing cannot accidentally bypass the Worker.
+- X API production use is pay-per-use/credit based as of 2026-08-26, so the launch budget must account for API writes in addition to Cloudflare hosting.
