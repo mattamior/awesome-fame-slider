@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "slide-rheostat",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-26",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "slide-rheostat-db",
+      "database_id": "REPLACE_AFTER_D1_CREATE"
+    }
+  ],
+  "vars": {
+    "APP_ORIGIN": "https://slide-rheostat.workers.dev"
+  }
+}
