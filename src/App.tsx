@@ -110,6 +110,10 @@ export default function App() {
         location.href = data.authUrl;
         return;
       }
+      if (res.status === 429) {
+        setNotice('Too many share attempts from this network. Try again in about 10 minutes. No vote was counted.');
+        return;
+      }
       if (res.status === 503) {
         const url = new URL('https://x.com/intent/tweet');
         url.searchParams.set('text', `${shareText}\n\n${location.href}`);
