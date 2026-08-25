@@ -28,6 +28,8 @@ export const PEOPLE: Person[] = [
   { id: 'demis', name: 'Demis Hassabis', nameZh: '哈萨比斯', role: 'Google DeepMind', accent: '哈', ranks: standard('哈') },
 ];
 
-export const DEFAULT_VOTES: Record<string, number[]> = Object.fromEntries(
-  PEOPLE.map((p) => [p.id, [1, 2, 5, 8, 3, 1]]),
+// Never fabricate community sentiment when the API is unavailable. Zero votes render
+// the neutral rank while the UI clearly marks live results as unavailable.
+export const EMPTY_VOTES: Record<string, number[]> = Object.fromEntries(
+  PEOPLE.map((p) => [p.id, [0, 0, 0, 0, 0, 0]]),
 );
