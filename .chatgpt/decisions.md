@@ -46,3 +46,10 @@
 - The limiter stores a short SHA-256-derived identifier rather than a raw request IP; rows older than one day are removed opportunistically.
 - Add `/api/ready` separately from `/api/health`: liveness remains a simple process check, while readiness returns HTTP 200 only when the required D1 tables exist and `APP_ORIGIN` plus X client credentials are configured.
 - Production deployment verification must check `/api/ready` before testing the live OAuth/media/post/vote transaction.
+
+## 2026-08-26 — Voting-data integrity and live refresh
+
+- The frontend must never fabricate community sentiment when the vote API is unavailable. The previous seeded fallback counts were removed; an unavailable API now renders zero bars, neutral rank, and an explicit offline/live-results-unavailable state.
+- Client-side zero-vote and tie-breaking semantics mirror the Worker: zero votes use the neutral rank and ties prefer the rank closest to neutral.
+- Live aggregate results refresh when the person changes, after a share result, when the tab returns to the foreground, and every 30 seconds while visible.
+- Mobile styling must account for safe-area insets, narrow screens, horizontal roster scrolling, touch interaction, and reduced-motion preferences.
