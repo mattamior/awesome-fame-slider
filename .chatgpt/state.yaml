@@ -10,13 +10,12 @@ summary: >-
   card; the Worker uses OAuth 2.0 PKCE, uploads the image, creates the X Post, and records or
   updates the vote only after X returns a successful Post ID. Pre-launch hardening includes
   D1-backed share-start rate limiting, a production readiness endpoint, honest no-fabrication
-  behavior when live vote data is unavailable, 30-second visible-tab vote refresh, and improved
-  mobile/X-in-app-browser ergonomics.
+  behavior when live vote data is unavailable, 30-second visible-tab vote refresh, improved
+  mobile/X-in-app-browser ergonomics, and a GitHub Actions production deploy workflow that can
+  apply D1 migrations, deploy Workers/static assets, configure X secrets, and smoke-test readiness.
 current_focus: >-
-  Create the production D1 database, configure Cloudflare deployment and X Developer App
-  credentials, deploy the Worker, run all three migrations, and verify the end-to-end live
-  auth/media/post/vote loop; continue visual/share-card polish while account-side deployment
-  prerequisites remain unavailable.
+  Supply production Cloudflare/X account configuration as GitHub Actions secrets, create the D1
+  database, run the Deploy workflow, then verify the complete live auth/media/post/vote loop.
 confirmed_constraints:
   - Vite + React + TypeScript frontend.
   - Cloudflare Workers is the unified deployment target.
@@ -47,12 +46,14 @@ implemented:
   - /api/ready returns 200 only when required D1 tables, APP_ORIGIN, and X credentials are present.
   - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
   - GitHub Actions CI workflow for npm install, build, and Wrangler type generation.
+  - Manual GitHub Actions Deploy workflow validates six required production secrets, builds, injects runner-only D1/origin config, applies remote migrations, deploys the Worker/assets, writes X OAuth secrets, and retries /api/ready smoke checks.
 blockers:
-  - No usable Cloudflare account integration/plugin is available in this environment; plugin discovery did not surface a Cloudflare deployment connector, so D1 creation and production deploy cannot yet be executed here.
-  - Production X Developer App Client ID/Secret and exact callback configuration are not available yet.
+  - Cloudflare account credentials are not available to this runtime. Production deployment can now run from GitHub once CF_API_TOKEN, CF_ACCOUNT_ID, CF_D1_DATABASE_ID, and APP_ORIGIN repository secrets are configured.
+  - Production X Developer App Client ID/Secret and exact callback configuration are not available to this runtime; the Deploy workflow accepts X_CLIENT_ID and X_CLIENT_SECRET repository secrets.
   - X API production use requires sufficient Developer Console credits.
 validation_notes:
   - GitHub Actions CI provides the networked validation environment unavailable to this runtime.
   - Earlier CI exposed and resolved workflow caching and Vite typing issues.
   - CI run 11 succeeded after rate limiting/readiness hardening.
-  - CI run 18 (commit be4542b6687c9f60c5ba7d96bc38729f43378750) succeeded after removing fabricated fallback votes, adding live polling, and mobile hardening; npm install, Vite build, and Wrangler type generation passed.
+  - CI run 18 (commit be4542b6687c9f60c5ba7d96bc38729f43378750) succeeded after removing fabricated fallback votes, adding live polling, and mobile hardening.
+  - X official documentation rechecked on 2026-08-26 confirms POST /2/media/upload accepts JSON base64 media for tweet_image and returns a media ID for POST /2/tweets.
