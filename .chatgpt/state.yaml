@@ -4,16 +4,18 @@ phase: production-verification
 repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-26
 summary: >-
-  The MVP is now deployed successfully to Cloudflare at
-  https://awesome-fame-slider.mattamior.workers.dev. Voting happens directly on the site using
-  one anonymous browser-device vote per person backed by D1, while X sharing uses a free Web
-  Intent and is independent from voting. GitHub Actions Deploy run 2 completed successfully on
-  the request-derived-origin architecture: it reused awesome-fame-slider-db, found no pending
-  migrations, deployed the awesome-fame-slider Worker, and passed both /api/health and /api/ready.
+  The MVP is live at https://awesome-fame-slider.mattamior.workers.dev and the repository now
+  implements AI-Native Repository Delivery: ChatGPT operates GitHub directly, CI validates
+  product-relevant main-branch commits, and a successful push CI automatically triggers a serialized
+  production Deploy for the exact passing SHA. Deploy reuses/provisions D1 as needed, applies
+  migrations, deploys the Worker/assets, discovers the workers.dev URL, and requires /api/health
+  plus /api/ready to pass. Normal releases now require no local checkout and no manual Run workflow
+  click; workflow_dispatch remains only as a fallback.
 current_focus: >-
-  Verify the live product end to end in a real browser: anonymous vote creation and update semantics,
+  Verify the live product end to end in a real browser: anonymous vote creation/update semantics,
   aggregate refresh, X Web Intent composition, social-card metadata/image rendering, and mobile/X
-  in-app browser behavior. After those checks, polish artwork/branding and record a launch checkpoint.
+  in-app browser behavior. Continue refining and documenting the AI-Native Repository Delivery
+  operating model as a reusable development pattern.
 confirmed_constraints:
   - GitHub repository: mattamior/awesome-fame-slider.
   - Product display name remains Slide Rheostat for now.
@@ -35,6 +37,13 @@ confirmed_constraints:
   - Share metadata derives its origin from the incoming request, so workers.dev and future custom domains work without APP_ORIGIN configuration.
   - Each person page displays aggregate voting distribution and the modal community rank.
   - Community results must never fall back to fabricated sample votes.
+  - Production deployment requires only CF_API_TOKEN and CF_ACCOUNT_ID.
+  - Normal production delivery is CI-gated and automatic after successful push CI on main.
+  - Deploy checks out the exact workflow_run.head_sha that passed CI.
+  - Pull-request CI cannot enter the production deploy path; automatic deploy requires workflow_run.event == push and head_branch == main.
+  - Production deploys are serialized with a production-deploy concurrency group and are not cancelled mid-run.
+  - Pure .chatgpt/**, docs/**, and README.md commits are ignored by push CI so RPM/docs updates do not deploy production.
+  - workflow_dispatch remains available only as a manual recovery/re-run path.
 implemented:
   - React/Vite/TypeScript project scaffold and eight-person data-driven roster.
   - Six-position rheostat interaction, rank labels, community vote distribution, and leader display.
@@ -51,12 +60,16 @@ implemented:
   - Human share-link visitors are redirected into the app with person/rank preselected.
   - /api/ready requires only the anonymous-vote/rate-limit tables.
   - Cloudflare static-asset routing runs Worker-first for /api/* and /share/*.
-  - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
+  - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal roster scrolling, and reduced motion.
   - GitHub Actions CI for install, tests, build/share-card generation, and Wrangler type generation.
-  - Manual GitHub Actions Deploy workflow discovers or creates awesome-fame-slider-db, applies migrations, deploys Worker/assets, discovers the real workers.dev URL from Wrangler output, and checks health/readiness.
-  - Production Deploy requires only CF_API_TOKEN and CF_ACCOUNT_ID.
+  - CI ignores pure RPM/docs/README changes to avoid meaningless releases.
+  - GitHub Actions Deploy is triggered automatically by successful push CI on main and retains manual workflow_dispatch fallback.
+  - Deploy verifies and checks out the exact CI-passing SHA before building/deploying.
+  - Deploy automatically discovers or creates awesome-fame-slider-db, applies migrations, deploys Worker/assets, discovers the workers.dev URL, and checks health/readiness.
+  - Production deployment concurrency prevents overlapping deploy/migration runs.
   - Repository/package/frontend links and infrastructure naming are synchronized to awesome-fame-slider.
   - Production deployment is live at https://awesome-fame-slider.mattamior.workers.dev.
+  - Reusable AI-Native Repository Delivery playbook is stored at docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md.
 removed_from_current_flow:
   - X OAuth 2.0 PKCE authorization.
   - X media upload and POST /2/tweets calls.
@@ -64,13 +77,15 @@ removed_from_current_flow:
   - Vote-on-successful-X-post semantics.
   - X-account identity as the voting key.
   - APP_ORIGIN runtime/deployment requirement.
+  - Manual Run workflow as a normal release requirement.
 blockers:
   - End-to-end browser verification of anonymous vote/upsert behavior has not yet been completed.
   - X Web Intent and X/Open Graph card rendering still need live manual verification before public announcement.
 validation_notes:
-  - GitHub Actions Deploy run 1 created awesome-fame-slider-db, applied migrations 0001 through 0004, uploaded 51 static assets, and deployed Worker version 17c3c017-b9b8-44d0-94e8-d122380ee2fa; only the old APP_ORIGIN smoke check failed.
-  - GitHub Actions CI run 76 (commit 433764e82454814fb95c280ce231fe91ac38e779) passed tests, build/share-card generation, and Wrangler type generation after removing APP_ORIGIN.
-  - GitHub Actions Deploy run 2 (commit b0d192a1f5167e587cd00b5938e246690c74ff10) succeeded completely. It reused D1, reported no migrations to apply, deployed Worker version 3c26c236-8ab7-4afe-a7a7-d97167e126db, discovered https://awesome-fame-slider.mattamior.workers.dev, and passed /api/health plus /api/ready on the first attempt.
+  - Deploy run 1 created awesome-fame-slider-db, applied migrations 0001 through 0004, uploaded assets, and deployed the Worker; only the obsolete APP_ORIGIN smoke check failed.
+  - Deploy run 2 completed successfully on the request-derived-origin design and passed /api/health plus /api/ready.
+  - CI run 86 for commit 052cc4a9a800803ed8ff398e22ea832e505a474b passed automatically after enabling CI-gated production delivery.
+  - Automatic Deploy run 4 was created by workflow_run without any human Run workflow action, checked out exact SHA 052cc4a9a800803ed8ff398e22ea832e505a474b, reused D1 with no pending migrations, deployed Worker version daae83d8-4ee2-46d1-8674-1c23391260ff, and passed /api/health plus /api/ready on the first attempt.
 last_checkpoint:
   saved_at: 2026-08-26T14:31:00+08:00
   reason: user requested checkpoint after repository and pre-launch infrastructure rename
