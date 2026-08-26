@@ -23,15 +23,15 @@ function json(data: unknown, init: ResponseInit = {}) {
   headers.set('cache-control', 'no-store');
   return Response.json(data, { ...init, headers });
 }
-function validRank(value: unknown) { const n = Number(value); return Number.isInteger(n) && n >= 0 && n <= 5 ? n : null; }
+export function validRank(value: unknown) { const n = Number(value); return Number.isInteger(n) && n >= 0 && n <= 5 ? n : null; }
 function b64url(bytes: Uint8Array) { let s=''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
 function randomToken(size = 32) { const bytes = new Uint8Array(size); crypto.getRandomValues(bytes); return b64url(bytes); }
 async function challenge(verifier: string) { return b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)))); }
-function canonicalOrigin(env: Env) { return env.APP_ORIGIN.replace(/\/$/,''); }
+export function canonicalOrigin(env: Pick<Env, 'APP_ORIGIN'>) { return env.APP_ORIGIN.replace(/\/$/,''); }
 function redirectUri(env: Env) { return env.X_REDIRECT_URI || `${canonicalOrigin(env)}/api/auth/x/callback`; }
 function personExists(id: string) { return Object.prototype.hasOwnProperty.call(PEOPLE, id); }
 
-function leader(counts: number[]) {
+export function leader(counts: number[]) {
   const max = Math.max(...counts);
   if (max <= 0) return NEUTRAL_RANK;
   const tied = counts.map((count, rank) => ({ count, rank })).filter((item) => item.count === max);
@@ -52,7 +52,7 @@ async function xJson<T>(url: string, init: RequestInit): Promise<T> {
   return data as T;
 }
 
-function postText(personId: string, rank: number, env: Env) {
+export function postText(personId: string, rank: number, env: Pick<Env, 'APP_ORIGIN'>) {
   const person = PEOPLE[personId];
   const verdict = person?.ranks[rank] || `rank ${rank + 1}/6`;
   const origin = canonicalOrigin(env);
