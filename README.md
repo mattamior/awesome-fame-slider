@@ -1,6 +1,8 @@
-# slide-rheostat
+# awesome-fame-slider
 
 A reputation rheostat for the internet. Pick a public figure, slide their status, cast an anonymous site vote, and share the verdict to X without paid X API writes.
+
+The current product display name is **Slide Rheostat**.
 
 ## MVP stack
 
@@ -28,15 +30,15 @@ The repository includes `.github/workflows/deploy.yml`. Configure these GitHub A
 
 - `CF_API_TOKEN` — Cloudflare API token with Worker/D1 deployment access
 - `CF_ACCOUNT_ID` — Cloudflare account ID
-- `APP_ORIGIN` — final public origin, for example `https://slide-rheostat.example.com`
+- `APP_ORIGIN` — final public origin, initially something like `https://awesome-fame-slider.<account-subdomain>.workers.dev`
 
-Then run the **Deploy** workflow manually. It validates the three required values, runs tests, builds the React app and share cards, discovers an existing D1 database named `slide-rheostat-db` or creates it automatically, injects its UUID and the production origin into the runner-only Wrangler config, applies all remote migrations, deploys the Worker/static assets, and smoke-tests `/api/health` plus `/api/ready`.
+Then run the **Deploy** workflow manually. It validates the three required values, runs tests, builds the React app and share cards, discovers an existing D1 database named `awesome-fame-slider-db` or creates it automatically, injects its UUID and the production origin into the runner-only Wrangler config, applies all remote migrations, deploys the `awesome-fame-slider` Worker/static assets, and smoke-tests `/api/health` plus `/api/ready`.
 
 There is no X callback URL to configure and no X API credit requirement for the share flow.
 
 ### Manual Wrangler path
 
-1. Create a D1 database named `slide-rheostat-db`.
+1. Create a D1 database named `awesome-fame-slider-db`.
 2. Replace `REPLACE_AFTER_D1_CREATE` in `wrangler.jsonc` with the D1 database ID.
 3. Apply all migrations:
 
