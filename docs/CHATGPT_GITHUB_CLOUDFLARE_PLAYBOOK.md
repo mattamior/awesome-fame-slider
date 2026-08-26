@@ -1,102 +1,137 @@
-# ChatGPT + GitHub + Cloudflare Zero-Local Development Playbook
+# AI-Native Repository Delivery
 
-> A reusable workflow for building and shipping a web application from a ChatGPT Project without cloning the repository or running a local development environment.
+## ChatGPT + GitHub + Cloudflare Zero-Local Development Playbook
 
-## 1. What this workflow optimizes for
+> A reusable operating model for building, testing, deploying, and maintaining a web application from a ChatGPT Project without requiring a local checkout or local development environment.
 
-The goal is a project-development loop in which:
+## 1. The concept
 
-- the human creates the ChatGPT Project and an empty GitHub repository;
+**AI-Native Repository Delivery (ANRD)** is a development model in which the repository and its automation become the primary execution environment for an AI developer.
+
+The human supplies intent, product judgment, account ownership, and security approvals. ChatGPT operates the repository. GitHub stores durable state and executes CI/CD. Cloudflare runs production.
+
+The shortest form is:
+
+```text
+Human intent
+    ↓
+ChatGPT Project + repository memory
+    ↓
+GitHub repository
+    ↓
+GitHub Actions
+    ↓
+Cloudflare
+```
+
+This is different from using ChatGPT as a code generator that feeds a local editor. In ANRD, the laptop is optional. The repository, automation, and cloud runtime are the working environment.
+
+**Zero-local development** is the implementation property: no clone, editor, local terminal, package installation, git command, Wrangler command, or local build is required from the human.
+
+**AI-Native Repository Delivery** is the broader operating model: repository-native memory, direct repository manipulation, CI-gated delivery, automated cloud provisioning, production verification, and failure recovery are all part of one closed loop.
+
+## 2. What the workflow optimizes for
+
+The target experience is:
+
+- the human creates a ChatGPT Project and an empty GitHub repository;
 - ChatGPT treats GitHub as the canonical project filesystem and durable source of truth;
 - ChatGPT writes code, tests, workflows, migrations, documentation, and project memory directly to GitHub;
-- GitHub Actions provides the reproducible build/CI/deployment environment;
+- GitHub Actions provides the reproducible build, test, and deployment environment;
 - Cloudflare provides the production runtime and stateful services such as Workers and D1;
-- the human performs only the one-time security/authorization steps that should not be delegated to an assistant;
-- after bootstrap, normal code changes can be tested and deployed without a local checkout.
+- the human performs only one-time trust-boundary operations that should remain account-owner controlled;
+- after bootstrap, normal code changes can be tested and deployed without a local checkout and without a manual release click.
 
-This is **not** “ChatGPT editing a local repository through chat.” It is closer to an AI-native control plane in which the repository, CI system, and cloud runtime are the working environment.
-
-## 2. The architecture
+## 3. Architecture
 
 ```mermaid
 flowchart LR
     U[Human] -->|requirements / approvals| C[ChatGPT Project]
     C -->|read + write repository| G[GitHub]
-    G -->|push / workflow event| A[GitHub Actions]
-    A -->|tests + build| A
-    A -->|Wrangler + API token| CF[Cloudflare]
+    C -->|read CI status + logs| A[GitHub Actions]
+    G -->|push| A
+    A -->|CI success| D[Deploy workflow]
+    D -->|Wrangler + scoped token| CF[Cloudflare]
     CF --> W[Worker / Static Assets]
-    CF --> D[D1 / other resources]
-    A -->|health + readiness checks| W
-    C -->|inspect CI / logs / repository state| G
+    CF --> DB[D1 / other resources]
+    D -->|health + readiness| W
     C -->|diagnose + commit fixes| G
 
+    U -. one-time GitHub authorization .-> G
     U -. one-time secret setup .-> G
     U -. one-time Cloudflare token setup .-> CF
 ```
 
-## 3. Responsibility boundary
+## 4. Responsibility boundary
 
-### Human-only bootstrap actions
+The cleanest rule is:
 
-These steps intentionally remain human-controlled because they involve account ownership, authorization, billing, or secret material:
+> **The human handles trust boundaries; ChatGPT handles implementation.**
 
-1. Create a **ChatGPT Project** and enable **project-only memory** when appropriate.
-2. Add the project's persistent Instructions.
-3. Create an empty GitHub repository.
-4. Connect/authorize GitHub for ChatGPT.
-5. Create the Cloudflare account/API token with least-privilege permissions.
-6. Add Cloudflare credentials to GitHub Actions Secrets.
-7. Configure custom domains, billing, external provider consoles, or other account-level settings when required.
+### Human-controlled bootstrap actions
 
-Secrets should never be pasted into the chat.
+These remain human actions because they involve account ownership, authorization, billing, or secret material:
+
+1. Create a ChatGPT Project.
+2. Enable **project-only memory** when project isolation is desired.
+3. Add persistent Project Instructions.
+4. Create an empty GitHub repository.
+5. Connect/authorize GitHub for ChatGPT.
+6. Create a least-privilege Cloudflare API token.
+7. Add Cloudflare credentials to GitHub Actions Secrets.
+8. Configure custom domains, billing, external provider consoles, or other account-level settings when required.
+
+Secrets should never be pasted into the conversation.
 
 ### ChatGPT-owned work
 
-After GitHub access is available, ChatGPT can own essentially the entire repository lifecycle:
+Once GitHub access exists, ChatGPT can own essentially the entire software lifecycle:
 
-- initialize the application;
+- initialize the repository;
+- scaffold the application;
 - choose and document architecture;
-- create source files;
+- create and edit source files;
 - add dependencies;
 - write tests;
-- add D1 migrations;
-- write Worker code;
+- add database migrations;
+- write Worker/server code;
 - create CI workflows;
 - create deployment workflows;
-- update documentation;
-- inspect GitHub Actions runs;
-- read failure logs;
+- inspect Actions runs and logs;
+- diagnose failures;
 - commit fixes;
 - maintain repository project memory;
-- verify deployment health;
+- provision supported cloud resources through CI/CD;
+- verify production health;
 - continue iteration without requiring a local checkout.
 
 ### GitHub's role
 
-GitHub is more than source control in this model. It is:
+GitHub is not merely source control. In this model it is:
 
 - the canonical project filesystem;
 - the durable project history;
+- the project-memory store;
 - the CI execution environment;
+- the deployment orchestrator;
 - the secret store for deployment credentials;
-- the event source for automatic deployment.
+- the event source for automatic delivery.
 
 ### Cloudflare's role
 
-Cloudflare is the production target:
+Cloudflare is the production substrate:
 
 - Workers execute server logic;
 - Workers Static Assets serve the frontend;
 - D1 stores relational state;
-- other Cloudflare services can be added as required;
-- Wrangler is invoked from GitHub Actions, not from the user's laptop.
+- additional Cloudflare resources can be provisioned as needed;
+- Wrangler runs inside GitHub Actions rather than on the user's laptop.
 
-## 4. Repository Project Memory (RPM)
+## 5. Repository Project Memory (RPM)
 
-Chat conversations are excellent working memory but should not be the canonical project state. Store durable state in the repository.
+Chat is working memory. The repository should hold durable project state.
 
-A minimal layout:
+A minimal structure:
 
 ```text
 .chatgpt/
@@ -126,149 +161,142 @@ checkpoint:
     - 收尾
 ```
 
-The Project Instructions should tell ChatGPT to read the RPM manifest and referenced files at the start of each substantive new conversation and to checkpoint when requested.
+Project Instructions should tell ChatGPT to read the manifest and referenced files at the first substantive turn of each new conversation, and to checkpoint repository state when requested.
 
-This makes the repository—not any individual chat—the durable project brain.
+This makes the repository—not any individual conversation—the durable project brain.
 
-## 5. Standard project bootstrap
+## 6. Standard bootstrap
 
-### Phase A — Human creates the control plane
+### Phase A — Create the control plane
+
+Human:
 
 1. Create a ChatGPT Project.
-2. Enable project-only memory if isolation from other projects is desired.
-3. Add project Instructions that define repository-first behavior and RPM rules.
+2. Enable project-only memory if desired.
+3. Add repository-first/RPM Instructions.
 4. Create an empty GitHub repository.
-5. Give ChatGPT access to that repository.
+5. Authorize ChatGPT to access it.
 
 No local clone is required.
 
-### Phase B — ChatGPT initializes the repository
+### Phase B — Initialize the repository
 
-ChatGPT then:
+ChatGPT:
 
 1. initializes RPM;
 2. scaffolds the application;
-3. writes the initial architecture and decisions;
+3. records architecture and decisions;
 4. adds tests and CI;
 5. adds Cloudflare configuration;
-6. adds migrations and deployment workflow;
+6. adds migrations and deployment automation;
 7. commits everything directly to GitHub;
-8. monitors CI and fixes failures until green.
+8. monitors CI and fixes repository-side failures until green.
 
-### Phase C — Human performs one-time production authorization
+### Phase C — Establish the production trust boundary
 
-For the current Workers + D1 pattern, create a Cloudflare API token with least privilege, for example:
+For a Workers + D1 application, a typical Cloudflare token needs only the project-relevant permissions, for example:
 
 - Workers Scripts: Write/Edit
 - D1: Write/Edit
 
-Then add GitHub Actions repository secrets such as:
+GitHub Actions Secrets:
 
 ```text
 CF_API_TOKEN
 CF_ACCOUNT_ID
 ```
 
-Application-specific integrations may require additional secrets, but they should be introduced only when actually needed.
+Application-specific services may add more secrets, but only when actually necessary.
 
-### Phase D — First deployment
+### Phase D — Bootstrap production
 
-A bootstrap deployment workflow should be able to:
+The first deployment should be capable of:
 
-1. validate required secrets;
-2. install dependencies;
-3. run tests;
-4. build production assets;
-5. discover or provision the D1 database;
-6. inject the D1 ID into the runner's temporary Wrangler configuration;
-7. apply migrations;
-8. deploy Worker and static assets;
-9. discover the actual production URL;
-10. call `/api/health` and `/api/ready`;
-11. fail loudly if production is not healthy.
+1. validating required secrets;
+2. installing dependencies;
+3. running tests;
+4. building production assets;
+5. discovering or provisioning D1;
+6. injecting runtime resource IDs into a runner-only configuration;
+7. applying migrations;
+8. deploying Worker and assets;
+9. discovering the actual production URL;
+10. calling `/api/health` and `/api/ready`;
+11. failing loudly when production is unhealthy.
 
-The important property is **idempotence**: re-running the deployment should reuse existing resources rather than create duplicates.
+The deployment must be **idempotent**. Re-running it should reuse resources rather than create duplicates.
 
-## 6. The normal development loop
-
-After bootstrap, a normal iteration becomes:
+## 7. Normal development loop
 
 ```mermaid
 sequenceDiagram
     participant U as Human
     participant C as ChatGPT
     participant G as GitHub
-    participant CI as GitHub Actions
+    participant CI as GitHub CI
+    participant D as GitHub Deploy
     participant CF as Cloudflare
 
     U->>C: Describe feature / bug / product decision
     C->>G: Read RPM + relevant code
     C->>G: Commit implementation + tests
-    G->>CI: Trigger CI
-    C->>CI: Inspect results
+    G->>CI: Push triggers CI
+    C->>CI: Inspect result
     alt CI fails
         CI-->>C: Failure + logs
         C->>G: Commit fix
-        G->>CI: Trigger CI again
-    else CI passes
-        CI->>CF: Deploy automatically or via release trigger
-        CF-->>CI: Production health/readiness
-        C->>G: Update durable project state when appropriate
+        G->>CI: CI runs again
+    else CI succeeds
+        CI->>D: workflow_run event
+        D->>G: Checkout exact passing SHA
+        D->>CF: Migrations + deployment
+        CF-->>D: Production endpoint
+        D->>CF: Health/readiness checks
+        C->>G: Update RPM/docs when appropriate
     end
 ```
 
-The user's laptop does not participate in this loop.
+The laptop does not participate in the normal loop.
 
-## 7. Deployment modes
+## 8. Deployment maturity modes
 
 ### Mode 1 — Manual production trigger
 
-This is the safest bootstrap configuration and is what this project initially used:
+Useful while infrastructure is still being bootstrapped:
 
 ```yaml
 on:
   workflow_dispatch:
 ```
-
-A human clicks **Run workflow** when ready.
 
 Advantages:
 
 - explicit production gate;
-- useful while credentials and infrastructure are still being debugged;
-- prevents accidental deploys during early repository construction.
+- easy to reason about during first-time credential setup;
+- prevents accidental early releases.
 
 Disadvantage:
 
-- one manual click remains for every release.
+- every release still needs a human click.
 
-### Mode 2 — Fully automatic deployment on `main`
+### Mode 2 — Push-to-main automatic deployment
 
-For a small project where ChatGPT is allowed to commit directly to `main`, production can be completely automatic.
-
-The simplest trigger is:
+Simple small-project automation:
 
 ```yaml
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 ```
 
-Then every commit ChatGPT writes to `main` launches deployment automatically. `workflow_dispatch` is retained as an emergency/manual re-run mechanism.
+Every main commit deploys automatically. If the deployment itself runs tests, bad builds still fail before release.
 
-If the deploy workflow itself runs tests before deployment, this is already a valid CI/CD pipeline: a bad build will fail before Wrangler deploys it.
+### Mode 3 — CI-gated automatic deployment
 
-### Mode 3 — CI-gated automatic deployment (recommended reusable pattern)
+Recommended for ANRD.
 
-For a cleaner separation of concerns:
-
-1. `CI` runs on every change.
-2. `Deploy` runs only after the `CI` workflow for `main` completes successfully.
-3. Manual dispatch remains available for recovery.
-
-Conceptually:
+`CI` validates a commit first. `Deploy` is triggered only when the CI workflow completes successfully for a **push to main**.
 
 ```yaml
 on:
@@ -282,72 +310,95 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
        github.event.workflow_run.head_branch == 'main')
 ```
 
-When implementing this pattern, the checkout step should deploy the exact SHA that passed CI rather than blindly checking out the newest `main` commit.
+The `event == 'push'` condition is important: `workflow_run` may also observe CI created by pull requests, while the deployment workflow has access to production secrets. Production deployment should not be opened to PR-triggered CI.
 
-This gives a strong invariant:
+The deployment must checkout the **exact SHA that passed CI**:
 
-> **Only a commit that passed CI can become production.**
-
-## 8. Recommended automation policy
-
-For small personal products and prototypes, the highest-leverage setup is:
-
-```text
-ChatGPT commit to main
-        ↓
-GitHub CI
-        ↓ success only
-Automatic Cloudflare Deploy
-        ↓
-Health + readiness checks
-        ↓
-Production
+```yaml
+- uses: actions/checkout@v4
+  with:
+    ref: ${{ github.event.workflow_run.head_sha }}
 ```
 
-Keep `workflow_dispatch` as a fallback, but it should no longer be part of the normal release path.
+This establishes the invariant:
 
-For higher-risk production systems, switch to:
+> **Only the exact commit that passed CI can become production.**
 
-```text
-ChatGPT creates branch/PR
-        ↓
-CI
-        ↓
-Human review / protected environment approval
-        ↓
-Deploy
+Keep `workflow_dispatch` as a fallback/recovery path rather than part of normal releases.
+
+## 9. Prevent repository-memory churn from deploying production
+
+ANRD creates more repository commits than a traditional workflow because ChatGPT may update RPM and documentation frequently. Those commits should not deploy the application.
+
+A practical CI policy is:
+
+```yaml
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '.chatgpt/**'
+      - 'docs/**'
+      - 'README.md'
 ```
 
-The important point is that **manual release clicks are a policy choice, not a technical requirement**.
+Result:
 
-## 9. Secrets and security model
+- code/config/workflow changes → CI → automatic deployment;
+- pure RPM checkpoint → no CI, no deploy;
+- pure documentation edit → no CI, no deploy.
 
-The flow is powerful because credentials do not have to pass through the conversation.
+If one commit changes both application code and documentation, CI still runs because the change set is not exclusively ignored paths.
 
-Recommended rules:
+This distinction is important: **repository state changes are not necessarily product release changes**.
 
-- use scoped Cloudflare API Tokens, never the Global API Key;
-- grant only the services required by the project;
-- store secrets only in GitHub Actions Secrets or an equivalent secret manager;
-- never commit secrets to the repository;
+## 10. Deployment concurrency
+
+Automated AI work can generate multiple commits quickly. Production deploys should not execute concurrently, especially when migrations are involved.
+
+Use a deployment concurrency group:
+
+```yaml
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+```
+
+`cancel-in-progress: false` avoids interrupting a migration or partially completed cloud deployment. GitHub serializes production runs; newer pending work follows the active deployment.
+
+For very high commit frequency, an additional “deploy only latest main SHA” policy can be added later. For small projects, serialized exact-SHA deployment is a robust default.
+
+## 11. Secrets and security model
+
+The model is powerful precisely because credentials do not have to pass through the conversation.
+
+Rules:
+
+- use scoped Cloudflare API Tokens, not a Global API Key;
+- grant only required services and account scope;
+- store secrets in GitHub Actions Secrets or an equivalent secret manager;
+- never commit secrets;
 - never paste secrets into ChatGPT;
-- prefer account-specific resources over global permissions;
-- give CI read-only GitHub permissions unless it needs more;
-- keep deployment workflows version-controlled and reviewable;
-- expose `/api/health` and, where useful, `/api/ready` so automation can verify real production state.
+- keep CI GitHub permissions read-only unless more is explicitly required;
+- restrict automatic production deployment to trusted push events;
+- version-control deployment workflows;
+- expose health/readiness endpoints so automation verifies real production state.
 
-## 10. Cloud resource provisioning principle
+The human retains control of credentials while ChatGPT can use the automation that consumes them.
+
+## 12. Cloud resource provisioning principle
 
 Prefer **deployment-as-code** over dashboard-driven provisioning when the provider supports it.
 
-For example, the deployment can:
+Example:
 
 ```text
 wrangler d1 list
-       ↓ not found
+       ↓ absent
 wrangler d1 create
        ↓
 wrangler d1 migrations apply
@@ -355,35 +406,32 @@ wrangler d1 migrations apply
 wrangler deploy
 ```
 
-This means a new project can be bootstrapped without the human manually reproducing resource settings in the Cloudflare dashboard.
+The dashboard should be reserved for actions that genuinely require account-owner intent, such as token issuance, billing, or domain ownership.
 
-Use dashboard steps only for actions that genuinely require account-owner intent, such as issuing a token or attaching a production domain.
+## 13. Failure recovery
 
-## 11. Failure-recovery loop
+A failed production attempt should not turn into “download the repo and debug locally.”
 
-A production failure should not turn into “download the repo and debug locally.”
+Expected loop:
 
-The expected loop is:
-
-1. ChatGPT reads the failed GitHub Actions job.
-2. ChatGPT reads the detailed logs.
-3. It determines whether the failure is:
+1. ChatGPT reads the failed Actions run.
+2. ChatGPT reads the failed job and logs.
+3. It classifies the failure:
    - code/build/test;
    - permissions;
-   - missing secrets;
+   - missing secret;
    - cloud provisioning;
    - migration;
    - routing/DNS;
-   - health/readiness.
-4. If it is a repository issue, ChatGPT commits a fix directly.
-5. CI/deployment reruns.
-6. If it is an account-level or secret problem, ChatGPT gives the human exact UI steps without asking them to touch local code.
+   - production health/readiness.
+4. Repository-side issue → ChatGPT commits a fix.
+5. CI runs automatically.
+6. Successful CI triggers deployment automatically.
+7. Account/secret issue → ChatGPT gives the human exact UI instructions without requiring local code work.
 
-This separation is important: **the human handles trust boundaries; ChatGPT handles implementation.**
+This is a closed repair loop around the repository and cloud runtime.
 
-## 12. A reusable Project Instructions template
-
-The following is a compact starting point for future projects:
+## 14. Reusable Project Instructions template
 
 ```text
 This project uses GitHub as the canonical source of truth and RPM
@@ -401,47 +449,95 @@ Prefer creating/editing files, inspecting CI, and diagnosing workflow failures
 through the connected GitHub repository.
 
 Cloud deployment should run through version-controlled GitHub Actions.
-Secrets must remain in GitHub/Cloud provider secret stores and must never be
+Prefer CI-gated automatic deployment of the exact passing main-branch SHA.
+Keep manual workflow dispatch only as a fallback unless the project requires a
+human production approval gate.
+
+Secrets must remain in GitHub/cloud-provider secret stores and must never be
 requested in chat.
+
+Pure RPM/documentation changes should not trigger production delivery.
 
 When I say checkpoint, save progress, 收尾, 结束, or equivalent, update RPM
 before finishing.
 ```
 
-Project-specific architecture, deployment provider, resource names, and safety constraints can be appended below this generic section.
+Project-specific architecture, resource names, deployment provider, and risk controls should be appended below the generic policy.
 
-## 13. Definition of Done for the pipeline itself
+## 15. Definition of Done for the delivery system
 
-The development system—not just the application—is considered ready when:
+The application pipeline—not just the application—is ready when:
 
 - [ ] ChatGPT can read and write the repository without a local clone.
 - [ ] RPM is initialized and repository-backed.
-- [ ] CI runs automatically on repository changes.
+- [ ] CI runs automatically for product-relevant changes.
+- [ ] pure RPM/docs commits do not deploy production.
 - [ ] production credentials exist only in GitHub/provider secret stores.
 - [ ] deployment is idempotent.
 - [ ] database migrations run from CI/CD.
-- [ ] deployed URL is discoverable by automation.
-- [ ] health/readiness checks gate a successful deployment.
-- [ ] a failed run can be diagnosed from GitHub Actions logs.
-- [ ] normal production deployment requires no local commands.
-- [ ] optionally, deployment runs automatically after CI passes on `main`.
+- [ ] deployed URL is discoverable automatically.
+- [ ] health/readiness checks gate success.
+- [ ] failures can be diagnosed entirely from GitHub Actions logs.
+- [ ] production deploys are serialized.
+- [ ] automatic deployment uses the exact SHA that passed CI.
+- [ ] PR-triggered CI cannot access the production deploy path.
+- [ ] normal production delivery requires no local commands and no manual release click.
 
-## 14. Case study: `awesome-fame-slider`
+## 16. Case study: `awesome-fame-slider`
 
-This repository validated the workflow end to end:
+This repository validated ANRD end to end.
 
-1. the human created the empty GitHub repository;
-2. ChatGPT initialized React/Vite/TypeScript, Worker code, D1 schema/migrations, tests, CI, deployment workflow, and RPM directly through GitHub;
-3. no local project checkout was required;
-4. the human created a least-privilege Cloudflare token and added GitHub Secrets following ChatGPT's UI instructions;
-5. the first deployment automatically created `awesome-fame-slider-db`, applied all migrations, and created the `awesome-fame-slider` Worker;
-6. when the first smoke test failed because of an unnecessary manually configured origin, ChatGPT read the Actions logs, removed that configuration dependency, committed the fix, and verified CI;
-7. the second deployment completed successfully, including `/api/health` and `/api/ready`;
-8. production became available at the Worker URL without any local terminal operation.
+1. The human created the empty GitHub repository.
+2. ChatGPT initialized React/Vite/TypeScript, Worker code, D1 schema/migrations, tests, CI, deployment workflow, documentation, and RPM directly through GitHub.
+3. No local project checkout was required.
+4. The human created a least-privilege Cloudflare token and added GitHub Secrets following ChatGPT's UI instructions.
+5. The first deployment automatically created `awesome-fame-slider-db`, applied migrations, uploaded assets, and created the `awesome-fame-slider` Worker.
+6. Its smoke check exposed an unnecessary manually configured origin. ChatGPT read the GitHub Actions logs, removed the `APP_ORIGIN` dependency, committed the fix, and verified CI without local debugging.
+7. A second manually triggered deployment passed `/api/health` and `/api/ready`, establishing the first healthy production release at `https://awesome-fame-slider.mattamior.workers.dev`.
+8. The deployment model was then upgraded from manual `workflow_dispatch` to CI-gated automatic delivery.
+9. CI was configured to ignore pure `.chatgpt/**`, `docs/**`, and `README.md` commits so RPM checkpoints do not create production releases.
+10. Deploy was configured to accept only successful `push` CI on `main`, checkout the exact passing SHA, serialize production runs, retain manual dispatch as a fallback, run migrations, deploy, and verify health/readiness.
+11. The automation was validated without a human click: CI for commit `052cc4a9a800803ed8ff398e22ea832e505a474b` succeeded; GitHub automatically created the Deploy workflow run; Deploy checked out that exact SHA; Cloudflare published Worker version `daae83d8-4ee2-46d1-8674-1c23391260ff`; `/api/health` and `/api/ready` both passed.
 
-The remaining manual **Run workflow** click is not technically required. It exists because the current Deploy workflow uses `workflow_dispatch` as its trigger. Replacing or supplementing that trigger with CI-gated deployment turns the process into a fully automatic GitHub-to-Cloudflare delivery loop.
+At this point the normal release path is genuinely zero-touch:
 
-## 15. The resulting mental model
+```text
+Human asks ChatGPT for a product change
+        ↓
+ChatGPT commits implementation to GitHub
+        ↓
+CI automatically validates it
+        ↓
+Deploy automatically receives the passing SHA
+        ↓
+Cloudflare automatically updates production
+        ↓
+Production is automatically verified
+```
+
+No local environment. No git command from the human. No Wrangler command from the human. No **Run workflow** click.
+
+## 17. Maturity model
+
+ANRD can be adopted incrementally:
+
+```text
+Level 0 — AI-assisted local development
+ChatGPT → copy/paste → local editor/terminal → manual deployment
+
+Level 1 — Zero-local repository development
+ChatGPT → GitHub directly → CI → human-triggered deployment
+
+Level 2 — AI-Native Repository Delivery
+ChatGPT → GitHub → CI-gated automatic deployment → production verification
+
+Level 3 — Governed ANRD
+ChatGPT → branch/PR → CI → policy/review gate → automatic deployment
+```
+
+Level 2 is a high-leverage default for personal products, prototypes, and low-risk applications. Level 3 is the natural evolution for teams or higher-risk systems.
+
+## 18. Mental model
 
 Traditional small-project workflow:
 
@@ -449,7 +545,7 @@ Traditional small-project workflow:
 Chat → copy code → laptop → editor → terminal → git → GitHub → cloud dashboard
 ```
 
-AI-native repository workflow:
+AI-Native Repository Delivery:
 
 ```text
 Human intent
@@ -458,9 +554,13 @@ ChatGPT Project + RPM
     ↓
 GitHub repository
     ↓
-GitHub Actions
+CI policy
     ↓
-Cloudflare
+Automatic delivery
+    ↓
+Cloud runtime
+    ↓
+Production verification
 ```
 
-The laptop becomes optional. The durable artifacts are the repository, its workflows, its project memory, and the deployed cloud resources.
+The durable artifacts are the repository, its memory, its policy-as-code workflows, its deployment history, and its cloud resources. The laptop is no longer a required part of the software supply chain.
