@@ -1,57 +1,63 @@
 project: slide-rheostat
-status: paused
+status: active
 phase: implementation
 repository: mattamior/slide-rheostat
 updated_at: 2026-08-26
 summary: >-
-  Checkpoint saved after implementing the MVP code path: React + TypeScript frontend,
-  eight-person six-rank rheostat, live aggregate voting, Cloudflare Worker + D1 backend,
-  X OAuth 2.0 PKCE Share & Vote with browser-generated 1200x675 PNG media, post-success-only
-  vote persistence, rate limiting, readiness checks, tests/CI, and a GitHub Actions production
-  Deploy workflow that automatically discovers or creates the D1 database.
+  The MVP has been refactored away from paid X API writes. Voting now happens directly on the
+  site using one anonymous browser-device vote per person backed by D1. X sharing uses a free
+  Web Intent and is independent from voting. Dynamic /share/:person/:rank landing pages expose
+  X/Open Graph metadata pointing to build-time generated 1200x675 PNG result cards.
 current_focus: >-
-  Work is intentionally paused at the production-launch boundary. Resume by supplying the five
-  production GitHub Actions secrets, configuring the X callback/credits, running Deploy, and
-  verifying the complete live share/media/post/vote flow.
+  Validate the refactor in GitHub Actions CI, then configure the three Cloudflare production
+  values, run Deploy, and verify anonymous vote upsert, aggregate refresh, X Web Intent, and
+  social-card rendering end to end.
 confirmed_constraints:
   - Vite + React + TypeScript frontend.
   - Cloudflare Workers is the unified deployment target.
-  - Cloudflare D1 stores current votes, share events, short-lived pending OAuth shares, and lightweight rate-limit state.
+  - Cloudflare D1 stores anonymous active votes and lightweight rate-limit state.
   - Initial roster: Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo Sottiaux.
-  - Sharing includes the user's selected rank/verdict and a generated PNG image.
-  - A vote is recorded only after X confirms that the Post was successfully created.
-  - One active vote per X account per person; later successful shares update that vote.
+  - Voting and X sharing are independent actions.
+  - One active vote per anonymous browser device per person; later votes from the same device/person update that vote.
+  - The browser identifier is a random HttpOnly cookie; only its SHA-256-derived identifier is stored in D1.
+  - Network rate limiting discourages rapid vote abuse without storing raw request IPs.
+  - X sharing uses Web Intent and must not require an X Developer App, OAuth credentials, or paid X API writes.
+  - Shared result URLs expose crawler-friendly metadata and a 1200x675 PNG result card.
   - Each person page displays aggregate voting distribution and the modal community rank.
   - Community results must never fall back to fabricated sample votes.
 implemented:
   - React/Vite/TypeScript project scaffold and eight-person data-driven roster.
   - Six-position rheostat interaction, rank labels, community vote distribution, and leader display.
-  - D1 votes/share_events schema plus oauth_pending and rate_limits migrations.
-  - Worker liveness, production-readiness, and aggregate vote APIs.
-  - Explicit Cloudflare static-asset routing so /api/* runs Worker-first.
-  - X OAuth 2.0 Authorization Code with PKCE using tweet.read, tweet.write, users.read, and media.write.
-  - Browser-generated 1200x675 PNG result card sent into the pending-share transaction.
-  - X media upload and POST /2/tweets integration.
-  - Verified Share & Vote persistence: insert share event and upsert one active vote per X user/person only after Post success.
-  - Success/failure return states in the React UI; Web Intent fallback never records a vote.
-  - Real localized verdict labels in verified X post text.
   - Neutral rank for zero-vote community state and neutral-biased tie-breaking in Worker and client.
   - No fabricated fallback vote counts; failed API loads display explicit offline state and zero bars.
-  - Aggregate vote polling every 30 seconds while visible plus refresh on foreground/person/share-result changes.
-  - Opportunistic cleanup of expired OAuth pending rows and stale rate-limit rows.
-  - D1-backed per-network share-start rate limiting: 8 attempts per 10-minute window using a hashed network identifier, with UI handling for HTTP 429.
-  - /api/ready returns 200 only when required D1 tables, APP_ORIGIN, and X credentials are present.
+  - Aggregate vote polling every 30 seconds while visible plus refresh on foreground/person changes.
+  - D1-backed anonymous vote endpoint at POST /api/people/:personId/vote.
+  - Random HttpOnly browser-device cookie with only a SHA-256-derived voter identifier persisted in D1.
+  - One anonymous active vote per device/person via D1 upsert semantics.
+  - D1-backed per-network vote-write rate limiting with raw IPs never stored.
+  - Free X Web Intent sharing with pre-populated verdict text and a stable /share/:person/:rank URL.
+  - Worker-generated share landing pages with Open Graph and X summary_large_image metadata.
+  - Build-time generation of 48 1200x675 PNG result cards using Sharp.
+  - Human share-link visitors are redirected into the app with person/rank preselected.
+  - /api/ready now requires only the anonymous-vote/rate-limit tables and production APP_ORIGIN; X credentials are not required.
+  - Cloudflare static-asset routing runs Worker-first for /api/* and /share/*.
   - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
-  - GitHub Actions CI workflow for dependency install, Vitest worker-helper tests, build, and Wrangler type generation.
-  - Unit tests cover zero-vote neutral state, modal/tie behavior, rank validation, canonical origin handling, localized Liang share copy, and Tibo launch-roster copy.
-  - Manual GitHub Actions Deploy workflow validates five required production secrets, runs tests/build, discovers or creates slide-rheostat-db via Wrangler, injects the resolved D1 UUID/origin into runner-only config, applies migrations, deploys Worker/assets, writes X OAuth secrets, and retries /api/ready smoke checks.
+  - GitHub Actions CI for install, tests, build/share-card generation, and Wrangler type generation.
+  - Manual GitHub Actions Deploy workflow automatically discovers or creates slide-rheostat-db, applies migrations, deploys Worker/assets, and checks health/readiness.
+  - Production Deploy now requires only CF_API_TOKEN, CF_ACCOUNT_ID, and APP_ORIGIN.
+removed_from_current_flow:
+  - X OAuth 2.0 PKCE authorization.
+  - X media upload and POST /2/tweets calls.
+  - X_CLIENT_ID and X_CLIENT_SECRET deployment requirements.
+  - Vote-on-successful-X-post semantics.
+  - X-account identity as the voting key.
 blockers:
-  - Production GitHub Actions secrets still needed: CF_API_TOKEN, CF_ACCOUNT_ID, APP_ORIGIN, X_CLIENT_ID, X_CLIENT_SECRET.
-  - X Developer Console must use the exact callback ${APP_ORIGIN}/api/auth/x/callback and have sufficient API credits.
-  - Production deploy and end-to-end OAuth/media/post/vote verification have not yet been completed.
+  - Latest refactor still needs a green GitHub Actions CI run.
+  - Production GitHub Actions values are still needed: CF_API_TOKEN, CF_ACCOUNT_ID, APP_ORIGIN.
+  - Production deploy and end-to-end anonymous vote/Web Intent/social-card verification have not yet been completed.
 validation_notes:
-  - CI run 31 (commit 9caa51266e4dfecdffd567ac1e927965b0706a73) succeeded with npm install, Vitest tests, Vite/TypeScript build, and Wrangler type generation all passing.
-  - The production Deploy workflow is prepared but has not been run with real production credentials.
-checkpoint:
+  - The previous X-OAuth implementation had a green CI run 31 before this architecture change.
+  - Current refactor includes updated unit tests for share copy, stable share/card paths, and social metadata; current CI status is pending verification.
+last_checkpoint:
   saved_at: 2026-08-26T09:39:00+08:00
-  reason: user requested end/checkpoint
+  reason: user requested end/checkpoint before the free-sharing refactor
