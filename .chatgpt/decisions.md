@@ -67,3 +67,18 @@
 - Implementation is paused intentionally at the production-launch boundary.
 - The code path and CI are prepared; production deployment and end-to-end verification remain incomplete.
 - Resume from `.chatgpt/next-steps.md`: configure the five production secrets, configure the exact X callback and credits, run Deploy, verify Share & Vote end-to-end, then record the live URL.
+
+## 2026-08-26 — Replace paid X API writes with free sharing
+
+This decision supersedes the X-native voting loop, OAuth share transaction, X-specific readiness requirements, and five-secret deployment requirements above. Those entries remain as historical context only.
+
+- Voting and X sharing are now independent product actions.
+- A vote is written directly to D1 when the visitor presses `Cast vote`; X publication is not evidence for, or a prerequisite of, a vote.
+- Voting identity is an anonymous browser-device identifier held in a random HttpOnly cookie. Only a SHA-256-derived identifier is persisted in D1.
+- One active anonymous vote is kept per browser device/person; later votes update the existing row.
+- A D1-backed per-network write limiter remains as lightweight abuse resistance. Results are internet sentiment, not verified-person polling.
+- X distribution uses `https://x.com/intent/tweet` with pre-populated verdict text and an absolute result URL. This requires no X Developer App, OAuth credentials, or paid X API write.
+- Stable `/share/:personId/:rank` pages are served by the Worker for social crawlers. They publish `summary_large_image`/Open Graph metadata and immediately return human visitors to the corresponding interactive state.
+- 48 result-specific 1200×675 PNG cards are generated at build time (8 people × 6 ranks) and served as static assets.
+- Production deployment now requires only `CF_API_TOKEN`, `CF_ACCOUNT_ID`, and `APP_ORIGIN`; `/api/ready` no longer checks X credentials.
+- Legacy OAuth/share-event database migrations remain in migration history so previously initialized databases stay compatible, but current application code does not use those tables.
