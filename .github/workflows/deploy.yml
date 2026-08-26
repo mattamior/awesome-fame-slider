@@ -51,16 +51,16 @@ jobs:
           set -euo pipefail
 
           find_db_id() {
-            npx wrangler d1 list --json | node <<'NODE'
-          let input = '';
-          process.stdin.setEncoding('utf8');
-          process.stdin.on('data', (chunk) => input += chunk);
-          process.stdin.on('end', () => {
-            const rows = JSON.parse(input);
-            const db = rows.find((row) => row.name === 'slide-rheostat-db');
-            if (db) process.stdout.write(db.uuid || db.id || '');
-          });
-          NODE
+            npx wrangler d1 list --json | node -e '
+              let input = "";
+              process.stdin.setEncoding("utf8");
+              process.stdin.on("data", (chunk) => input += chunk);
+              process.stdin.on("end", () => {
+                const rows = JSON.parse(input);
+                const db = rows.find((row) => row.name === "slide-rheostat-db");
+                if (db) process.stdout.write(db.uuid || db.id || "");
+              });
+            '
           }
 
           db_id="$(find_db_id)"
