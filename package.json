@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && node scripts/generate-share-cards.mjs && vite build",
     "test": "vitest run",
     "preview": "vite preview",
     "cf:dev": "wrangler dev",
@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "sharp": "latest",
     "vitest": "latest",
     "wrangler": "latest"
   }
