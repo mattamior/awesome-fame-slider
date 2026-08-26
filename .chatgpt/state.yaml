@@ -12,11 +12,11 @@ summary: >-
   D1-backed share-start rate limiting, a production readiness endpoint, honest no-fabrication
   behavior when live vote data is unavailable, 30-second visible-tab vote refresh, improved
   mobile/X-in-app-browser ergonomics, unit tests for deterministic voting/share helpers, and a
-  GitHub Actions production deploy workflow that applies D1 migrations, deploys Workers/static
-  assets, configures X secrets, and smoke-tests readiness.
+  GitHub Actions production deploy workflow that can now discover or create the production D1
+  database automatically before applying migrations and deploying.
 current_focus: >-
-  Supply production Cloudflare/X account configuration as GitHub Actions secrets, create the D1
-  database, run the Deploy workflow, then verify the complete live auth/media/post/vote loop.
+  Supply production Cloudflare/X account configuration as GitHub Actions secrets, run the Deploy
+  workflow, then verify the complete live auth/media/post/vote loop.
 confirmed_constraints:
   - Vite + React + TypeScript frontend.
   - Cloudflare Workers is the unified deployment target.
@@ -48,10 +48,11 @@ implemented:
   - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
   - GitHub Actions CI workflow for dependency install, Vitest worker-helper tests, build, and Wrangler type generation.
   - Unit tests cover zero-vote neutral state, modal/tie behavior, rank validation, canonical origin handling, localized Liang share copy, and Tibo launch-roster copy.
-  - Manual GitHub Actions Deploy workflow validates six required production secrets, runs tests/build, injects runner-only D1/origin config, applies remote migrations, deploys the Worker/assets, writes X OAuth secrets, and retries /api/ready smoke checks.
+  - Manual GitHub Actions Deploy workflow validates five required production secrets, runs tests/build, discovers or creates `slide-rheostat-db` via Wrangler, injects the resolved D1 UUID/origin into runner-only config, applies migrations, deploys Worker/assets, writes X OAuth secrets, and retries /api/ready smoke checks.
   - Fixed Deploy workflow npm caching bug: repository has no package-lock.json, so setup-node cache mode was removed to prevent pre-install deployment failure.
+  - Removed `CF_D1_DATABASE_ID` as a required production secret by using `wrangler d1 list --json` plus on-demand `wrangler d1 create` in the Deploy workflow.
 blockers:
-  - Cloudflare account credentials are not available to this runtime. Production deployment can now run from GitHub once CF_API_TOKEN, CF_ACCOUNT_ID, CF_D1_DATABASE_ID, and APP_ORIGIN repository secrets are configured.
+  - Production Cloudflare credentials are not available to this runtime. Deployment now needs only CF_API_TOKEN, CF_ACCOUNT_ID, and APP_ORIGIN on the Cloudflare side; D1 provisioning is automatic.
   - Production X Developer App Client ID/Secret and exact callback configuration are not available to this runtime; the Deploy workflow accepts X_CLIENT_ID and X_CLIENT_SECRET repository secrets.
   - X API production use requires sufficient Developer Console credits.
 validation_notes:
@@ -60,4 +61,5 @@ validation_notes:
   - CI run 18 (commit be4542b6687c9f60c5ba7d96bc38729f43378750) succeeded after removing fabricated fallback votes, adding live polling, and mobile hardening.
   - CI run 27 (commit f3c2ab5a9cb28f9473261e6bb7d406a0084eef6a) succeeded after the production Deploy workflow and RPM documentation were added.
   - CI run 31 (commit 9caa51266e4dfecdffd567ac1e927965b0706a73) succeeded with npm install, Vitest tests, Vite/TypeScript build, and Wrangler type generation all passing.
+  - Cloudflare D1 docs rechecked on 2026-08-26 confirm `wrangler d1 list --json` is supported and `wrangler d1 create <NAME>` provisions a remote D1 database.
   - X official documentation rechecked on 2026-08-26 confirms POST /2/media/upload accepts JSON base64 media for tweet_image and returns a media ID for POST /2/tweets.
