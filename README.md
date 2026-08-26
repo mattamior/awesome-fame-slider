@@ -4,6 +4,8 @@ A reputation rheostat for the internet. Pick a public figure, slide their status
 
 The current product display name is **Slide Rheostat**.
 
+> This project was built and deployed without a local checkout: ChatGPT operated the GitHub repository directly, GitHub Actions handled CI/CD, and Cloudflare hosted the production Worker/D1 resources. See [`docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md`](docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md) for the reusable workflow.
+
 ## MVP stack
 
 - React + TypeScript + Vite
