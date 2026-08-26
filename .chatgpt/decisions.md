@@ -57,6 +57,7 @@
 ## 2026-08-26 — GitHub-driven production deployment
 
 - Add a manual GitHub Actions `Deploy` workflow so production rollout does not depend on a local development machine or a ChatGPT Cloudflare connector.
-- Production account material is supplied through repository secrets: `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `CF_D1_DATABASE_ID`, `APP_ORIGIN`, `X_CLIENT_ID`, and `X_CLIENT_SECRET`.
-- The workflow modifies only the runner workspace copy of `wrangler.jsonc` to inject the D1 database ID and canonical origin; production IDs/secrets are not committed to Git.
-- The workflow must validate required secrets, build, apply D1 migrations, deploy Worker/static assets, configure X OAuth Worker secrets, and fail unless `/api/health` and `/api/ready` succeed.
+- Production account material is supplied through repository secrets: `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `APP_ORIGIN`, `X_CLIENT_ID`, and `X_CLIENT_SECRET`.
+- The Deploy workflow discovers `slide-rheostat-db` using `wrangler d1 list --json`; if it does not exist, the workflow creates it with Wrangler and resolves the resulting UUID. `CF_D1_DATABASE_ID` is therefore not a required repository secret.
+- The workflow modifies only the runner workspace copy of `wrangler.jsonc` to inject the resolved D1 database ID and canonical origin; production IDs/secrets are not committed to Git.
+- The workflow must validate required secrets, run tests/build, provision/resolve D1, apply migrations, deploy Worker/static assets, configure X OAuth Worker secrets, and fail unless `/api/health` and `/api/ready` succeed.
