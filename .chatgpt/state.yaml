@@ -1,21 +1,37 @@
 project: awesome-fame-slider
-status: active
+status: paused
 phase: production-verification
 repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-26
 summary: >-
-  The MVP is live at https://awesome-fame-slider.mattamior.workers.dev and the repository now
-  implements AI-Native Repository Delivery: ChatGPT operates GitHub directly, CI validates
-  product-relevant main-branch commits, and a successful push CI automatically triggers a serialized
-  production Deploy for the exact passing SHA. Deploy reuses/provisions D1 as needed, applies
-  migrations, deploys the Worker/assets, discovers the workers.dev URL, and requires /api/health
-  plus /api/ready to pass. Normal releases now require no local checkout and no manual Run workflow
-  click; workflow_dispatch remains only as a fallback.
+  The MVP is live at https://awesome-fame-slider.mattamior.workers.dev and the repository implements
+  zero-local, CI-gated, zero-touch delivery: ChatGPT operates GitHub directly, CI validates product-relevant
+  main-branch commits, and successful push CI automatically triggers a serialized production Deploy for
+  the exact passing SHA. Deploy reuses/provisions D1 as needed, applies migrations, deploys Worker/assets,
+  discovers the workers.dev URL, and requires /api/health plus /api/ready to pass. The reusable methodology
+  discovered through this project is being spun out under the public-facing name ZeroLocal into a separate
+  ChatGPT Project and planned iorLab repositories.
 current_focus: >-
-  Verify the live product end to end in a real browser: anonymous vote creation/update semantics,
-  aggregate refresh, X Web Intent composition, social-card metadata/image rendering, and mobile/X
-  in-app browser behavior. Continue refining and documenting the AI-Native Repository Delivery
-  operating model as a reusable development pattern.
+  Product work is paused at production verification while the reusable delivery model is handed off into
+  a dedicated ZeroLocal project. When resuming this repository, verify live anonymous vote semantics,
+  aggregate refresh, X Web Intent composition, social-card rendering, and mobile/X in-app browser behavior.
+zerolocal_handoff:
+  brand: ZeroLocal
+  technical_description: AI-native repository delivery
+  chatgpt_project: ZeroLocal
+  memory_mode: project-only
+  canonical_spec_repo: iorLab/zerolocal
+  cloudflare_reference_repo: iorLab/zerolocal-cloudflare-starter
+  founding_case_study: mattamior/awesome-fame-slider
+  github_org_access: >-
+    The ChatGPT GitHub App installation for iorLab has been authorized for all organization repositories
+    and access was verified from ChatGPT.
+  bootstrap_status: >-
+    The new ZeroLocal ChatGPT Project and the two iorLab repositories have not yet been created.
+  first_turn: >-
+    Treat iorLab/zerolocal as canonical, initialize RPM, use iorLab/zerolocal-cloudflare-starter as the
+    reference implementation repository, cite mattamior/awesome-fame-slider as the founding case study,
+    and begin ZeroLocal Specification v0.1.
 confirmed_constraints:
   - GitHub repository: mattamior/awesome-fame-slider.
   - Product display name remains Slide Rheostat for now.
@@ -69,7 +85,7 @@ implemented:
   - Production deployment concurrency prevents overlapping deploy/migration runs.
   - Repository/package/frontend links and infrastructure naming are synchronized to awesome-fame-slider.
   - Production deployment is live at https://awesome-fame-slider.mattamior.workers.dev.
-  - Reusable AI-Native Repository Delivery playbook is stored at docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md.
+  - Reusable delivery playbook is stored at docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md.
 removed_from_current_flow:
   - X OAuth 2.0 PKCE authorization.
   - X media upload and POST /2/tweets calls.
@@ -86,6 +102,7 @@ validation_notes:
   - Deploy run 2 completed successfully on the request-derived-origin design and passed /api/health plus /api/ready.
   - CI run 86 for commit 052cc4a9a800803ed8ff398e22ea832e505a474b passed automatically after enabling CI-gated production delivery.
   - Automatic Deploy run 4 was created by workflow_run without any human Run workflow action, checked out exact SHA 052cc4a9a800803ed8ff398e22ea832e505a474b, reused D1 with no pending migrations, deployed Worker version daae83d8-4ee2-46d1-8674-1c23391260ff, and passed /api/health plus /api/ready on the first attempt.
+  - ChatGPT GitHub App access to the iorLab organization was verified after organization-wide authorization.
 last_checkpoint:
-  saved_at: 2026-08-26T14:31:00+08:00
-  reason: user requested checkpoint after repository and pre-launch infrastructure rename
+  saved_at: 2026-08-26T18:51:00+08:00
+  reason: user requested checkpoint before creating the separate ZeroLocal project and repositories
