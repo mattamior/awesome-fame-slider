@@ -4,7 +4,7 @@ A reputation rheostat for the internet. Pick a public figure, slide their status
 
 The current product display name is **Slide Rheostat**.
 
-> This project was built and deployed without a local checkout: ChatGPT operated the GitHub repository directly, GitHub Actions handled CI/CD, and Cloudflare hosted the production Worker/D1 resources. See [`docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md`](docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md) for the reusable workflow.
+> This project was built and deployed without a local checkout: ChatGPT operated the GitHub repository directly, GitHub Actions handled CI/CD, and Cloudflare hosted the production Worker/D1 resources. The repository now uses CI-gated automatic production deployment. See [`docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md`](docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md) for the reusable **AI-Native Repository Delivery** workflow.
 
 ## MVP stack
 
@@ -15,6 +15,8 @@ The current product display name is **Slide Rheostat**.
 - Build-time 1200×675 PNG cards for X/Open Graph link previews
 
 ## Local development
+
+A local checkout is optional, not required by the delivery model. If desired:
 
 ```bash
 npm install
@@ -28,14 +30,34 @@ npm run cf:dev
 
 ### Recommended: GitHub Actions
 
-The repository includes `.github/workflows/deploy.yml`. Configure these GitHub Actions repository secrets:
+The repository includes `.github/workflows/ci.yml` and `.github/workflows/deploy.yml`. Configure these GitHub Actions repository secrets once:
 
 - `CF_API_TOKEN` — Cloudflare API token with Workers Scripts Write and D1 Write access
 - `CF_ACCOUNT_ID` — Cloudflare account ID
 
-`APP_ORIGIN` is not required. Share pages derive their origin from the incoming request, and the Deploy workflow discovers the real `workers.dev` URL from Wrangler output before smoke testing.
+`APP_ORIGIN` is not required. Share pages derive their origin from the incoming request, and Deploy discovers the real `workers.dev` URL from Wrangler output before smoke testing.
 
-Then run the **Deploy** workflow manually. It validates the two required values, runs tests, builds the React app and share cards, discovers an existing D1 database named `awesome-fame-slider-db` or creates it automatically, injects its UUID into the runner-only Wrangler config, applies all remote migrations, deploys the `awesome-fame-slider` Worker/static assets, discovers the deployed `workers.dev` URL, and smoke-tests `/api/health` plus `/api/ready`.
+The normal production path is fully automatic:
+
+```text
+ChatGPT commits code to main
+        ↓
+CI runs tests/build/types
+        ↓ success only
+Deploy receives the exact passing SHA
+        ↓
+D1 discovery/migrations
+        ↓
+Cloudflare Worker + assets deploy
+        ↓
+/api/health + /api/ready
+        ↓
+Production
+```
+
+`workflow_dispatch` remains available as a manual recovery/re-run mechanism, but a normal release requires no **Run workflow** click. Pure RPM/documentation changes under `.chatgpt/**`, `docs/**`, or `README.md` are ignored by CI so project-memory checkpoints do not cause unnecessary production deployments.
+
+The deployment is idempotent: it discovers an existing D1 database named `awesome-fame-slider-db` or creates it if absent, injects its UUID into the runner-only Wrangler config, applies pending migrations, deploys `awesome-fame-slider`, discovers the deployed `workers.dev` URL, and smoke-tests `/api/health` plus `/api/ready`.
 
 There is no X callback URL to configure and no X API credit requirement for the share flow.
 
@@ -85,6 +107,7 @@ Sharing and voting are deliberately independent: opening or publishing an X comp
 
 ## Notes
 
+- Production: `https://awesome-fame-slider.mattamior.workers.dev`
 - Current community results are never replaced with fabricated sample data when the API is unavailable.
 - A short SHA-256-derived network identifier is used for rate limiting; raw request IPs are not stored in D1.
 - Old OAuth/share-event tables remain in historical migrations for compatibility with databases created from earlier versions, but the current application does not use them.
