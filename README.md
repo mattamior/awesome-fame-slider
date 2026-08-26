@@ -1,13 +1,14 @@
 # slide-rheostat
 
-A reputation rheostat for the internet. Pick a public figure, slide their status, share your verdict to X, and update the community result.
+A reputation rheostat for the internet. Pick a public figure, slide their status, cast an anonymous site vote, and share the verdict to X without paid X API writes.
 
 ## MVP stack
 
 - React + TypeScript + Vite
-- Cloudflare Workers for static assets + API
-- Cloudflare D1 for votes, pending OAuth shares, and lightweight share-start rate limiting
-- X OAuth 2.0 PKCE + X API v2 for authenticated image-post-and-vote
+- Cloudflare Workers for static assets, dynamic social share pages, and API
+- Cloudflare D1 for anonymous device votes and lightweight network rate limiting
+- X Web Intent for free pre-populated sharing; no X Developer App or X API credentials required
+- Build-time 1200×675 PNG cards for X/Open Graph link previews
 
 ## Local development
 
@@ -16,6 +17,8 @@ npm install
 npm run build
 npm run cf:dev
 ```
+
+`npm run build` generates 48 result cards (8 people × 6 ranks) into `public/share-cards/` before Vite copies them into the production bundle.
 
 ## Cloudflare deployment
 
@@ -26,16 +29,10 @@ The repository includes `.github/workflows/deploy.yml`. Configure these GitHub A
 - `CF_API_TOKEN` — Cloudflare API token with Worker/D1 deployment access
 - `CF_ACCOUNT_ID` — Cloudflare account ID
 - `APP_ORIGIN` — final public origin, for example `https://slide-rheostat.example.com`
-- `X_CLIENT_ID` — X OAuth 2.0 client ID
-- `X_CLIENT_SECRET` — X OAuth 2.0 client secret
 
-Then run the **Deploy** workflow manually. It validates required secrets, runs tests, builds the React app, discovers an existing D1 database named `slide-rheostat-db` or creates it automatically, injects its UUID and the production origin into the runner-only Wrangler config, applies all remote migrations, deploys the Worker/static assets, writes the X OAuth Worker secrets, and smoke-tests `/api/health` plus `/api/ready`.
+Then run the **Deploy** workflow manually. It validates the three required values, runs tests, builds the React app and share cards, discovers an existing D1 database named `slide-rheostat-db` or creates it automatically, injects its UUID and the production origin into the runner-only Wrangler config, applies all remote migrations, deploys the Worker/static assets, and smoke-tests `/api/health` plus `/api/ready`.
 
-The exact callback configured in the X Developer Console must be:
-
-```text
-${APP_ORIGIN}/api/auth/x/callback
-```
+There is no X callback URL to configure and no X API credit requirement for the share flow.
 
 ### Manual Wrangler path
 
@@ -47,42 +44,43 @@ ${APP_ORIGIN}/api/auth/x/callback
 npm run db:migrate:remote
 ```
 
-4. Configure Worker secrets:
-
-```bash
-npx wrangler secret put X_CLIENT_ID
-npx wrangler secret put X_CLIENT_SECRET
-```
-
-5. Set `APP_ORIGIN` in `wrangler.jsonc` to the final Worker/custom-domain origin.
-6. Deploy:
+4. Set `APP_ORIGIN` in `wrangler.jsonc` to the final Worker/custom-domain origin.
+5. Deploy:
 
 ```bash
 npm run cf:deploy
 ```
 
-7. Verify liveness and production readiness:
+6. Verify liveness and production readiness:
 
 ```text
 GET /api/health
 GET /api/ready
 ```
 
-`/api/ready` returns HTTP 200 only when the required D1 tables are present and the production X credentials plus app origin are configured. The Worker explicitly runs first for `/api/*`; SPA navigation and static assets are served by Workers Static Assets.
+`/api/ready` returns HTTP 200 when the anonymous voting tables and production app origin are configured. The Worker runs first for `/api/*` and `/share/*`; SPA navigation and generated card assets are served by Workers Static Assets.
 
-## Share & vote transaction
+## Vote flow
 
-1. The browser renders a 1200×675 PNG result card for the selected person/rank.
-2. `/api/x/share/start` validates the payload, applies a lightweight per-IP 10-minute rate limit, stores a short-lived pending share, and starts OAuth 2.0 Authorization Code + PKCE with `tweet.read tweet.write users.read media.write`.
-3. The callback exchanges the code, resolves the authenticated X user, uploads the PNG, and creates the X Post.
-4. Only after X returns a successful Post ID does D1 insert the share event and upsert the user's active vote.
+1. The visitor selects a person and one of six ranks.
+2. `POST /api/people/:personId/vote` validates the rank and applies a per-network write limit.
+3. The Worker creates or reuses a random HttpOnly browser cookie, hashes that opaque identifier, and stores only the hash in D1.
+4. D1 upserts one active vote per anonymous browser device and person. Voting again moves that device's vote instead of increasing the voter count.
+5. The API returns the refreshed aggregate distribution immediately.
 
-## Vote rule
+The cookie is an abuse-reduction mechanism, not a claim of strong real-world identity. Clearing browser storage or switching devices can create another anonymous voter, so aggregate results should be treated as internet sentiment rather than verified-person polling.
 
-One current vote per X account per person. A successful authenticated X post updates that vote; repeat shares move the existing vote instead of adding duplicate voters. Share events are stored separately.
+## Share flow
+
+1. The frontend opens `https://x.com/intent/tweet` with pre-populated verdict text and a result URL such as `/share/liang/1`.
+2. X Web Intent handles login/composer UX without authorizing this application or calling the paid X API.
+3. `/share/:personId/:rank` returns crawler-friendly Open Graph/X Card metadata whose `twitter:image` points at the corresponding generated 1200×675 PNG.
+4. Human visitors who open that shared URL are redirected into the interactive app with the person and rank preselected.
+
+Sharing and voting are deliberately independent: opening or publishing an X composer never creates, changes, or verifies a vote.
 
 ## Notes
 
-- Web Intent fallback may open the normal X composer when API credentials are unavailable, but it never counts a vote.
-- X API v2 is pay-per-use, so production launch requires Developer Console credits in addition to App credentials.
-- The rate limiter stores only a short hash derived from the request IP and app origin, not the raw IP; stale limiter rows are cleaned opportunistically.
+- Current community results are never replaced with fabricated sample data when the API is unavailable.
+- A short SHA-256-derived network identifier is used for rate limiting; raw request IPs are not stored in D1.
+- Old OAuth/share-event tables remain in historical migrations for compatibility with databases created from earlier versions, but the current application does not use them.
