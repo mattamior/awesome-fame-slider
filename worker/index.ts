@@ -1,4 +1,4 @@
-type Env = { DB: D1Database; ASSETS: Fetcher; APP_ORIGIN: string };
+type Env = { DB: D1Database; ASSETS: Fetcher };
 
 type RankMeta = { zh: string; en: string };
 type PersonMeta = { name: string; role: string; ranks: RankMeta[] };
@@ -27,6 +27,7 @@ const NEUTRAL_RANK = 2;
 const VOTE_WRITE_LIMIT = 24;
 const VOTER_COOKIE = 'sr_voter';
 const VOTER_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+const HASH_NAMESPACE = 'awesome-fame-slider-v1';
 
 function json(data: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
@@ -64,10 +65,6 @@ export function validRank(value: unknown) {
   return Number.isInteger(rank) && rank >= 0 && rank <= 5 ? rank : null;
 }
 
-export function canonicalOrigin(env: Pick<Env, 'APP_ORIGIN'>) {
-  return env.APP_ORIGIN.replace(/\/$/, '');
-}
-
 export function leader(counts: number[]) {
   const max = Math.max(...counts);
   if (max <= 0) return NEUTRAL_RANK;
@@ -90,12 +87,12 @@ export function shareCardPath(personId: string, rank: number) {
   return `/share-cards/${encodeURIComponent(personId)}-${rank}.png`;
 }
 
-export function sharePageHtml(personId: string, rank: number, env: Pick<Env, 'APP_ORIGIN'>) {
+export function sharePageHtml(personId: string, rank: number, requestOrigin: string) {
   const person = PEOPLE[personId];
   const verdict = person?.ranks[rank];
   if (!person || !verdict) return null;
 
-  const origin = canonicalOrigin(env);
+  const origin = new URL(requestOrigin).origin;
   const pageUrl = `${origin}${sharePath(personId, rank)}`;
   const appUrl = `${origin}/?who=${encodeURIComponent(personId)}&rank=${rank}&from=share`;
   const imageUrl = `${origin}${shareCardPath(personId, rank)}`;
@@ -163,17 +160,17 @@ async function sha256Id(value: string) {
   return b64url(new Uint8Array(digest));
 }
 
-async function voterId(token: string, env: Env) {
-  return sha256Id(`${canonicalOrigin(env)}|voter|${token}`);
+async function voterId(token: string) {
+  return sha256Id(`${HASH_NAMESPACE}|voter|${token}`);
 }
 
-async function rateLimitKey(request: Request, env: Env, scope: string) {
+async function rateLimitKey(request: Request, scope: string) {
   const forwarded = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  return sha256Id(`${canonicalOrigin(env)}|${scope}|${forwarded}`);
+  return sha256Id(`${HASH_NAMESPACE}|${scope}|${forwarded}`);
 }
 
 async function allowVote(request: Request, env: Env) {
-  const key = await rateLimitKey(request, env, 'vote');
+  const key = await rateLimitKey(request, 'vote');
   const row = await env.DB.prepare(`
     INSERT INTO rate_limits (key, window_start, count)
     VALUES (?, datetime('now'), 1)
@@ -203,7 +200,7 @@ async function castVote(request: Request, env: Env, personId: string) {
   }
 
   const token = voterToken(request);
-  const id = await voterId(token, env);
+  const id = await voterId(token);
   await env.DB.prepare(`
     INSERT INTO anonymous_votes (voter_id, person_id, rank)
     VALUES (?, ?, ?)
@@ -223,12 +220,11 @@ async function readiness(env: Env) {
     const tables = new Set(rows.results.map((row) => row.name));
     const required = ['anonymous_votes', 'rate_limits'];
     const missingTables = required.filter((name) => !tables.has(name));
-    const appOriginConfigured = Boolean(env.APP_ORIGIN && !env.APP_ORIGIN.includes('example'));
-    const ready = missingTables.length === 0 && appOriginConfigured;
+    const ready = missingTables.length === 0;
     return json({
       ok: ready,
-      database: { ok: missingTables.length === 0, missingTables },
-      appOrigin: { configured: appOriginConfigured, value: canonicalOrigin(env) },
+      database: { ok: ready, missingTables },
+      originMode: 'request',
       xApiRequired: false,
     }, { status: ready ? 200 : 503 });
   } catch (error) {
@@ -236,8 +232,8 @@ async function readiness(env: Env) {
   }
 }
 
-function sharePage(personId: string, rank: number, env: Env) {
-  const page = sharePageHtml(personId, rank, env);
+function sharePage(personId: string, rank: number, request: Request) {
+  const page = sharePageHtml(personId, rank, new URL(request.url).origin);
   if (!page) return new Response('Unknown verdict', { status: 404 });
   return new Response(page, {
     headers: {
@@ -269,7 +265,7 @@ export default {
 
     const shareMatch = url.pathname.match(/^\/share\/([^/]+)\/([0-5])\/?$/);
     if (shareMatch && request.method === 'GET') {
-      return sharePage(decodeURIComponent(shareMatch[1]), Number(shareMatch[2]), env);
+      return sharePage(decodeURIComponent(shareMatch[1]), Number(shareMatch[2]), request);
     }
 
     return env.ASSETS.fetch(request);
