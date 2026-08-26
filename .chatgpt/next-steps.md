@@ -7,4 +7,5 @@
 5. Verify mobile layout and X in-app browser behavior before announcing the MVP publicly; confirm voting cookie persistence, Web Intent opening, live/offline state, and 429 messaging on narrow screens.
 6. Decide whether to keep the current `workers.dev` URL for the initial public test or attach a custom domain before announcement.
 7. Add production-grade portrait/character artwork and make result cards visually match the on-page rheostat more closely after the functional launch path is verified.
-8. Once production behavior is verified, update RPM with the verified live URL, any custom-domain choice, and a launch checkpoint.
+8. Continue formalizing AI-Native Repository Delivery as a reusable development model. Topics to evaluate next: deploy-only-latest-main suppression during bursty commits, branch/PR policy for higher-risk projects, GitHub Environment approval gates, artifact reuse between CI and Deploy, and whether RPM checkpoints should be automatically summarized into releases/changelogs.
+9. Once production behavior is verified, update RPM with the verified live URL, any custom-domain choice, and a launch checkpoint.
