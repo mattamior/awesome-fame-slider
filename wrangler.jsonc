@@ -17,9 +17,6 @@
       "database_id": "REPLACE_AFTER_D1_CREATE"
     }
   ],
-  "vars": {
-    "APP_ORIGIN": "https://awesome-fame-slider.workers.dev"
-  },
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
