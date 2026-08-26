@@ -60,7 +60,7 @@ blockers:
   - Production deploy and end-to-end anonymous vote/Web Intent/social-card verification have not yet been completed.
 validation_notes:
   - GitHub Actions CI run 56 succeeded after the free-sharing refactor.
-  - The repository/resource rename is pending a fresh CI result.
+  - GitHub Actions CI run 67 succeeded after the repository, Worker, D1, package, frontend link, and deployment naming changes.
 last_checkpoint:
   saved_at: 2026-08-26T09:39:00+08:00
   reason: user requested end/checkpoint before the free-sharing refactor
