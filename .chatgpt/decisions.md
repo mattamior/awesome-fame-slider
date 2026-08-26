@@ -93,3 +93,12 @@ This decision supersedes the original repository/resource identifiers while pres
 - The D1 database had not yet been created by the deployment workflow, so its intended name is changed to `awesome-fame-slider-db`.
 - The default workers.dev origin placeholder is `https://awesome-fame-slider.workers.dev`; production `APP_ORIGIN` still uses the account-specific workers.dev hostname or a custom domain.
 - The current on-page product display name remains `Slide Rheostat`; repository/infrastructure naming is intentionally allowed to differ from the product brand.
+
+## 2026-08-26 — Checkpoint before first Cloudflare deployment
+
+- Project is intentionally paused before any production Cloudflare Worker or D1 resource has been created.
+- Repository, package, Worker target, D1 target, frontend GitHub link, Deploy workflow, README, and RPM canonical identity are aligned to `awesome-fame-slider`.
+- CI is green after the free-sharing refactor and naming changes.
+- Resume by configuring `CF_API_TOKEN`, `CF_ACCOUNT_ID`, and account-specific `APP_ORIGIN`, then run the manual Deploy workflow.
+- First production deployment should create `awesome-fame-slider-db`, deploy the `awesome-fame-slider` Worker, apply migrations, and pass `/api/health` plus `/api/ready`.
+- After deployment, verify anonymous vote upsert behavior, aggregate refresh, X Web Intent sharing, social-card metadata/image rendering, and mobile/X in-app browser behavior.
