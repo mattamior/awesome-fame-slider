@@ -59,5 +59,5 @@ validation_notes:
   - Earlier CI exposed and resolved workflow caching and Vite typing issues.
   - CI run 18 (commit be4542b6687c9f60c5ba7d96bc38729f43378750) succeeded after removing fabricated fallback votes, adding live polling, and mobile hardening.
   - CI run 27 (commit f3c2ab5a9cb28f9473261e6bb7d406a0084eef6a) succeeded after the production Deploy workflow and RPM documentation were added.
-  - The new Vitest-enabled CI run for the latest worker tests/deploy fix is pending verification as of this checkpoint.
+  - CI run 31 (commit 9caa51266e4dfecdffd567ac1e927965b0706a73) succeeded with npm install, Vitest tests, Vite/TypeScript build, and Wrangler type generation all passing.
   - X official documentation rechecked on 2026-08-26 confirms POST /2/media/upload accepts JSON base64 media for tweet_image and returns a media ID for POST /2/tweets.
