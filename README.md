@@ -21,16 +21,15 @@ npm run cf:dev
 
 ### Recommended: GitHub Actions
 
-The repository includes `.github/workflows/deploy.yml`. After creating the D1 database and X Developer App, configure these GitHub Actions repository secrets:
+The repository includes `.github/workflows/deploy.yml`. Configure these GitHub Actions repository secrets:
 
 - `CF_API_TOKEN` — Cloudflare API token with Worker/D1 deployment access
 - `CF_ACCOUNT_ID` — Cloudflare account ID
-- `CF_D1_DATABASE_ID` — ID of `slide-rheostat-db`
 - `APP_ORIGIN` — final public origin, for example `https://slide-rheostat.example.com`
 - `X_CLIENT_ID` — X OAuth 2.0 client ID
 - `X_CLIENT_SECRET` — X OAuth 2.0 client secret
 
-Then run the **Deploy** workflow manually. It validates required secrets, builds the React app, injects the production D1 ID/origin into the runner-only Wrangler config, applies all remote migrations, deploys the Worker/static assets, writes the X OAuth Worker secrets, and smoke-tests `/api/health` plus `/api/ready`.
+Then run the **Deploy** workflow manually. It validates required secrets, runs tests, builds the React app, discovers an existing D1 database named `slide-rheostat-db` or creates it automatically, injects its UUID and the production origin into the runner-only Wrangler config, applies all remote migrations, deploys the Worker/static assets, writes the X OAuth Worker secrets, and smoke-tests `/api/health` plus `/api/ready`.
 
 The exact callback configured in the X Developer Console must be:
 
