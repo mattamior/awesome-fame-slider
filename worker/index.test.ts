@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalOrigin, leader, shareCardPath, shareCopy, sharePageHtml, sharePath, validRank } from './index';
+import { leader, shareCardPath, shareCopy, sharePageHtml, sharePath, validRank } from './index';
 
 describe('leader', () => {
   it('uses neutral rank when there are no votes', () => {
@@ -33,10 +33,6 @@ describe('validRank', () => {
 });
 
 describe('free share flow', () => {
-  it('removes a trailing slash from APP_ORIGIN', () => {
-    expect(canonicalOrigin({ APP_ORIGIN: 'https://slide.example/' })).toBe('https://slide.example');
-  });
-
   it('uses the selected localized verdict without requiring an X API post', () => {
     expect(shareCopy('liang', 1)).toBe("My vote for Liang Wenfeng: 牢梁 (Jailed 梁). What's your verdict?");
     expect(shareCopy('tibo', 4)).toContain('Tibo神');
@@ -47,8 +43,8 @@ describe('free share flow', () => {
     expect(shareCardPath('liang', 1)).toBe('/share-cards/liang-1.png');
   });
 
-  it('renders large-image social metadata and redirects humans into the app', () => {
-    const html = sharePageHtml('liang', 1, { APP_ORIGIN: 'https://slide.example/' });
+  it('renders large-image metadata using the request origin', () => {
+    const html = sharePageHtml('liang', 1, 'https://slide.example/some/path');
     expect(html).toContain('twitter:card');
     expect(html).toContain('summary_large_image');
     expect(html).toContain('https://slide.example/share-cards/liang-1.png');
