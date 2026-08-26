@@ -114,3 +114,18 @@ This decision supersedes the remaining APP_ORIGIN requirements above.
 - `/api/ready` now checks only required D1 tables.
 - Production deployment now requires only `CF_API_TOKEN` and `CF_ACCOUNT_ID`.
 - The Deploy workflow parses the actual `workers.dev` URL from Wrangler deployment output and uses that discovered URL for `/api/health` and `/api/ready` smoke checks.
+
+## 2026-08-26 — Adopt AI-Native Repository Delivery
+
+This decision supersedes the earlier requirement to manually trigger normal production releases.
+
+- The project adopts **AI-Native Repository Delivery (ANRD)** as its development and delivery model: human intent enters through the ChatGPT Project; ChatGPT operates the GitHub repository; GitHub Actions performs CI/CD; Cloudflare is the production runtime.
+- Zero-local development is an explicit project property. A local checkout, local build, git command, or Wrangler command is not required from the human for normal development or release.
+- CI remains the production quality gate. Product-relevant pushes to `main` run CI automatically.
+- Deploy is triggered through `workflow_run` only when CI concluded successfully, the triggering CI event was a trusted `push`, and the branch was `main`. Pull-request CI cannot enter the production deploy path.
+- Automatic Deploy checks out `workflow_run.head_sha`, verifies that exact revision, and deploys the exact commit that passed CI rather than an unrelated newer checkout.
+- Production Deploy runs are serialized with concurrency group `production-deploy`; an in-progress deployment is not cancelled mid-migration/deploy.
+- `workflow_dispatch` is retained as a recovery/re-run fallback, not as the normal release path.
+- Pure `.chatgpt/**`, `docs/**`, and `README.md` pushes are ignored by CI so RPM checkpoints and documentation edits do not create production releases.
+- The reusable operating model is documented at `docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md` under the name AI-Native Repository Delivery.
+- The zero-touch path was validated in production: CI run 86 passed for commit `052cc4a9a800803ed8ff398e22ea832e505a474b`; GitHub automatically created Deploy run 4 with no human click; Deploy checked out that exact SHA, reused D1, found no pending migrations, deployed Cloudflare Worker version `daae83d8-4ee2-46d1-8674-1c23391260ff`, and passed `/api/health` plus `/api/ready` on the first attempt.
