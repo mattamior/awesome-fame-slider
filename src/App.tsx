@@ -114,7 +114,7 @@ export default function App() {
           <h1>Slide Rheostat</h1>
           <p className="dek">Pick a person. Slide their status. Cast your vote. Share the verdict.</p>
         </div>
-        <a className="github" href="https://github.com/mattamior/slide-rheostat" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <a className="github" href="https://github.com/mattamior/awesome-fame-slider" target="_blank" rel="noreferrer">GitHub ↗</a>
       </header>
 
       <nav className="people" aria-label="People">
