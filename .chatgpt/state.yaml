@@ -1,28 +1,27 @@
 project: awesome-fame-slider
 status: active
-phase: production-launch
+phase: production-verification
 repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-26
 summary: >-
-  The MVP has been refactored away from paid X API writes. Voting happens directly on the site
-  using one anonymous browser-device vote per person backed by D1, while X sharing uses a free
-  Web Intent and is independent from voting. The first production Deploy created the Cloudflare
-  Worker awesome-fame-slider, created awesome-fame-slider-db, applied all four migrations, and
-  uploaded the frontend/share-card assets successfully. That run failed only in the final smoke
-  check because the manually supplied APP_ORIGIN hostname did not resolve. APP_ORIGIN has since
-  been removed from the Worker and deployment design; origin is now derived from each request and
-  Deploy discovers the real workers.dev URL from Wrangler output. The fix is green in CI.
+  The MVP is now deployed successfully to Cloudflare at
+  https://awesome-fame-slider.mattamior.workers.dev. Voting happens directly on the site using
+  one anonymous browser-device vote per person backed by D1, while X sharing uses a free Web
+  Intent and is independent from voting. GitHub Actions Deploy run 2 completed successfully on
+  the request-derived-origin architecture: it reused awesome-fame-slider-db, found no pending
+  migrations, deployed the awesome-fame-slider Worker, and passed both /api/health and /api/ready.
 current_focus: >-
-  Re-run the GitHub Actions Deploy workflow on the latest main branch, confirm health/readiness on
-  the discovered workers.dev URL, then verify anonymous vote upsert, aggregate refresh, X Web Intent,
-  and social-card rendering end to end.
+  Verify the live product end to end in a real browser: anonymous vote creation and update semantics,
+  aggregate refresh, X Web Intent composition, social-card metadata/image rendering, and mobile/X
+  in-app browser behavior. After those checks, polish artwork/branding and record a launch checkpoint.
 confirmed_constraints:
   - GitHub repository: mattamior/awesome-fame-slider.
   - Product display name remains Slide Rheostat for now.
+  - Production URL: https://awesome-fame-slider.mattamior.workers.dev.
   - Vite + React + TypeScript frontend.
   - Cloudflare Worker name: awesome-fame-slider.
   - Cloudflare D1 database name: awesome-fame-slider-db.
-  - Cloudflare Worker and D1 now exist in production.
+  - Cloudflare Worker and D1 exist in production.
   - Cloudflare Workers is the unified deployment target.
   - Cloudflare D1 stores anonymous active votes and lightweight rate-limit state.
   - Initial roster: Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo Sottiaux.
@@ -55,8 +54,9 @@ implemented:
   - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
   - GitHub Actions CI for install, tests, build/share-card generation, and Wrangler type generation.
   - Manual GitHub Actions Deploy workflow discovers or creates awesome-fame-slider-db, applies migrations, deploys Worker/assets, discovers the real workers.dev URL from Wrangler output, and checks health/readiness.
-  - Production Deploy now requires only CF_API_TOKEN and CF_ACCOUNT_ID.
+  - Production Deploy requires only CF_API_TOKEN and CF_ACCOUNT_ID.
   - Repository/package/frontend links and infrastructure naming are synchronized to awesome-fame-slider.
+  - Production deployment is live at https://awesome-fame-slider.mattamior.workers.dev.
 removed_from_current_flow:
   - X OAuth 2.0 PKCE authorization.
   - X media upload and POST /2/tweets calls.
@@ -65,11 +65,12 @@ removed_from_current_flow:
   - X-account identity as the voting key.
   - APP_ORIGIN runtime/deployment requirement.
 blockers:
-  - Re-run Deploy on latest main to replace the first-deployed Worker version and pass health/readiness smoke tests.
-  - End-to-end anonymous vote/Web Intent/social-card verification has not yet been completed.
+  - End-to-end browser verification of anonymous vote/upsert behavior has not yet been completed.
+  - X Web Intent and X/Open Graph card rendering still need live manual verification before public announcement.
 validation_notes:
-  - GitHub Actions Deploy run 1 created awesome-fame-slider-db, applied migrations 0001 through 0004, uploaded 51 static assets, and deployed Worker version 17c3c017-b9b8-44d0-94e8-d122380ee2fa; only the final curl smoke check failed because the supplied APP_ORIGIN did not resolve.
-  - GitHub Actions CI run 76 (commit 433764e82454814fb95c280ce231fe91ac38e779) passed tests, build/share-card generation, and Wrangler type generation after removing APP_ORIGIN and making Deploy discover the workers.dev URL.
+  - GitHub Actions Deploy run 1 created awesome-fame-slider-db, applied migrations 0001 through 0004, uploaded 51 static assets, and deployed Worker version 17c3c017-b9b8-44d0-94e8-d122380ee2fa; only the old APP_ORIGIN smoke check failed.
+  - GitHub Actions CI run 76 (commit 433764e82454814fb95c280ce231fe91ac38e779) passed tests, build/share-card generation, and Wrangler type generation after removing APP_ORIGIN.
+  - GitHub Actions Deploy run 2 (commit b0d192a1f5167e587cd00b5938e246690c74ff10) succeeded completely. It reused D1, reported no migrations to apply, deployed Worker version 3c26c236-8ab7-4afe-a7a7-d97167e126db, discovered https://awesome-fame-slider.mattamior.workers.dev, and passed /api/health plus /api/ready on the first attempt.
 last_checkpoint:
   saved_at: 2026-08-26T14:31:00+08:00
   reason: user requested checkpoint after repository and pre-launch infrastructure rename
