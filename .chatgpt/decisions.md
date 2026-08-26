@@ -82,3 +82,14 @@ This decision supersedes the X-native voting loop, OAuth share transaction, X-sp
 - 48 result-specific 1200×675 PNG cards are generated at build time (8 people × 6 ranks) and served as static assets.
 - Production deployment now requires only `CF_API_TOKEN`, `CF_ACCOUNT_ID`, and `APP_ORIGIN`; `/api/ready` no longer checks X credentials.
 - Legacy OAuth/share-event database migrations remain in migration history so previously initialized databases stay compatible, but current application code does not use those tables.
+
+## 2026-08-26 — Rename repository and pre-launch Cloudflare resources
+
+This decision supersedes the original repository/resource identifiers while preserving the product display name for now.
+
+- GitHub repository renamed from `mattamior/slide-rheostat` to `mattamior/awesome-fame-slider`.
+- RPM canonical repository is now `mattamior/awesome-fame-slider`.
+- The Cloudflare Worker had not yet been created, so its intended name is changed to `awesome-fame-slider` before first deployment.
+- The D1 database had not yet been created by the deployment workflow, so its intended name is changed to `awesome-fame-slider-db`.
+- The default workers.dev origin placeholder is `https://awesome-fame-slider.workers.dev`; production `APP_ORIGIN` still uses the account-specific workers.dev hostname or a custom domain.
+- The current on-page product display name remains `Slide Rheostat`; repository/infrastructure naming is intentionally allowed to differ from the product brand.
