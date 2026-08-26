@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "slide-rheostat",
+  "name": "awesome-fame-slider",
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-26",
   "compatibility_flags": ["nodejs_compat"],
@@ -13,12 +13,12 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "slide-rheostat-db",
+      "database_name": "awesome-fame-slider-db",
       "database_id": "REPLACE_AFTER_D1_CREATE"
     }
   ],
   "vars": {
-    "APP_ORIGIN": "https://slide-rheostat.workers.dev"
+    "APP_ORIGIN": "https://awesome-fame-slider.workers.dev"
   },
   "observability": {
     "enabled": true,
