@@ -102,3 +102,15 @@ This decision supersedes the original repository/resource identifiers while pres
 - Resume by configuring `CF_API_TOKEN`, `CF_ACCOUNT_ID`, and account-specific `APP_ORIGIN`, then run the manual Deploy workflow.
 - First production deployment should create `awesome-fame-slider-db`, deploy the `awesome-fame-slider` Worker, apply migrations, and pass `/api/health` plus `/api/ready`.
 - After deployment, verify anonymous vote upsert behavior, aggregate refresh, X Web Intent sharing, social-card metadata/image rendering, and mobile/X in-app browser behavior.
+
+## 2026-08-26 — Remove APP_ORIGIN from free-sharing architecture
+
+This decision supersedes the remaining APP_ORIGIN requirements above.
+
+- The first production Deploy successfully created `awesome-fame-slider-db`, applied migrations, uploaded assets, and deployed the `awesome-fame-slider` Worker, but its final smoke check failed because the manually supplied APP_ORIGIN hostname did not resolve.
+- Because the current architecture no longer uses X OAuth callbacks, a configured canonical origin is unnecessary.
+- Share-page metadata and redirect URLs now derive their origin from the incoming request URL, so workers.dev and future custom domains work without a deployment-specific origin variable.
+- Anonymous voter and rate-limit hashes use a fixed application namespace rather than the origin, preventing identity churn when the public hostname changes.
+- `/api/ready` now checks only required D1 tables.
+- Production deployment now requires only `CF_API_TOKEN` and `CF_ACCOUNT_ID`.
+- The Deploy workflow parses the actual `workers.dev` URL from Wrangler deployment output and uses that discovered URL for `/api/health` and `/api/ready` smoke checks.
