@@ -1,7 +1,7 @@
 version: 1
 project:
-  name: slide-rheostat
-  repository: mattamior/slide-rheostat
+  name: awesome-fame-slider
+  repository: mattamior/awesome-fame-slider
 canonical_source: github
 files:
   state: .chatgpt/state.yaml
