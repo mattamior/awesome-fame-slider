@@ -7,11 +7,11 @@ summary: >-
   The MVP has been refactored away from paid X API writes. Voting now happens directly on the
   site using one anonymous browser-device vote per person backed by D1. X sharing uses a free
   Web Intent and is independent from voting. Dynamic /share/:person/:rank landing pages expose
-  X/Open Graph metadata pointing to build-time generated 1200x675 PNG result cards.
+  X/Open Graph metadata pointing to build-time generated 1200x675 PNG result cards. The full
+  refactor is green in GitHub Actions CI.
 current_focus: >-
-  Validate the refactor in GitHub Actions CI, then configure the three Cloudflare production
-  values, run Deploy, and verify anonymous vote upsert, aggregate refresh, X Web Intent, and
-  social-card rendering end to end.
+  Configure the three Cloudflare production values, run Deploy, and verify anonymous vote upsert,
+  aggregate refresh, X Web Intent, and social-card rendering end to end.
 confirmed_constraints:
   - Vite + React + TypeScript frontend.
   - Cloudflare Workers is the unified deployment target.
@@ -52,12 +52,11 @@ removed_from_current_flow:
   - Vote-on-successful-X-post semantics.
   - X-account identity as the voting key.
 blockers:
-  - Latest refactor still needs a green GitHub Actions CI run.
   - Production GitHub Actions values are still needed: CF_API_TOKEN, CF_ACCOUNT_ID, APP_ORIGIN.
   - Production deploy and end-to-end anonymous vote/Web Intent/social-card verification have not yet been completed.
 validation_notes:
-  - The previous X-OAuth implementation had a green CI run 31 before this architecture change.
-  - Current refactor includes updated unit tests for share copy, stable share/card paths, and social metadata; current CI status is pending verification.
+  - GitHub Actions CI run 56 (commit 1951403bc9f7d4dee1736089fc4f909727ac2198) succeeded after the refactor.
+  - CI run 56 passed npm install, Vitest, the full Vite build including generation of 48 PNG share cards, and Wrangler type generation.
 last_checkpoint:
   saved_at: 2026-08-26T09:39:00+08:00
   reason: user requested end/checkpoint before the free-sharing refactor
