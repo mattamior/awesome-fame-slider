@@ -55,7 +55,7 @@ jobs:
               process.stdin.on("data", (chunk) => input += chunk);
               process.stdin.on("end", () => {
                 const rows = JSON.parse(input);
-                const db = rows.find((row) => row.name === "slide-rheostat-db");
+                const db = rows.find((row) => row.name === "awesome-fame-slider-db");
                 if (db) process.stdout.write(db.uuid || db.id || "");
               });
             '
@@ -63,8 +63,8 @@ jobs:
 
           db_id="$(find_db_id)"
           if [ -z "$db_id" ]; then
-            echo "slide-rheostat-db not found; creating it"
-            npx wrangler d1 create slide-rheostat-db
+            echo "awesome-fame-slider-db not found; creating it"
+            npx wrangler d1 create awesome-fame-slider-db
             db_id="$(find_db_id)"
           fi
 
@@ -73,7 +73,7 @@ jobs:
             exit 1
           fi
 
-          echo "Resolved slide-rheostat-db: $db_id"
+          echo "Resolved awesome-fame-slider-db: $db_id"
           echo "CF_D1_DATABASE_ID=$db_id" >> "$GITHUB_ENV"
 
       - name: Prepare production Wrangler config
@@ -87,13 +87,13 @@ jobs:
           const origin = process.env.APP_ORIGIN.replace(/\/$/, '');
           source = source
             .replace('REPLACE_AFTER_D1_CREATE', process.env.CF_D1_DATABASE_ID)
-            .replace('https://slide-rheostat.workers.dev', origin);
+            .replace('https://awesome-fame-slider.workers.dev', origin);
           if (source.includes('REPLACE_AFTER_D1_CREATE')) throw new Error('D1 database id placeholder remains');
           fs.writeFileSync(path, source);
           NODE
 
       - name: Apply production D1 migrations
-        run: npx wrangler d1 migrations apply slide-rheostat-db --remote
+        run: npx wrangler d1 migrations apply awesome-fame-slider-db --remote
 
       - name: Deploy Worker and static assets
         run: npx wrangler deploy
