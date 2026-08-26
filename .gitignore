@@ -1,0 +1,5 @@
+node_modules/
+dist/
+public/share-cards/
+.wrangler/
+worker-configuration.d.ts
