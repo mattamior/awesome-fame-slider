@@ -23,7 +23,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - name: Validate required deployment secrets
         shell: bash
@@ -40,6 +39,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Run tests
+        run: npm test
 
       - name: Build frontend
         run: npm run build
@@ -78,16 +80,22 @@ jobs:
         run: |
           set -euo pipefail
           origin="${APP_ORIGIN%/}"
+          echo "Checking $origin/api/health"
           curl --fail --show-error --silent "$origin/api/health" | tee /tmp/health.json
+          echo
           ready=0
           for attempt in $(seq 1 12); do
+            echo "Readiness attempt $attempt/12"
             if curl --fail --show-error --silent "$origin/api/ready" | tee /tmp/ready.json; then
               ready=1
+              echo
               break
             fi
+            echo
             sleep 5
           done
           if [ "$ready" -ne 1 ]; then
-            echo "::error::Production readiness did not become healthy"
+            echo "::error::Production readiness did not become healthy. Last response (if any):"
+            cat /tmp/ready.json 2>/dev/null || true
             exit 1
           fi
