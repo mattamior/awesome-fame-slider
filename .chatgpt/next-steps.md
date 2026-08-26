@@ -1,10 +1,12 @@
 # Next Steps
 
-1. Configure GitHub Actions repository secrets: `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `APP_ORIGIN`, `X_CLIENT_ID`, and `X_CLIENT_SECRET`. The Deploy workflow now discovers or creates `slide-rheostat-db` automatically, so no D1 database ID secret is required.
-2. In the X Developer Console, configure the exact callback `${APP_ORIGIN}/api/auth/x/callback` and ensure sufficient API credits are available.
-3. Run the GitHub Actions **Deploy** workflow. It runs worker unit tests before build, resolves/creates the production D1 database, applies all migrations, deploys the Worker/static assets, configures X secrets, and requires `/api/health` plus `/api/ready` to succeed.
-4. Verify the complete live flow: choose person/rank -> generate PNG -> OAuth PKCE -> media upload -> Post creation -> D1 share event -> vote upsert -> aggregate status refresh.
-5. Verify that a second successful share from the same X account/person moves the existing vote rather than increasing unique voter count.
-6. Add production-grade portrait/character artwork and make the share card visually match the on-page rheostat while keeping the current browser-generated PNG mechanism.
-7. Verify mobile layout and X in-app browser behavior before announcing the MVP publicly; confirm OAuth return, offline/live state, and 429 messaging on narrow screens.
-8. Once production is verified, update RPM with the live URL and launch checkpoint, then stop the recurring implementation task.
+1. Confirm the current GitHub Actions **CI** run is green after the anonymous-voting/Web-Intent refactor.
+2. Configure GitHub Actions repository secrets: `CF_API_TOKEN`, `CF_ACCOUNT_ID`, and `APP_ORIGIN`. No X credentials or D1 database ID secret are required.
+3. Run the GitHub Actions **Deploy** workflow. It runs tests/build, generates all 48 social cards, discovers or creates `slide-rheostat-db`, applies migrations, deploys the Worker/static assets, and requires `/api/health` plus `/api/ready` to succeed.
+4. Verify the live vote flow: choose person/rank -> `POST /api/people/:personId/vote` -> anonymous browser cookie -> D1 upsert -> aggregate status refresh.
+5. Verify that changing a vote from the same browser/person moves the existing vote rather than increasing the total voter count.
+6. Verify the live share flow: `Share to X` -> `https://x.com/intent/tweet` composer with verdict text + `/share/:person/:rank` URL, with no OAuth prompt from this app and no X API credentials.
+7. Verify X/Open Graph crawling for `/share/:person/:rank` renders the corresponding generated 1200x675 result-card image and that human clicks return to the selected person/rank in the app.
+8. Verify mobile layout and X in-app browser behavior before announcing the MVP publicly; confirm voting cookie persistence, Web Intent opening, live/offline state, and 429 messaging on narrow screens.
+9. Add production-grade portrait/character artwork and make result cards visually match the on-page rheostat more closely after the functional launch path is verified.
+10. Once production is verified, update RPM with the live URL and launch checkpoint.
