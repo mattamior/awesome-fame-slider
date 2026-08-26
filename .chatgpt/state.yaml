@@ -1,36 +1,39 @@
 project: awesome-fame-slider
-status: paused
+status: active
 phase: production-launch
 repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-26
 summary: >-
   The MVP has been refactored away from paid X API writes. Voting happens directly on the site
   using one anonymous browser-device vote per person backed by D1, while X sharing uses a free
-  Web Intent and is independent from voting. Dynamic /share/:person/:rank landing pages expose
-  X/Open Graph metadata pointing to build-time generated 1200x675 PNG result cards. The GitHub
-  repository is now mattamior/awesome-fame-slider. Cloudflare resources have not yet been created;
-  the intended first-deploy names are awesome-fame-slider for the Worker and awesome-fame-slider-db
-  for D1. CI is green after the architecture and naming changes.
+  Web Intent and is independent from voting. The first production Deploy created the Cloudflare
+  Worker awesome-fame-slider, created awesome-fame-slider-db, applied all four migrations, and
+  uploaded the frontend/share-card assets successfully. That run failed only in the final smoke
+  check because the manually supplied APP_ORIGIN hostname did not resolve. APP_ORIGIN has since
+  been removed from the Worker and deployment design; origin is now derived from each request and
+  Deploy discovers the real workers.dev URL from Wrangler output. The fix is green in CI.
 current_focus: >-
-  Work is paused immediately before first production deployment. Resume by configuring the three
-  GitHub Actions secrets, resolving the account-specific workers.dev origin for APP_ORIGIN, running
-  Deploy, and verifying anonymous voting, aggregate refresh, free X Web Intent sharing, and social-card rendering end to end.
+  Re-run the GitHub Actions Deploy workflow on the latest main branch, confirm health/readiness on
+  the discovered workers.dev URL, then verify anonymous vote upsert, aggregate refresh, X Web Intent,
+  and social-card rendering end to end.
 confirmed_constraints:
   - GitHub repository: mattamior/awesome-fame-slider.
   - Product display name remains Slide Rheostat for now.
   - Vite + React + TypeScript frontend.
   - Cloudflare Worker name: awesome-fame-slider.
   - Cloudflare D1 database name: awesome-fame-slider-db.
-  - Cloudflare Worker and D1 have not yet been created in production.
+  - Cloudflare Worker and D1 now exist in production.
   - Cloudflare Workers is the unified deployment target.
   - Cloudflare D1 stores anonymous active votes and lightweight rate-limit state.
   - Initial roster: Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo Sottiaux.
   - Voting and X sharing are independent actions.
   - One active vote per anonymous browser device per person; later votes from the same device/person update that vote.
   - The browser identifier is a random HttpOnly cookie; only its SHA-256-derived identifier is stored in D1.
+  - Voter/rate-limit hashing uses a fixed application namespace rather than deployment origin.
   - Network rate limiting discourages rapid vote abuse without storing raw request IPs.
   - X sharing uses Web Intent and must not require an X Developer App, OAuth credentials, or paid X API writes.
   - Shared result URLs expose crawler-friendly metadata and a 1200x675 PNG result card.
+  - Share metadata derives its origin from the incoming request, so workers.dev and future custom domains work without APP_ORIGIN configuration.
   - Each person page displays aggregate voting distribution and the modal community rank.
   - Community results must never fall back to fabricated sample votes.
 implemented:
@@ -47,26 +50,26 @@ implemented:
   - Worker-generated share landing pages with Open Graph and X summary_large_image metadata.
   - Build-time generation of 48 1200x675 PNG result cards using Sharp.
   - Human share-link visitors are redirected into the app with person/rank preselected.
-  - /api/ready requires only the anonymous-vote/rate-limit tables and production APP_ORIGIN; X credentials are not required.
+  - /api/ready requires only the anonymous-vote/rate-limit tables.
   - Cloudflare static-asset routing runs Worker-first for /api/* and /share/*.
   - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
   - GitHub Actions CI for install, tests, build/share-card generation, and Wrangler type generation.
-  - Manual GitHub Actions Deploy workflow automatically discovers or creates awesome-fame-slider-db, applies migrations, deploys Worker/assets, and checks health/readiness.
-  - Production Deploy requires only CF_API_TOKEN, CF_ACCOUNT_ID, and APP_ORIGIN.
-  - Repository/package/frontend links and pre-launch infrastructure naming have been synchronized to awesome-fame-slider.
+  - Manual GitHub Actions Deploy workflow discovers or creates awesome-fame-slider-db, applies migrations, deploys Worker/assets, discovers the real workers.dev URL from Wrangler output, and checks health/readiness.
+  - Production Deploy now requires only CF_API_TOKEN and CF_ACCOUNT_ID.
+  - Repository/package/frontend links and infrastructure naming are synchronized to awesome-fame-slider.
 removed_from_current_flow:
   - X OAuth 2.0 PKCE authorization.
   - X media upload and POST /2/tweets calls.
   - X_CLIENT_ID and X_CLIENT_SECRET deployment requirements.
   - Vote-on-successful-X-post semantics.
   - X-account identity as the voting key.
+  - APP_ORIGIN runtime/deployment requirement.
 blockers:
-  - Production GitHub Actions values are still needed: CF_API_TOKEN, CF_ACCOUNT_ID, APP_ORIGIN.
-  - The account-specific workers.dev subdomain must be known before setting the initial APP_ORIGIN unless a custom domain is used first.
-  - Production Worker/D1 creation, deploy, and end-to-end anonymous vote/Web Intent/social-card verification have not yet been completed.
+  - Re-run Deploy on latest main to replace the first-deployed Worker version and pass health/readiness smoke tests.
+  - End-to-end anonymous vote/Web Intent/social-card verification has not yet been completed.
 validation_notes:
-  - GitHub Actions CI run 56 succeeded after the free-sharing refactor.
-  - GitHub Actions CI run 67 succeeded after the repository, Worker, D1, package, frontend link, and deployment naming changes.
+  - GitHub Actions Deploy run 1 created awesome-fame-slider-db, applied migrations 0001 through 0004, uploaded 51 static assets, and deployed Worker version 17c3c017-b9b8-44d0-94e8-d122380ee2fa; only the final curl smoke check failed because the supplied APP_ORIGIN did not resolve.
+  - GitHub Actions CI run 76 (commit 433764e82454814fb95c280ce231fe91ac38e779) passed tests, build/share-card generation, and Wrangler type generation after removing APP_ORIGIN and making Deploy discover the workers.dev URL.
 last_checkpoint:
   saved_at: 2026-08-26T14:31:00+08:00
   reason: user requested checkpoint after repository and pre-launch infrastructure rename
