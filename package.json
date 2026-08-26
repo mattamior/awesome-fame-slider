@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "vitest run",
     "preview": "vite preview",
     "cf:dev": "wrangler dev",
     "cf:types": "wrangler types",
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "vitest": "latest",
     "wrangler": "latest"
   }
 }
