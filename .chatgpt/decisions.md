@@ -129,3 +129,17 @@ This decision supersedes the earlier requirement to manually trigger normal prod
 - Pure `.chatgpt/**`, `docs/**`, and `README.md` pushes are ignored by CI so RPM checkpoints and documentation edits do not create production releases.
 - The reusable operating model is documented at `docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md` under the name AI-Native Repository Delivery.
 - The zero-touch path was validated in production: CI run 86 passed for commit `052cc4a9a800803ed8ff398e22ea832e505a474b`; GitHub automatically created Deploy run 4 with no human click; Deploy checked out that exact SHA, reused D1, found no pending migrations, deployed Cloudflare Worker version `daae83d8-4ee2-46d1-8674-1c23391260ff`, and passed `/api/health` plus `/api/ready` on the first attempt.
+
+## 2026-08-26 — Spin out the delivery model as ZeroLocal
+
+This decision records the handoff from the founding application into a standalone methodology project.
+
+- The public-facing name for the reusable development model should be **ZeroLocal** because it communicates the user-visible property more directly than the ANRD acronym. `AI-native repository delivery` remains a useful technical description rather than the primary brand.
+- The methodology should move into a dedicated ChatGPT Project named `ZeroLocal` with project-only memory so product-specific conversations from `awesome-fame-slider` do not become the durable context for the standard.
+- The planned canonical specification repository is `iorLab/zerolocal`.
+- The planned Cloudflare reference implementation repository is `iorLab/zerolocal-cloudflare-starter`.
+- `mattamior/awesome-fame-slider` remains the founding case study and production proof that zero-local, CI-gated, zero-touch delivery works end to end.
+- The `iorLab` GitHub App installation has been authorized for all organization repositories and access was verified from ChatGPT. New repositories created under `iorLab` should therefore be accessible without a second repository-selection step.
+- At this checkpoint the new `ZeroLocal` ChatGPT Project and the two `iorLab` repositories have not yet been created. Those are the next human bootstrap actions.
+- Once created, the first ZeroLocal Project turn should initialize RPM from `iorLab/zerolocal`, treat GitHub as canonical, cite `mattamior/awesome-fame-slider` as the founding case study, and begin **ZeroLocal Specification v0.1** plus the Cloudflare starter.
+- ZeroLocal should later be evaluated as a reusable ChatGPT Skill and, once the protocol and adapters stabilize, as a Plugin that can package procedural skills, integrations, and starter templates for other users.
