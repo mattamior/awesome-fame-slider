@@ -11,8 +11,9 @@ summary: >-
   updates the vote only after X returns a successful Post ID. Pre-launch hardening includes
   D1-backed share-start rate limiting, a production readiness endpoint, honest no-fabrication
   behavior when live vote data is unavailable, 30-second visible-tab vote refresh, improved
-  mobile/X-in-app-browser ergonomics, and a GitHub Actions production deploy workflow that can
-  apply D1 migrations, deploy Workers/static assets, configure X secrets, and smoke-test readiness.
+  mobile/X-in-app-browser ergonomics, unit tests for deterministic voting/share helpers, and a
+  GitHub Actions production deploy workflow that applies D1 migrations, deploys Workers/static
+  assets, configures X secrets, and smoke-tests readiness.
 current_focus: >-
   Supply production Cloudflare/X account configuration as GitHub Actions secrets, create the D1
   database, run the Deploy workflow, then verify the complete live auth/media/post/vote loop.
@@ -45,8 +46,10 @@ implemented:
   - D1-backed per-network share-start rate limiting: 8 attempts per 10-minute window using a hashed network identifier, with UI handling for HTTP 429.
   - /api/ready returns 200 only when required D1 tables, APP_ORIGIN, and X credentials are present.
   - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
-  - GitHub Actions CI workflow for npm install, build, and Wrangler type generation.
-  - Manual GitHub Actions Deploy workflow validates six required production secrets, builds, injects runner-only D1/origin config, applies remote migrations, deploys the Worker/assets, writes X OAuth secrets, and retries /api/ready smoke checks.
+  - GitHub Actions CI workflow for dependency install, Vitest worker-helper tests, build, and Wrangler type generation.
+  - Unit tests cover zero-vote neutral state, modal/tie behavior, rank validation, canonical origin handling, localized Liang share copy, and Tibo launch-roster copy.
+  - Manual GitHub Actions Deploy workflow validates six required production secrets, runs tests/build, injects runner-only D1/origin config, applies remote migrations, deploys the Worker/assets, writes X OAuth secrets, and retries /api/ready smoke checks.
+  - Fixed Deploy workflow npm caching bug: repository has no package-lock.json, so setup-node cache mode was removed to prevent pre-install deployment failure.
 blockers:
   - Cloudflare account credentials are not available to this runtime. Production deployment can now run from GitHub once CF_API_TOKEN, CF_ACCOUNT_ID, CF_D1_DATABASE_ID, and APP_ORIGIN repository secrets are configured.
   - Production X Developer App Client ID/Secret and exact callback configuration are not available to this runtime; the Deploy workflow accepts X_CLIENT_ID and X_CLIENT_SECRET repository secrets.
@@ -54,6 +57,7 @@ blockers:
 validation_notes:
   - GitHub Actions CI provides the networked validation environment unavailable to this runtime.
   - Earlier CI exposed and resolved workflow caching and Vite typing issues.
-  - CI run 11 succeeded after rate limiting/readiness hardening.
   - CI run 18 (commit be4542b6687c9f60c5ba7d96bc38729f43378750) succeeded after removing fabricated fallback votes, adding live polling, and mobile hardening.
+  - CI run 27 (commit f3c2ab5a9cb28f9473261e6bb7d406a0084eef6a) succeeded after the production Deploy workflow and RPM documentation were added.
+  - The new Vitest-enabled CI run for the latest worker tests/deploy fix is pending verification as of this checkpoint.
   - X official documentation rechecked on 2026-08-26 confirms POST /2/media/upload accepts JSON base64 media for tweet_image and returns a media ID for POST /2/tweets.
