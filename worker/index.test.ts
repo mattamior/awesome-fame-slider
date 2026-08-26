@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalOrigin, leader, postText, validRank } from './index';
+import { canonicalOrigin, leader, shareCardPath, shareCopy, sharePageHtml, sharePath, validRank } from './index';
 
 describe('leader', () => {
   it('uses neutral rank when there are no votes', () => {
@@ -32,18 +32,26 @@ describe('validRank', () => {
   });
 });
 
-describe('share copy', () => {
+describe('free share flow', () => {
   it('removes a trailing slash from APP_ORIGIN', () => {
     expect(canonicalOrigin({ APP_ORIGIN: 'https://slide.example/' })).toBe('https://slide.example');
   });
 
-  it('uses the selected localized verdict and deep link', () => {
-    expect(postText('liang', 1, { APP_ORIGIN: 'https://slide.example/' })).toBe(
-      "My vote for Liang Wenfeng: 牢梁\n\nWhat's your verdict? → https://slide.example/?who=liang&rank=1",
-    );
+  it('uses the selected localized verdict without requiring an X API post', () => {
+    expect(shareCopy('liang', 1)).toBe("My vote for Liang Wenfeng: 牢梁 (Jailed 梁). What's your verdict?");
+    expect(shareCopy('tibo', 4)).toContain('Tibo神');
   });
 
-  it('covers Tibo in the launch roster', () => {
-    expect(postText('tibo', 4, { APP_ORIGIN: 'https://slide.example' })).toContain('Tibo神');
+  it('uses stable share and card paths', () => {
+    expect(sharePath('liang', 1)).toBe('/share/liang/1');
+    expect(shareCardPath('liang', 1)).toBe('/share-cards/liang-1.png');
+  });
+
+  it('renders large-image social metadata and redirects humans into the app', () => {
+    const html = sharePageHtml('liang', 1, { APP_ORIGIN: 'https://slide.example/' });
+    expect(html).toContain('twitter:card');
+    expect(html).toContain('summary_large_image');
+    expect(html).toContain('https://slide.example/share-cards/liang-1.png');
+    expect(html).toContain('https://slide.example/?who=liang&amp;rank=1&amp;from=share');
   });
 });
