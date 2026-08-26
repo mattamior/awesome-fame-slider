@@ -1,19 +1,23 @@
-project: slide-rheostat
+project: awesome-fame-slider
 status: active
 phase: implementation
-repository: mattamior/slide-rheostat
+repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-26
 summary: >-
   The MVP has been refactored away from paid X API writes. Voting now happens directly on the
   site using one anonymous browser-device vote per person backed by D1. X sharing uses a free
   Web Intent and is independent from voting. Dynamic /share/:person/:rank landing pages expose
-  X/Open Graph metadata pointing to build-time generated 1200x675 PNG result cards. The full
-  refactor is green in GitHub Actions CI.
+  X/Open Graph metadata pointing to build-time generated 1200x675 PNG result cards. The GitHub
+  repository and not-yet-created Cloudflare resources are now named awesome-fame-slider.
 current_focus: >-
   Configure the three Cloudflare production values, run Deploy, and verify anonymous vote upsert,
   aggregate refresh, X Web Intent, and social-card rendering end to end.
 confirmed_constraints:
+  - GitHub repository: mattamior/awesome-fame-slider.
+  - Product display name remains Slide Rheostat for now.
   - Vite + React + TypeScript frontend.
+  - Cloudflare Worker name: awesome-fame-slider.
+  - Cloudflare D1 database name: awesome-fame-slider-db.
   - Cloudflare Workers is the unified deployment target.
   - Cloudflare D1 stores anonymous active votes and lightweight rate-limit state.
   - Initial roster: Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo Sottiaux.
@@ -39,12 +43,12 @@ implemented:
   - Worker-generated share landing pages with Open Graph and X summary_large_image metadata.
   - Build-time generation of 48 1200x675 PNG result cards using Sharp.
   - Human share-link visitors are redirected into the app with person/rank preselected.
-  - /api/ready now requires only the anonymous-vote/rate-limit tables and production APP_ORIGIN; X credentials are not required.
+  - /api/ready requires only the anonymous-vote/rate-limit tables and production APP_ORIGIN; X credentials are not required.
   - Cloudflare static-asset routing runs Worker-first for /api/* and /share/*.
   - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal person roster, and reduced motion.
   - GitHub Actions CI for install, tests, build/share-card generation, and Wrangler type generation.
-  - Manual GitHub Actions Deploy workflow automatically discovers or creates slide-rheostat-db, applies migrations, deploys Worker/assets, and checks health/readiness.
-  - Production Deploy now requires only CF_API_TOKEN, CF_ACCOUNT_ID, and APP_ORIGIN.
+  - Manual GitHub Actions Deploy workflow automatically discovers or creates awesome-fame-slider-db, applies migrations, deploys Worker/assets, and checks health/readiness.
+  - Production Deploy requires only CF_API_TOKEN, CF_ACCOUNT_ID, and APP_ORIGIN.
 removed_from_current_flow:
   - X OAuth 2.0 PKCE authorization.
   - X media upload and POST /2/tweets calls.
@@ -55,8 +59,8 @@ blockers:
   - Production GitHub Actions values are still needed: CF_API_TOKEN, CF_ACCOUNT_ID, APP_ORIGIN.
   - Production deploy and end-to-end anonymous vote/Web Intent/social-card verification have not yet been completed.
 validation_notes:
-  - GitHub Actions CI run 56 (commit 1951403bc9f7d4dee1736089fc4f909727ac2198) succeeded after the refactor.
-  - CI run 56 passed npm install, Vitest, the full Vite build including generation of 48 PNG share cards, and Wrangler type generation.
+  - GitHub Actions CI run 56 succeeded after the free-sharing refactor.
+  - The repository/resource rename is pending a fresh CI result.
 last_checkpoint:
   saved_at: 2026-08-26T09:39:00+08:00
   reason: user requested end/checkpoint before the free-sharing refactor
