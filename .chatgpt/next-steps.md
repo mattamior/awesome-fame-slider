@@ -1,14 +1,16 @@
 # Next Steps
 
-## Production verification — active
+## Final device verification — active
 
-1. Add and run a full production crawler/card sweep for all 8 people × 6 ranks. For every `/share/:person/:rank`, verify `twitter:card=summary_large_image`, exact `twitter:image` and `og:image`, PNG type metadata, and absence of crawler-hostile meta refresh. For every `/share-cards/:person-:rank.png`, verify a non-empty `image/png` response.
-2. Keep the existing single-card post-deploy smoke as a fast sentinel, but make the 48-combination sweep part of the production Deploy verification path so regressions fail deployment verification automatically.
-3. Verify anonymous vote upsert semantics end to end in production: use one temporary browser identity, cast a vote for one person, move that same vote to another rank, confirm total voter count does not increase, then remove the temporary test row so public totals are not polluted.
-4. Verify mobile layout and X in-app browser behavior: cookie persistence, Web Intent/native share behavior, live/offline state, and 429 messaging.
-5. Decide whether to keep the workers.dev URL for public launch or attach a custom domain.
-6. Record the final launch checkpoint in RPM after the 48-card sweep, vote-upsert verification, and mobile/X verification are complete.
+1. Verify the production site on a real mobile browser. Confirm layout/safe-area behavior, anonymous cookie persistence across reloads, moving the same person's vote without creating an extra voter, live/offline state, and the user-facing 429 message if a controlled rate-limit test is practical.
+2. Verify the production site inside the X in-app browser. Open a rank-specific shared URL, confirm the selected rank/deep-link state is preserved, exercise Share to X through native Web Share or Web Intent as exposed by that client, and confirm returning to the site leaves the experience usable.
+3. Treat these two true-device checks as the only remaining launch verification. Repository CI already covers Worker revision convergence, health/readiness, all 48 social pages/cards, exact 1200x675 PNG dimensions, and self-cleaning production vote-upsert semantics.
+4. After true-device checks pass, record the final launch checkpoint in RPM. Keep `https://awesome-fame-slider.mattamior.workers.dev` as the v1 public origin; attach a custom domain only when there is a concrete branding/distribution need.
 
-## Completed rollout
+## Completed automated verification
 
-All eight initial subjects now have six-rank internet meme/image packs in production: Liang Wenfeng, Elon Musk, Sam Altman, Tibo Sottiaux, Jensen Huang, Mark Zuckerberg, Dario Amodei, and Demis Hassabis. Preserve the established semantics: fixed default roster image; SUBJECT follows community leader; refresh defaults large art to community leader; explicit user selection takes over large art; slider uses a mechanical pointer; X shares preserve the user's selected rank image.
+- All eight initial subjects have six-rank internet meme/image packs in production.
+- Production Deploy waits until `/api/health` and `/api/ready` confirm share-card revision 4, preventing verification from racing a stale Cloudflare edge Worker.
+- Every Deploy validates all 8 people × 6 ranks: exact X/Open Graph image metadata, no crawler-hostile meta refresh, non-empty `image/png`, and exact 1200×675 dimensions for all 48 cards.
+- Every Deploy runs a temporary anonymous-vote smoke test that inserts one voter/person row, moves it to another rank without duplication, then deletes the temporary row and confirms cleanup.
+- X sharing remains independent from voting and uses free Web Intent / native Web Share mechanics; no X Developer App or paid write API is required.
