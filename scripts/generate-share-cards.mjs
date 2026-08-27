@@ -11,10 +11,19 @@ const standard = (surname) => [
   `Ancestor ${surname}`,
 ];
 
-const LIANG_MEME_THUMB = 'https://raw.githubusercontent.com/cholf5/liang-slider/main/img/thumb.png';
+const LIANG_BIANZU_REV = '3f6f20fd260dd791e0a2ccd4676db1e47f793fa0';
+const LIANG_BIANZU_BASE = `https://raw.githubusercontent.com/makerjackie/bianzu/${LIANG_BIANZU_REV}/public/ranks/liang`;
+const LIANG_RANK_IMAGES = [
+  `${LIANG_BIANZU_BASE}/y-00-nan.webp`,
+  `${LIANG_BIANZU_BASE}/y-02-lao.webp`,
+  `${LIANG_BIANZU_BASE}/y2-03-zi.webp`,
+  `${LIANG_BIANZU_BASE}/y-04-saint.webp`,
+  `${LIANG_BIANZU_BASE}/y-05-god.webp`,
+  `${LIANG_BIANZU_BASE}/y-06-zu.webp`,
+];
 
 const people = [
-  { id: 'liang', avatarIndex: 0, avatarUrl: LIANG_MEME_THUMB, name: 'Liang Wenfeng', role: 'DeepSeek', ranks: standard('Liang') },
+  { id: 'liang', avatarIndex: 0, rankImageUrls: LIANG_RANK_IMAGES, name: 'Liang Wenfeng', role: 'DeepSeek', ranks: standard('Liang') },
   { id: 'musk', avatarIndex: 1, name: 'Elon Musk', role: 'xAI / Tesla / SpaceX', ranks: standard('Musk') },
   { id: 'altman', avatarIndex: 2, name: 'Sam Altman', role: 'OpenAI', ranks: standard('Altman') },
   { id: 'tibo', avatarIndex: 3, name: 'Tibo Sottiaux', role: 'Codex', ranks: standard('Tibo') },
@@ -37,14 +46,15 @@ function escapeXml(value) {
     .replaceAll("'", '&apos;');
 }
 
-async function fetchPngData(url) {
+async function fetchImagePngData(url) {
   try {
     const response = await fetch(url, {
       headers: { 'user-agent': 'awesome-fame-slider-share-card-builder/1.0' },
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const bytes = Buffer.from(await response.arrayBuffer());
-    return bytes.toString('base64');
+    const png = await sharp(bytes).png().toBuffer();
+    return png.toString('base64');
   } catch (error) {
     console.warn(`Could not fetch ${url}; falling back to the local illustrated avatar.`, error);
     return null;
@@ -53,11 +63,11 @@ async function fetchPngData(url) {
 
 const avatarSprite = await readFile(path.resolve('public/avatars.svg'));
 const avatarData = avatarSprite.toString('base64');
-const liangMemeData = await fetchPngData(LIANG_MEME_THUMB);
+const liangRankData = await Promise.all(LIANG_RANK_IMAGES.map(fetchImagePngData));
 
-function memeAvatar(person, x, y, size) {
-  if (person.id === 'liang' && liangMemeData) {
-    return `<image x="${x}" y="${y}" width="${size}" height="${size}" href="data:image/png;base64,${liangMemeData}" preserveAspectRatio="xMidYMid meet" />`;
+function memeAvatar(person, rank, x, y, size) {
+  if (person.id === 'liang' && liangRankData[rank]) {
+    return `<image x="${x}" y="${y}" width="${size}" height="${size}" href="data:image/png;base64,${liangRankData[rank]}" preserveAspectRatio="xMidYMid meet" />`;
   }
 
   const avatarViewX = person.avatarIndex * 256;
@@ -101,17 +111,17 @@ function liangCard(person, rank) {
       <text x="75" y="235" font-family="DejaVu Sans, Arial, sans-serif" font-size="29" font-weight="700" fill="#5f5546">${escapeXml(person.role)} · INTERNET STATUS RHEOSTAT</text>
       <path d="M70 270 H740" stroke="#171717" stroke-width="8" stroke-linecap="square" />
       <text x="72" y="362" font-family="DejaVu Sans, Arial, sans-serif" font-size="78" font-weight="900" fill="#8f271d">${escapeXml(person.ranks[rank])}</text>
-      <text x="75" y="399" font-family="DejaVu Sans Mono, monospace" font-size="20" font-weight="700" fill="#6b5c48" letter-spacing="2">THE KNOB MOVES. THE REPUTATION MOVES.</text>
+      <text x="75" y="399" font-family="DejaVu Sans Mono, monospace" font-size="20" font-weight="700" fill="#6b5c48" letter-spacing="2">THE KNOB MOVES. THE FACE MOVES.</text>
 
       <line x1="100" y1="438" x2="950" y2="438" stroke="#4a3626" stroke-width="14" stroke-linecap="round" />
       ${dots}
 
       <circle cx="1015" cy="220" r="144" fill="#cdbb98" opacity=".7" />
-      ${memeAvatar(person, 850, 58, 330)}
-      <text x="1014" y="402" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-size="18" font-weight="800" fill="#6b5c48">ORIGINAL MEME KNOB</text>
+      ${memeAvatar(person, rank, 850, 58, 330)}
+      <text x="1014" y="402" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-size="18" font-weight="800" fill="#6b5c48">RANK-SPECIFIC MEME PORTRAIT</text>
 
       <text x="72" y="545" font-family="DejaVu Sans Mono, monospace" font-size="26" font-weight="900" fill="#171717">RANK ${rank + 1} / 6</text>
-      <text x="72" y="588" font-family="DejaVu Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#6b5c48">SOURCE VISUAL: cholf5/liang-slider · parody / internet sentiment</text>
+      <text x="72" y="588" font-family="DejaVu Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#6b5c48">VISUAL SET: makerjackie/bianzu · parody / internet sentiment</text>
       <text x="1125" y="585" text-anchor="end" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="900" fill="#171717">CAST YOUR VERDICT →</text>
     </svg>`;
 }
