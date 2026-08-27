@@ -143,3 +143,14 @@ This decision records the handoff from the founding application into a standalon
 - At this checkpoint the new `ZeroLocal` ChatGPT Project and the two `iorLab` repositories have not yet been created. Those are the next human bootstrap actions.
 - Once created, the first ZeroLocal Project turn should initialize RPM from `iorLab/zerolocal`, treat GitHub as canonical, cite `mattamior/awesome-fame-slider` as the founding case study, and begin **ZeroLocal Specification v0.1** plus the Cloudflare starter.
 - ZeroLocal should later be evaluated as a reusable ChatGPT Skill and, once the protocol and adapters stabilize, as a Plugin that can package procedural skills, integrations, and starter templates for other users.
+
+## 2026-08-28 — Align the public product brand with Awesome Fame Slider
+
+This decision supersedes the earlier clause that intentionally kept `Slide Rheostat` as the on-page product name after the repository/infrastructure rename.
+
+- The public product display name is now **Awesome Fame Slider**.
+- The repository name, app header, browser title, Open Graph title, shared verdict-page title/link text, and generated social-card header should all use Awesome Fame Slider.
+- `Reputation rheostat` remains useful descriptive language for the interaction concept, but it is no longer the product name.
+- The social-card cache revision was bumped from v4 to v5 so X/OG crawlers and CDN caches do not retain the old Slide Rheostat branding.
+- The rename shipped through PR #17 and main commit `8a345198c6cd21f711b3198694ddf03b80cfc563`.
+- Production Worker version `1b2654c4-ea95-4b19-ba76-7f027b02f5af` serves share-card revision v5; the selected-rank sentinel, all 48 share-page/card checks, and the self-cleaning vote-upsert smoke passed on Deploy run `33096079530` after edge propagation settled.
