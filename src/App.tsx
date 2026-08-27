@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EMPTY_VOTES, PEOPLE, type Person } from './data';
 import './styles.css';
 
 type VoteSummary = { counts: number[]; total: number; leader: number };
 
 const NEUTRAL_RANK = 2;
+const SHARE_CARD_REV = '3';
 
 function emptySummary(personId: string): VoteSummary {
   const counts = EMPTY_VOTES[personId] || [0, 0, 0, 0, 0, 0];
@@ -15,14 +16,16 @@ function Avatar({
   person,
   className,
   labelled = false,
-  rankIndex = NEUTRAL_RANK,
+  rankIndex,
 }: {
   person: Person;
   className: string;
   labelled?: boolean;
   rankIndex?: number;
 }) {
-  const avatarUrl = person.rankImageUrls?.[rankIndex] || person.avatarUrl;
+  const avatarUrl = rankIndex === undefined
+    ? person.avatarUrl
+    : person.rankImageUrls?.[rankIndex] || person.avatarUrl;
 
   return (
     <span
@@ -54,14 +57,22 @@ function Avatar({
 export default function App() {
   const params = new URLSearchParams(location.search);
   const initialId = params.get('who') || 'liang';
+  const openedFromShare = params.get('from') === 'share';
+  const requestedRank = Number(params.get('rank') || NEUTRAL_RANK);
+  const validRequestedRank = Number.isInteger(requestedRank) && requestedRank >= 0 && requestedRank <= 5
+    ? requestedRank
+    : NEUTRAL_RANK;
+
   const [personId, setPersonId] = useState(PEOPLE.some((p) => p.id === initialId) ? initialId : 'liang');
   const person = PEOPLE.find((p) => p.id === personId)!;
-  const initialRank = Number(params.get('rank') || NEUTRAL_RANK);
-  const [rank, setRank] = useState(Number.isInteger(initialRank) && initialRank >= 0 && initialRank <= 5 ? initialRank : NEUTRAL_RANK);
+  const [rank, setRank] = useState(openedFromShare ? validRequestedRank : NEUTRAL_RANK);
+  const [hasExplicitSelection, setHasExplicitSelection] = useState(openedFromShare);
+  const explicitSelectionRef = useRef(openedFromShare);
   const [summary, setSummary] = useState<VoteSummary>(() => emptySummary(personId));
   const [liveResults, setLiveResults] = useState(false);
   const [voting, setVoting] = useState(false);
-  const [notice, setNotice] = useState(() => params.get('from') === 'share' ? 'You opened a shared verdict. Slide it and cast your own vote.' : '');
+  const [sharing, setSharing] = useState(false);
+  const [notice, setNotice] = useState(() => openedFromShare ? 'You opened a shared verdict. Slide it and cast your own vote.' : '');
 
   useEffect(() => {
     const url = new URL(location.href);
@@ -77,11 +88,18 @@ export default function App() {
       if (!response.ok) throw new Error('vote API unavailable');
       const data = await response.json() as VoteSummary;
       if (!Array.isArray(data.counts) || data.counts.length !== 6) throw new Error('invalid vote payload');
-      setSummary({ counts: data.counts.map(Number), total: Number(data.total) || 0, leader: Number(data.leader) });
+      const nextSummary = {
+        counts: data.counts.map(Number),
+        total: Number(data.total) || 0,
+        leader: Number(data.leader),
+      };
+      setSummary(nextSummary);
       setLiveResults(true);
+      if (!explicitSelectionRef.current) setRank(nextSummary.leader);
     } catch {
       setSummary(emptySummary(person.id));
       setLiveResults(false);
+      if (!explicitSelectionRef.current) setRank(NEUTRAL_RANK);
     }
   }, [person.id]);
 
@@ -109,7 +127,29 @@ export default function App() {
 
   const current = person.ranks[summary.leader] || person.ranks[NEUTRAL_RANK];
   const selected = person.ranks[rank] || person.ranks[NEUTRAL_RANK];
+  const visualRank = hasExplicitSelection ? rank : summary.leader;
+  const visual = person.ranks[visualRank] || person.ranks[NEUTRAL_RANK];
   const shareText = useMemo(() => `My vote for ${person.name}: ${selected.zh} (${selected.en}). What's your verdict?`, [person, selected]);
+
+  function selectRank(nextRank: number) {
+    explicitSelectionRef.current = true;
+    setHasExplicitSelection(true);
+    setRank(nextRank);
+  }
+
+  function switchPerson(nextId: string) {
+    explicitSelectionRef.current = false;
+    setHasExplicitSelection(false);
+    setRank(NEUTRAL_RANK);
+    setNotice('');
+    if (nextId === person.id) {
+      setRank(summary.leader);
+      return;
+    }
+    setPersonId(nextId);
+    setSummary(emptySummary(nextId));
+    setLiveResults(false);
+  }
 
   async function castVote() {
     setVoting(true);
@@ -144,13 +184,71 @@ export default function App() {
     }
   }
 
-  function shareToX() {
-    const shareUrl = `${location.origin}/share/${encodeURIComponent(person.id)}/${rank}`;
+  function buildXIntent(shareUrl: string) {
     const intent = new URL('https://x.com/intent/tweet');
     intent.searchParams.set('text', shareText);
     intent.searchParams.set('url', shareUrl);
-    window.open(intent.toString(), '_blank', 'noopener,noreferrer');
-    setNotice('X composer opened. Your site vote is independent of whether you publish the post.');
+    return intent.toString();
+  }
+
+  async function copyImage(blob: Blob) {
+    if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') return false;
+    try {
+      const type = blob.type || 'image/png';
+      await navigator.clipboard.write([new ClipboardItem({ [type]: blob })]);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function shareToX() {
+    const shareUrl = `${location.origin}/share/${encodeURIComponent(person.id)}/${rank}?v=${SHARE_CARD_REV}`;
+    const imageUrl = `${location.origin}/share-cards/${encodeURIComponent(person.id)}-${rank}.png`;
+    const intentUrl = buildXIntent(shareUrl);
+    const coarsePointer = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    const canTryNativeShare = coarsePointer && typeof navigator.share === 'function';
+
+    setSharing(true);
+    setNotice('Preparing your selected image…');
+
+    if (!canTryNativeShare) window.open(intentUrl, '_blank', 'noopener,noreferrer');
+
+    try {
+      const response = await fetch(imageUrl, { cache: 'no-store' });
+      if (!response.ok) throw new Error('share image unavailable');
+      const blob = await response.blob();
+      const file = new File([blob], `${person.id}-${rank}.png`, { type: blob.type || 'image/png' });
+
+      if (canTryNativeShare) {
+        const supportsFiles = typeof navigator.canShare !== 'function' || navigator.canShare({ files: [file] });
+        if (supportsFiles) {
+          await navigator.share({
+            files: [file],
+            text: shareText,
+            url: shareUrl,
+            title: `${selected.zh} · ${person.name}`,
+          });
+          setNotice('Share sheet opened with your selected image attached. Choose X to publish it.');
+          return;
+        }
+        window.open(intentUrl, '_blank', 'noopener,noreferrer');
+      }
+
+      const copied = await copyImage(blob);
+      setNotice(copied
+        ? 'X composer opened. Your selected image is copied — paste it with Ctrl/⌘+V. The shared link also uses this same image card.'
+        : 'X composer opened. The shared link is configured to render your selected image card.');
+    } catch (error) {
+      if (canTryNativeShare && !(error instanceof DOMException && error.name === 'AbortError')) {
+        window.open(intentUrl, '_blank', 'noopener,noreferrer');
+      }
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        setNotice('X composer opened. The shared URL still points to the image card for your selected rank.');
+      }
+    } finally {
+      setSharing(false);
+    }
   }
 
   return (
@@ -166,8 +264,8 @@ export default function App() {
 
       <nav className="people" aria-label="People">
         {PEOPLE.map((p) => (
-          <button key={p.id} disabled={voting} className={p.id === person.id ? 'active' : ''} onClick={() => { setPersonId(p.id); setRank(NEUTRAL_RANK); }}>
-            <Avatar person={p} className="mini-avatar" rankIndex={p.id === person.id ? rank : NEUTRAL_RANK} /><span>{p.nameZh}</span>
+          <button key={p.id} disabled={voting} className={p.id === person.id ? 'active' : ''} onClick={() => switchPerson(p.id)}>
+            <Avatar person={p} className="mini-avatar" /><span>{p.nameZh}</span>
           </button>
         ))}
       </nav>
@@ -175,7 +273,7 @@ export default function App() {
       <section className={`instrument${person.rankImageUrls ? ' meme-person' : ''}`}>
         <div className="plate-top">
           <div className="subject">
-            <Avatar person={person} className="subject-avatar" labelled rankIndex={rank} />
+            <Avatar person={person} className="subject-avatar" labelled rankIndex={summary.leader} />
             <div className="subject-copy">
               <span className="label">SUBJECT</span>
               <strong>{person.nameZh}</strong>
@@ -191,34 +289,34 @@ export default function App() {
         {person.rankImageUrls && (
           <div className="rank-visual" aria-live="polite">
             <img
-              key={`${person.id}-${rank}`}
-              src={person.rankImageUrls[rank]}
-              alt={`${person.name} — ${selected.zh}`}
+              key={`${person.id}-${visualRank}`}
+              src={person.rankImageUrls[visualRank]}
+              alt={`${person.name} — ${visual.zh}`}
               referrerPolicy="no-referrer"
             />
-            <span className="rank-visual-tag">RANK {rank + 1} / 6 · {selected.zh}</span>
+            <span className="rank-visual-tag">RANK {visualRank + 1} / 6 · {visual.zh}</span>
           </div>
         )}
 
         <div className="track-wrap">
           <div className="coil" />
-          <input disabled={voting} aria-label="Reputation rank" type="range" min="0" max="5" step="1" value={rank} onChange={(e) => setRank(Number(e.target.value))} />
+          <input disabled={voting} aria-label="Reputation rank" type="range" min="0" max="5" step="1" value={rank} onChange={(e) => selectRank(Number(e.target.value))} />
           <div className="thumb-face" style={{ left: `calc(${rank / 5 * 100}% - 33px)` }}>
             <Avatar person={person} className="thumb-avatar" rankIndex={rank} />
           </div>
         </div>
 
         <div className="rank-labels">
-          {person.ranks.map((r, i) => <button disabled={voting} key={r.id} className={i === rank ? 'chosen' : ''} onClick={() => setRank(i)}>{r.zh}</button>)}
+          {person.ranks.map((r, i) => <button disabled={voting} key={r.id} className={i === rank ? 'chosen' : ''} onClick={() => selectRank(i)}>{r.zh}</button>)}
         </div>
 
         <div className="selected-card"><span>YOUR VERDICT</span><strong>{selected.zh}</strong><em>{selected.en}</em></div>
         <div className="actions">
           <button className="vote" onClick={castVote} disabled={voting}>{voting ? 'Saving vote…' : 'Cast vote'}</button>
-          <button className="share" onClick={shareToX}>Share to X</button>
+          <button className="share" onClick={() => void shareToX()} disabled={sharing}>{sharing ? 'Preparing image…' : 'Share to X'}</button>
         </div>
         {notice && <p className="notice" role="status">{notice}</p>}
-        <p className="fine">Voting happens on this site, not through the X API. One anonymous browser device keeps one active vote per person; voting again updates it. Network rate limits discourage rapid repeat submissions. X sharing uses a free Web Intent and never changes the vote.</p>
+        <p className="fine">Voting happens on this site, not through the X API. One anonymous browser device keeps one active vote per person; voting again updates it. Network rate limits discourage rapid repeat submissions. Sharing never changes the vote, and every selected rank has its own share image.</p>
       </section>
 
       <section className="results" aria-live="polite">
