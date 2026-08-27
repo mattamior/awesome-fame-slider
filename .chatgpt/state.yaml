@@ -6,19 +6,19 @@ updated_at: 2026-08-27
 summary: >-
   Slide Rheostat is live at https://awesome-fame-slider.mattamior.workers.dev with anonymous D1 voting,
   community-rank state, rank-specific social cards, X Web Intent sharing, and CI-gated automatic Cloudflare
-  deployment. Liang Wenfeng, Tibo Sottiaux, Elon Musk, and Jensen Huang now use full six-rank internet meme
-  packs with fixed roster avatars, community-driven SUBJECT art, user-selection-driven large art, mechanical
-  slider pointers, and rank-specific X share images. The user explicitly verified that Liang X posts render
-  the selected large image.
+  deployment. Liang Wenfeng, Tibo Sottiaux, Elon Musk, Jensen Huang, and Mark Zuckerberg now use full six-rank
+  internet meme packs with fixed roster avatars, community-driven SUBJECT art, user-selection-driven large art,
+  mechanical slider pointers, and rank-specific X share images. The user explicitly verified that Liang X posts
+  render the selected large image.
 current_focus: >-
   Continue the meme-pack rollout one person at a time. After each person reaches production, write an RPM
-  checkpoint before moving to the next subject. Current next subject: Mark Zuckerberg.
+  checkpoint before moving to the next subject. Current next subject: Sam Altman.
 production:
   url: https://awesome-fame-slider.mattamior.workers.dev
   worker: awesome-fame-slider
   database: awesome-fame-slider-db
-  latest_verified_worker_version: 6461c6eb-8814-4d7f-91ef-35b3fa0fb31d
-  latest_verified_commit: 24ad58f0dc4dd807949fcc7fb416fb89590404df
+  latest_verified_worker_version: 255e2b4c-1cca-4bf2-8ab9-241a0382461b
+  latest_verified_commit: e48592b241455622a7a3178d33984769f8547980
 confirmed_constraints:
   - Product display name is Slide Rheostat.
   - Frontend is Vite + React + TypeScript.
@@ -45,11 +45,12 @@ implemented:
   - Fixed roster avatar, community SUBJECT image, and community-vs-explicit-selection large-image semantics.
   - Mechanical slider pointer for meme-pack subjects.
   - Share flow that preserves the selected rank; production X metadata/card smoke test runs after each deploy.
-  - Configured meme-pack assets are now build-required; share-card generation fails rather than silently substituting the old illustrated avatar if a configured source cannot be fetched.
+  - Configured meme-pack assets are build-required; share-card generation fails rather than silently substituting the old illustrated avatar if a configured source cannot be fetched.
   - Liang Wenfeng full six-rank makerjackie/bianzu image pack.
   - Tibo Sottiaux full six-rank makerjackie/bianzu image pack.
   - Elon Musk full six-rank makerjackie/bianzu image pack.
   - Jensen Huang six-rank public Imgflip meme-template pack.
+  - Mark Zuckerberg six-rank public Imgflip/internet meme-template pack.
 meme_rollout:
   source_policy: >-
     Prefer recognizable existing internet meme/rank packs and record their source. Use pinned immutable URLs
@@ -81,11 +82,18 @@ meme_rollout:
       deployment_commit: 24ad58f0dc4dd807949fcc7fb416fb89590404df
       deployment_version: 6461c6eb-8814-4d7f-91ef-35b3fa0fb31d
       validation: >-
-        PR CI and main CI passed; all configured source images were fetched successfully under strict build
-        mode; Deploy explicitly uploaded huang-0.png through huang-5.png; production health/readiness and
-        crawler-card smoke tests passed.
+        PR CI and main CI passed; all configured source images were fetched successfully under strict build mode;
+        Deploy explicitly uploaded huang-0.png through huang-5.png; production health/readiness and crawler-card smoke tests passed.
+    - person: Mark Zuckerberg
+      id: zuck
+      source: public Imgflip/internet Zuckerberg meme templates
+      state: production
+      deployment_commit: e48592b241455622a7a3178d33984769f8547980
+      deployment_version: 255e2b4c-1cca-4bf2-8ab9-241a0382461b
+      validation: >-
+        PR CI and main CI passed; Deploy generated all 48 cards and explicitly uploaded zuck-0.png through
+        zuck-5.png; production health/readiness and crawler-card smoke tests passed.
   remaining_order:
-    - zuck
     - altman
     - dario
     - demis
@@ -94,5 +102,5 @@ open_verification:
   - Mobile/X in-app browser behavior remains a launch-level check.
   - After all meme packs are complete, run a production crawler/card sweep across all 8 people and 6 ranks.
 last_checkpoint:
-  saved_at: 2026-08-27T22:27:00+08:00
-  reason: Jensen Huang six-rank meme pack completed, deployed, and verified before moving to Mark Zuckerberg
+  saved_at: 2026-08-27T23:12:00+08:00
+  reason: Mark Zuckerberg six-rank meme pack completed, deployed, and verified before moving to Sam Altman
