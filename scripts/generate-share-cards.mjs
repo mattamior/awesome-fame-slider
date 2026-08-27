@@ -33,9 +33,19 @@ const TIBO_RANK_IMAGES = [
   `${TIBO_BIANZU_BASE}/y-06-zu.webp`,
 ];
 
+const MUSK_BIANZU_BASE = `https://raw.githubusercontent.com/makerjackie/bianzu/${BIANZU_REV}/public/ranks/musk`;
+const MUSK_RANK_IMAGES = [
+  `${MUSK_BIANZU_BASE}/v2-00-nan.webp`,
+  `${MUSK_BIANZU_BASE}/v1-02-lao.webp`,
+  `${MUSK_BIANZU_BASE}/v1-03-zi.webp`,
+  `${MUSK_BIANZU_BASE}/v1-04-saint.webp`,
+  `${MUSK_BIANZU_BASE}/v1-05-god.webp`,
+  `${MUSK_BIANZU_BASE}/v1-06-ancestor.webp`,
+];
+
 const people = [
   { id: 'liang', avatarIndex: 0, rankImageUrls: LIANG_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · liang', name: 'Liang Wenfeng', role: 'DeepSeek', ranks: standard('Liang') },
-  { id: 'musk', avatarIndex: 1, name: 'Elon Musk', role: 'xAI / Tesla / SpaceX', ranks: standard('Musk') },
+  { id: 'musk', avatarIndex: 1, rankImageUrls: MUSK_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · musk', name: 'Elon Musk', role: 'xAI / Tesla / SpaceX', ranks: standard('Musk') },
   { id: 'altman', avatarIndex: 2, name: 'Sam Altman', role: 'OpenAI', ranks: standard('Altman') },
   { id: 'tibo', avatarIndex: 3, rankImageUrls: TIBO_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · tibo', name: 'Tibo Sottiaux', role: 'Codex', ranks: standard('Tibo') },
   { id: 'huang', avatarIndex: 4, name: 'Jensen Huang', role: 'NVIDIA', ranks: standard('Huang') },
