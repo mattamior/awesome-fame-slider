@@ -1,11 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EMPTY_VOTES, PEOPLE, type Person } from './data';
+import {
+  LOCALE_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+  UI,
+  initialLocale,
+  initialTheme,
+  personLabel,
+  rankLabel,
+  type Locale,
+  type Theme,
+} from './i18n';
 import './styles.css';
 
 type VoteSummary = { counts: number[]; total: number; leader: number };
 
 const NEUTRAL_RANK = 2;
-const SHARE_CARD_REV = '5';
+const SHARE_CARD_REV = '6';
 
 function emptySummary(personId: string): VoteSummary {
   const counts = EMPTY_VOTES[personId] || [0, 0, 0, 0, 0, 0];
@@ -63,6 +74,9 @@ export default function App() {
     ? requestedRank
     : NEUTRAL_RANK;
 
+  const [locale, setLocale] = useState<Locale>(() => initialLocale());
+  const [theme, setTheme] = useState<Theme>(() => initialTheme());
+  const ui = UI[locale];
   const [personId, setPersonId] = useState(PEOPLE.some((p) => p.id === initialId) ? initialId : 'liang');
   const person = PEOPLE.find((p) => p.id === personId)!;
   const [rank, setRank] = useState(openedFromShare ? validRequestedRank : NEUTRAL_RANK);
@@ -72,15 +86,31 @@ export default function App() {
   const [liveResults, setLiveResults] = useState(false);
   const [voting, setVoting] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [notice, setNotice] = useState(() => openedFromShare ? 'You opened a shared verdict. Slide it and cast your own vote.' : '');
+  const [notice, setNotice] = useState(() => openedFromShare ? UI[locale].openedShare : '');
+
+  useEffect(() => {
+    document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if (description) description.content = ui.dek;
+  }, [locale, ui.dek]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+    const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (themeMeta) themeMeta.content = theme === 'dark' ? '#171511' : '#efe5cf';
+  }, [theme]);
 
   useEffect(() => {
     const url = new URL(location.href);
     url.searchParams.set('who', person.id);
     url.searchParams.set('rank', String(rank));
+    url.searchParams.set('lang', locale);
     url.searchParams.delete('from');
     history.replaceState(null, '', url);
-  }, [person.id, rank]);
+  }, [person.id, rank, locale]);
 
   const refreshSummary = useCallback(async () => {
     try {
@@ -116,7 +146,7 @@ export default function App() {
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [refreshSummary, notice]);
+  }, [refreshSummary]);
 
   useEffect(() => {
     for (const src of person.rankImageUrls || []) {
@@ -129,7 +159,7 @@ export default function App() {
   const selected = person.ranks[rank] || person.ranks[NEUTRAL_RANK];
   const visualRank = hasExplicitSelection ? rank : summary.leader;
   const visual = person.ranks[visualRank] || person.ranks[NEUTRAL_RANK];
-  const shareText = useMemo(() => `My vote for ${person.name}: ${selected.zh} (${selected.en}). What's your verdict?`, [person, selected]);
+  const shareText = useMemo(() => ui.shareText(person, selected), [ui, person, selected]);
 
   function selectRank(nextRank: number) {
     explicitSelectionRef.current = true;
@@ -151,6 +181,15 @@ export default function App() {
     setLiveResults(false);
   }
 
+  function toggleLocale() {
+    setLocale((value) => value === 'zh' ? 'en' : 'zh');
+    setNotice('');
+  }
+
+  function toggleTheme() {
+    setTheme((value) => value === 'dark' ? 'light' : 'dark');
+  }
+
   async function castVote() {
     setVoting(true);
     setNotice('');
@@ -163,7 +202,7 @@ export default function App() {
       const data = await response.json().catch(() => ({})) as Partial<VoteSummary> & { error?: string };
 
       if (response.status === 429) {
-        setNotice('Too many vote changes from this network. Try again in about 10 minutes.');
+        setNotice(ui.rateLimited);
         return;
       }
       if (!response.ok || !Array.isArray(data.counts) || data.counts.length !== 6) {
@@ -176,9 +215,9 @@ export default function App() {
         leader: Number(data.leader),
       });
       setLiveResults(true);
-      setNotice(`Vote saved: ${selected.zh}. Sharing to X is optional and does not affect your vote.`);
+      setNotice(ui.voteSaved(rankLabel(selected, locale)));
     } catch {
-      setNotice('Could not save your vote. Nothing was changed.');
+      setNotice(ui.voteFailed);
     } finally {
       setVoting(false);
     }
@@ -203,14 +242,14 @@ export default function App() {
   }
 
   async function shareToX() {
-    const shareUrl = `${location.origin}/share/${encodeURIComponent(person.id)}/${rank}?v=${SHARE_CARD_REV}`;
+    const shareUrl = `${location.origin}/share/${encodeURIComponent(person.id)}/${rank}?v=${SHARE_CARD_REV}&lang=${locale}`;
     const imageUrl = `${location.origin}/share-cards/${encodeURIComponent(person.id)}-${rank}.png?v=${SHARE_CARD_REV}`;
     const intentUrl = buildXIntent(shareUrl);
     const coarsePointer = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
     const canTryNativeShare = coarsePointer && typeof navigator.share === 'function';
 
     setSharing(true);
-    setNotice('Preparing your selected image…');
+    setNotice(ui.preparingSelected);
 
     if (!canTryNativeShare) window.open(intentUrl, '_blank', 'noopener,noreferrer');
 
@@ -227,45 +266,63 @@ export default function App() {
             files: [file],
             text: shareText,
             url: shareUrl,
-            title: `${selected.zh} · ${person.name}`,
+            title: ui.shareTitle(person, selected),
           });
-          setNotice('Share sheet opened with your selected image attached. Choose X to publish it.');
+          setNotice(ui.nativeShared);
           return;
         }
         window.open(intentUrl, '_blank', 'noopener,noreferrer');
       }
 
       const copied = await copyImage(blob);
-      setNotice(copied
-        ? 'X composer opened. Your selected image is copied — paste it with Ctrl/⌘+V. The shared link also uses this same image card.'
-        : 'X composer opened. The shared link is configured to render your selected image card.');
+      setNotice(copied ? ui.copiedImage : ui.configuredImage);
     } catch (error) {
       if (canTryNativeShare && !(error instanceof DOMException && error.name === 'AbortError')) {
         window.open(intentUrl, '_blank', 'noopener,noreferrer');
       }
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
-        setNotice('X composer opened. The shared URL still points to the image card for your selected rank.');
+        setNotice(ui.fallbackShare);
       }
     } finally {
       setSharing(false);
     }
   }
 
+  const secondaryPersonName = locale === 'zh' ? person.name : person.nameZh;
+  const selectedPrimary = rankLabel(selected, locale);
+  const selectedSecondary = locale === 'zh' ? selected.en : selected.zh;
+
   return (
     <main className="shell">
       <header>
         <div>
-          <p className="eyebrow">REPUTATION RHEOSTAT</p>
+          <p className="eyebrow">{ui.eyebrow}</p>
           <h1>Awesome Fame Slider</h1>
-          <p className="dek">Pick a person. Slide their status. Cast your vote. Share the verdict.</p>
+          <p className="dek">{ui.dek}</p>
         </div>
-        <a className="github" href="https://github.com/mattamior/awesome-fame-slider" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <div className="header-actions">
+          <div className="utility-controls" aria-label="Display settings">
+            <button className="utility-toggle" type="button" onClick={toggleLocale} aria-label={ui.languageAria} title={ui.languageAria}>
+              {ui.languageButton}
+            </button>
+            <button
+              className="utility-toggle theme-toggle"
+              type="button"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? ui.switchToLight : ui.switchToDark}
+              title={theme === 'dark' ? ui.switchToLight : ui.switchToDark}
+            >
+              {theme === 'dark' ? `☀ ${ui.lightTheme}` : `☾ ${ui.darkTheme}`}
+            </button>
+          </div>
+          <a className="github" href="https://github.com/mattamior/awesome-fame-slider" target="_blank" rel="noreferrer">GitHub ↗</a>
+        </div>
       </header>
 
-      <nav className="people" aria-label="People">
+      <nav className="people" aria-label={ui.people}>
         {PEOPLE.map((p) => (
           <button key={p.id} disabled={voting} className={p.id === person.id ? 'active' : ''} onClick={() => switchPerson(p.id)}>
-            <Avatar person={p} className="mini-avatar" /><span>{p.nameZh}</span>
+            <Avatar person={p} className="mini-avatar" /><span>{personLabel(p, locale)}</span>
           </button>
         ))}
       </nav>
@@ -275,15 +332,19 @@ export default function App() {
           <div className="subject">
             <Avatar person={person} className="subject-avatar" labelled rankIndex={summary.leader} />
             <div className="subject-copy">
-              <span className="label">SUBJECT</span>
-              <strong>{person.nameZh}</strong>
-              <small>{person.name} · {person.role}</small>
+              <span className="label">{ui.subject}</span>
+              <strong>{personLabel(person, locale)}</strong>
+              <small>{secondaryPersonName} · {person.role}</small>
               {person.avatarSourceUrl && (
-                <a className="meme-source" href={person.avatarSourceUrl} target="_blank" rel="noreferrer">六档梗图来源 ↗</a>
+                <a className="meme-source" href={person.avatarSourceUrl} target="_blank" rel="noreferrer">{ui.memeSource}</a>
               )}
             </div>
           </div>
-          <div className="community"><span className="label">COMMUNITY NOW</span><strong>{current.zh}</strong><small>{liveResults ? `${summary.total} anonymous vote${summary.total === 1 ? '' : 's'}` : 'live results unavailable'}</small></div>
+          <div className="community">
+            <span className="label">{ui.communityNow}</span>
+            <strong>{rankLabel(current, locale)}</strong>
+            <small>{liveResults ? ui.anonymousVotes(summary.total) : ui.liveUnavailable}</small>
+          </div>
         </div>
 
         {person.rankImageUrls && (
@@ -291,49 +352,49 @@ export default function App() {
             <img
               key={`${person.id}-${visualRank}`}
               src={person.rankImageUrls[visualRank]}
-              alt={`${person.name} — ${visual.zh}`}
+              alt={`${personLabel(person, locale)} — ${rankLabel(visual, locale)}`}
               referrerPolicy="no-referrer"
             />
-            <span className="rank-visual-tag">RANK {visualRank + 1} / 6 · {visual.zh}</span>
+            <span className="rank-visual-tag">{ui.rankTag(visualRank, rankLabel(visual, locale))}</span>
           </div>
         )}
 
         <div className="track-wrap">
           <div className="coil" />
-          <input disabled={voting} aria-label="Reputation rank" type="range" min="0" max="5" step="1" value={rank} onChange={(e) => selectRank(Number(e.target.value))} />
+          <input disabled={voting} aria-label={ui.sliderLabel} type="range" min="0" max="5" step="1" value={rank} onChange={(e) => selectRank(Number(e.target.value))} />
           <div className="thumb-face" style={{ left: `calc(${rank / 5 * 100}% - 33px)` }}>
             <Avatar person={person} className="thumb-avatar" rankIndex={rank} />
           </div>
         </div>
 
         <div className="rank-labels">
-          {person.ranks.map((r, i) => <button disabled={voting} key={r.id} className={i === rank ? 'chosen' : ''} onClick={() => selectRank(i)}>{r.zh}</button>)}
+          {person.ranks.map((r, i) => <button disabled={voting} key={r.id} className={i === rank ? 'chosen' : ''} onClick={() => selectRank(i)}>{rankLabel(r, locale)}</button>)}
         </div>
 
-        <div className="selected-card"><span>YOUR VERDICT</span><strong>{selected.zh}</strong><em>{selected.en}</em></div>
+        <div className="selected-card"><span>{ui.yourVerdict}</span><strong>{selectedPrimary}</strong><em>{selectedSecondary}</em></div>
         <div className="actions">
-          <button className="vote" onClick={castVote} disabled={voting}>{voting ? 'Saving vote…' : 'Cast vote'}</button>
-          <button className="share" onClick={() => void shareToX()} disabled={sharing}>{sharing ? 'Preparing image…' : 'Share to X'}</button>
+          <button className="vote" onClick={castVote} disabled={voting}>{voting ? ui.savingVote : ui.castVote}</button>
+          <button className="share" onClick={() => void shareToX()} disabled={sharing}>{sharing ? ui.preparingImage : ui.shareToX}</button>
         </div>
         {notice && <p className="notice" role="status">{notice}</p>}
-        <p className="fine">Voting happens on this site, not through the X API. One anonymous browser device keeps one active vote per person; voting again updates it. Network rate limits discourage rapid repeat submissions. Sharing never changes the vote, and every selected rank has its own share image.</p>
+        <p className="fine">{ui.fine}</p>
       </section>
 
       <section className="results" aria-live="polite">
         <div className="results-heading">
-          <h2>Current vote distribution</h2>
-          <span className={liveResults ? 'live-dot live' : 'live-dot'}>{liveResults ? 'LIVE' : 'OFFLINE'}</span>
+          <h2>{ui.currentDistribution}</h2>
+          <span className={liveResults ? 'live-dot live' : 'live-dot'}>{liveResults ? ui.live : ui.offline}</span>
         </div>
         <div className="bars">
           {person.ranks.map((r, i) => {
             const pct = summary.total ? Math.round((summary.counts[i] / summary.total) * 100) : 0;
-            return <div className="bar-row" key={r.id}><span>{r.zh}</span><div className="bar"><i style={{ width: `${pct}%` }} /></div><b>{pct}%</b></div>;
+            return <div className="bar-row" key={r.id}><span>{rankLabel(r, locale)}</span><div className="bar"><i style={{ width: `${pct}%` }} /></div><b>{pct}%</b></div>;
           })}
         </div>
-        {!liveResults && <p className="results-note">Live voting data could not be loaded. No sample votes are shown.</p>}
+        {!liveResults && <p className="results-note">{ui.resultsUnavailable}</p>}
       </section>
 
-      <footer>Parody / internet sentiment toy. Meme imagery is used for parody/transformative internet culture commentary. Not affiliated with the people or companies shown.</footer>
+      <footer>{ui.footer}</footer>
     </main>
   );
 }

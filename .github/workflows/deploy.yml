@@ -128,7 +128,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          expected_share_rev=5
+          expected_share_rev=6
           ready=0
           for attempt in $(seq 1 24); do
             echo "Revision/readiness attempt $attempt/24"
@@ -159,8 +159,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          share_rev=5
-          share_url="$DEPLOY_URL/share/liang/5?v=$share_rev"
+          share_rev=6
+          share_url="$DEPLOY_URL/share/liang/5?v=$share_rev&lang=zh"
           card_url="$DEPLOY_URL/share-cards/liang-5.png?v=$share_rev"
 
           echo "Checking crawler metadata at $share_url"
@@ -170,6 +170,8 @@ jobs:
             -o /tmp/share.html \
             "$share_url"
 
+          grep -F '<html lang="zh-CN">' /tmp/share.html
+          grep -F '梁祖 · 梁文锋 | Awesome Fame Slider' /tmp/share.html
           grep -F '<meta name="twitter:card" content="summary_large_image"' /tmp/share.html
           grep -F "<meta name=\"twitter:image\" content=\"$card_url\"" /tmp/share.html
           grep -F "<meta property=\"og:image\" content=\"$card_url\"" /tmp/share.html
@@ -187,19 +189,19 @@ jobs:
             "$card_url"
           tr -d '\r' < /tmp/card-headers.txt | grep -Ei '^content-type: image/png'
           test -s /tmp/liang-5.png
-          echo "Production X-card smoke test passed"
+          echo "Production bilingual X-card smoke test passed"
 
       - name: Verify all 48 production share cards
         shell: bash
         run: |
           set -euo pipefail
           people=(liang musk altman tibo huang zuck dario demis)
-          share_rev=5
+          share_rev=6
           sweep_dir="$(mktemp -d)"
 
           for person in "${people[@]}"; do
             for rank in 0 1 2 3 4 5; do
-              share_url="$DEPLOY_URL/share/$person/$rank?v=$share_rev&verify=$DEPLOY_SHA"
+              share_url="$DEPLOY_URL/share/$person/$rank?v=$share_rev&lang=en&verify=$DEPLOY_SHA"
               card_url="$DEPLOY_URL/share-cards/$person-$rank.png?v=$share_rev"
               html="$sweep_dir/$person-$rank.html"
               headers="$sweep_dir/$person-$rank.headers"
@@ -211,6 +213,7 @@ jobs:
                 -o "$html" \
                 "$share_url"
 
+              grep -F '<html lang="en">' "$html" >/dev/null
               grep -F '<meta name="twitter:card" content="summary_large_image"' "$html" >/dev/null
               grep -F "<meta name=\"twitter:image\" content=\"$card_url\"" "$html" >/dev/null
               grep -F "<meta property=\"og:image\" content=\"$card_url\"" "$html" >/dev/null

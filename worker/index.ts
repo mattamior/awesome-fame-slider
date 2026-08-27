@@ -1,26 +1,27 @@
 type Env = { DB: D1Database; ASSETS: Fetcher };
 
+type Locale = 'en' | 'zh';
 type RankMeta = { zh: string; en: string };
-type PersonMeta = { name: string; role: string; ranks: RankMeta[] };
+type PersonMeta = { name: string; nameZh: string; role: string; ranks: RankMeta[] };
 
-const standard = (surname: string): RankMeta[] => [
-  { zh: `小难${surname}`, en: `Delayed ${surname}` },
-  { zh: `牢${surname}`, en: `Jailed ${surname}` },
-  { zh: `${surname}子`, en: `${surname}` },
-  { zh: `${surname}圣`, en: `Saint ${surname}` },
-  { zh: `${surname}神`, en: `God ${surname}` },
-  { zh: `${surname}祖`, en: `Ancestor ${surname}` },
+const standard = (surnameZh: string, surnameEn: string): RankMeta[] => [
+  { zh: `小难${surnameZh}`, en: `Delayed ${surnameEn}` },
+  { zh: `牢${surnameZh}`, en: `Jailed ${surnameEn}` },
+  { zh: `${surnameZh}子`, en: `${surnameEn}` },
+  { zh: `${surnameZh}圣`, en: `Saint ${surnameEn}` },
+  { zh: `${surnameZh}神`, en: `God ${surnameEn}` },
+  { zh: `${surnameZh}祖`, en: `Ancestor ${surnameEn}` },
 ];
 
 const PEOPLE: Record<string, PersonMeta> = {
-  liang: { name: 'Liang Wenfeng', role: 'DeepSeek', ranks: standard('梁') },
-  musk: { name: 'Elon Musk', role: 'xAI · Tesla · SpaceX', ranks: standard('马') },
-  altman: { name: 'Sam Altman', role: 'OpenAI', ranks: standard('奥') },
-  tibo: { name: 'Tibo Sottiaux', role: 'Codex', ranks: standard('Tibo') },
-  huang: { name: 'Jensen Huang', role: 'NVIDIA', ranks: standard('黄') },
-  zuck: { name: 'Mark Zuckerberg', role: 'Meta', ranks: standard('扎') },
-  dario: { name: 'Dario Amodei', role: 'Anthropic', ranks: standard('Dario') },
-  demis: { name: 'Demis Hassabis', role: 'Google DeepMind', ranks: standard('哈') },
+  liang: { name: 'Liang Wenfeng', nameZh: '梁文锋', role: 'DeepSeek', ranks: standard('梁', 'Liang') },
+  musk: { name: 'Elon Musk', nameZh: '马斯克', role: 'xAI · Tesla · SpaceX', ranks: standard('马', 'Musk') },
+  altman: { name: 'Sam Altman', nameZh: '奥特曼', role: 'OpenAI', ranks: standard('奥', 'Altman') },
+  tibo: { name: 'Tibo Sottiaux', nameZh: 'Tibo', role: 'Codex', ranks: standard('Tibo', 'Tibo') },
+  huang: { name: 'Jensen Huang', nameZh: '黄仁勋', role: 'NVIDIA', ranks: standard('黄', 'Huang') },
+  zuck: { name: 'Mark Zuckerberg', nameZh: '扎克伯格', role: 'Meta', ranks: standard('扎', 'Zuck') },
+  dario: { name: 'Dario Amodei', nameZh: 'Dario', role: 'Anthropic', ranks: standard('Dario', 'Dario') },
+  demis: { name: 'Demis Hassabis', nameZh: '哈萨比斯', role: 'Google DeepMind', ranks: standard('哈', 'Hassabis') },
 };
 
 const NEUTRAL_RANK = 2;
@@ -28,7 +29,7 @@ const VOTE_WRITE_LIMIT = 24;
 const VOTER_COOKIE = 'sr_voter';
 const VOTER_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 const HASH_NAMESPACE = 'awesome-fame-slider-v1';
-const SHARE_CARD_REV = '5';
+const SHARE_CARD_REV = '6';
 
 function json(data: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
@@ -61,6 +62,10 @@ function escapeHtml(value: string) {
     .replaceAll("'", '&#39;');
 }
 
+function localeFromUrl(url: URL): Locale {
+  return url.searchParams.get('lang') === 'zh' ? 'zh' : 'en';
+}
+
 export function validRank(value: unknown) {
   const rank = Number(value);
   return Number.isInteger(rank) && rank >= 0 && rank <= 5 ? rank : null;
@@ -73,11 +78,15 @@ export function leader(counts: number[]) {
   return tied.sort((a, b) => Math.abs(a.rank - NEUTRAL_RANK) - Math.abs(b.rank - NEUTRAL_RANK) || a.rank - b.rank)[0].rank;
 }
 
-export function shareCopy(personId: string, rank: number) {
+export function shareCopy(personId: string, rank: number, locale: Locale = 'en') {
   const person = PEOPLE[personId];
   const verdict = person?.ranks[rank];
-  if (!person || !verdict) return 'I set a reputation rheostat. What is your verdict?';
-  return `My vote for ${person.name}: ${verdict.zh} (${verdict.en}). What's your verdict?`;
+  if (!person || !verdict) {
+    return locale === 'zh' ? '我设置了一个声望滑杆。你怎么看？' : 'I set a reputation rheostat. What is your verdict?';
+  }
+  return locale === 'zh'
+    ? `我给${person.nameZh}的评级：${verdict.zh}。你怎么看？`
+    : `My vote for ${person.name}: ${verdict.zh} (${verdict.en}). What's your verdict?`;
 }
 
 export function sharePath(personId: string, rank: number) {
@@ -94,15 +103,22 @@ export function sharePageHtml(personId: string, rank: number, requestUrl: string
   if (!person || !verdict) return null;
 
   const requested = new URL(requestUrl);
+  const locale = localeFromUrl(requested);
   const origin = requested.origin;
   const pageUrl = `${origin}${sharePath(personId, rank)}${requested.search}`;
-  const appUrl = `${origin}/?who=${encodeURIComponent(personId)}&rank=${rank}&from=share`;
+  const appUrl = `${origin}/?who=${encodeURIComponent(personId)}&rank=${rank}&from=share&lang=${locale}`;
   const imageUrl = `${origin}${shareCardPath(personId, rank)}?v=${SHARE_CARD_REV}`;
-  const title = `${verdict.zh} · ${person.name} | Awesome Fame Slider`;
-  const description = shareCopy(personId, rank);
+  const title = locale === 'zh'
+    ? `${verdict.zh} · ${person.nameZh} | Awesome Fame Slider`
+    : `${verdict.en} · ${person.name} | Awesome Fame Slider`;
+  const description = shareCopy(personId, rank, locale);
+  const imageAlt = locale === 'zh'
+    ? `${person.nameZh}：${verdict.zh}，第 ${rank + 1} / 6 档`
+    : `${person.name}: ${verdict.en}, rank ${rank + 1} of 6`;
+  const openCopy = locale === 'zh' ? '在 Awesome Fame Slider 中打开这个判定' : 'Open this verdict in Awesome Fame Slider';
 
   return `<!doctype html>
-<html lang="en">
+<html lang="${locale === 'zh' ? 'zh-CN' : 'en'}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -125,11 +141,11 @@ export function sharePageHtml(personId: string, rank: number, requestUrl: string
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
   <meta name="twitter:image:src" content="${escapeHtml(imageUrl)}" />
-  <meta name="twitter:image:alt" content="${escapeHtml(`${person.name}: ${verdict.en}, rank ${rank + 1} of 6`)}" />
+  <meta name="twitter:image:alt" content="${escapeHtml(imageAlt)}" />
   <script>window.location.replace(${JSON.stringify(appUrl)});</script>
 </head>
 <body>
-  <p><a href="${escapeHtml(appUrl)}">Open this verdict in Awesome Fame Slider</a></p>
+  <p><a href="${escapeHtml(appUrl)}">${escapeHtml(openCopy)}</a></p>
 </body>
 </html>`;
 }
