@@ -10,7 +10,8 @@
 ## Completed automated verification
 
 - All eight initial subjects have six-rank internet meme/image packs in production.
-- Production Deploy waits until `/api/health` and `/api/ready` confirm share-card revision 4, preventing verification from racing a stale Cloudflare edge Worker.
+- Public product branding is aligned to **Awesome Fame Slider** across the app shell, browser/Open Graph metadata, shared verdict pages, and generated social cards.
+- Production Deploy waits until `/api/health` and `/api/ready` confirm share-card revision 5, preventing verification from racing a stale Cloudflare edge Worker.
 - Every Deploy validates all 8 people × 6 ranks: exact X/Open Graph image metadata, no crawler-hostile meta refresh, non-empty `image/png`, and exact 1200×675 dimensions for all 48 cards.
 - Every Deploy runs a temporary anonymous-vote smoke test that inserts one voter/person row, moves it to another rank without duplication, then deletes the temporary row and confirms cleanup.
 - X sharing remains independent from voting and uses free Web Intent / native Web Share mechanics; no X Developer App or paid write API is required.
