@@ -34,7 +34,8 @@ describe('validRank', () => {
 
 describe('free share flow', () => {
   it('uses the selected localized verdict without requiring an X API post', () => {
-    expect(shareCopy('liang', 1)).toBe("My vote for Liang Wenfeng: 牢梁 (Jailed 梁). What's your verdict?");
+    expect(shareCopy('liang', 1)).toBe("My vote for Liang Wenfeng: 牢梁 (Jailed Liang). What's your verdict?");
+    expect(shareCopy('liang', 1, 'zh')).toBe('我给梁文锋的评级：牢梁。你怎么看？');
     expect(shareCopy('tibo', 4)).toContain('Tibo神');
   });
 
@@ -44,7 +45,7 @@ describe('free share flow', () => {
   });
 
   it('renders crawler-safe large-image metadata for the selected rank', () => {
-    const html = sharePageHtml('liang', 1, 'https://slide.example/share/liang/1?v=5');
+    const html = sharePageHtml('liang', 1, 'https://slide.example/share/liang/1?v=6&lang=en');
     expect(html).toContain('twitter:card');
     expect(html).toContain('summary_large_image');
     expect(html).toContain('twitter:image:src');
@@ -52,10 +53,19 @@ describe('free share flow', () => {
     expect(html).toContain('og:image:type');
     expect(html).toContain('image/png');
     expect(html).toContain('Awesome Fame Slider');
-    expect(html).toContain('https://slide.example/share-cards/liang-1.png?v=5');
-    expect(html).toContain('https://slide.example/share/liang/1?v=5');
-    expect(html).toContain('https://slide.example/?who=liang&amp;rank=1&amp;from=share');
+    expect(html).toContain('Jailed Liang');
+    expect(html).toContain('https://slide.example/share-cards/liang-1.png?v=6');
+    expect(html).toContain('https://slide.example/share/liang/1?v=6&amp;lang=en');
+    expect(html).toContain('https://slide.example/?who=liang&amp;rank=1&amp;from=share&amp;lang=en');
     expect(html).toContain('window.location.replace');
     expect(html).not.toContain('http-equiv="refresh"');
+  });
+
+  it('localizes Chinese share pages and preserves language in the app deep link', () => {
+    const html = sharePageHtml('liang', 4, 'https://slide.example/share/liang/4?v=6&lang=zh');
+    expect(html).toContain('<html lang="zh-CN">');
+    expect(html).toContain('梁神 · 梁文锋 | Awesome Fame Slider');
+    expect(html).toContain('我给梁文锋的评级：梁神。你怎么看？');
+    expect(html).toContain('lang=zh');
   });
 });
