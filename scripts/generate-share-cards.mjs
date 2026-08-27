@@ -43,12 +43,21 @@ const MUSK_RANK_IMAGES = [
   `${MUSK_BIANZU_BASE}/v1-06-ancestor.webp`,
 ];
 
+const HUANG_RANK_IMAGES = [
+  'https://i.imgflip.com/8fdvq3.png',
+  'https://i.imgflip.com/619cwz.png',
+  'https://i.imgflip.com/9fxjcj.png',
+  'https://i.imgflip.com/4eh9y9.jpg',
+  'https://i.imgflip.com/9fvflj.jpg',
+  'https://i.imgflip.com/8z7k4x.png',
+];
+
 const people = [
   { id: 'liang', avatarIndex: 0, rankImageUrls: LIANG_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · liang', name: 'Liang Wenfeng', role: 'DeepSeek', ranks: standard('Liang') },
   { id: 'musk', avatarIndex: 1, rankImageUrls: MUSK_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · musk', name: 'Elon Musk', role: 'xAI / Tesla / SpaceX', ranks: standard('Musk') },
   { id: 'altman', avatarIndex: 2, name: 'Sam Altman', role: 'OpenAI', ranks: standard('Altman') },
   { id: 'tibo', avatarIndex: 3, rankImageUrls: TIBO_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · tibo', name: 'Tibo Sottiaux', role: 'Codex', ranks: standard('Tibo') },
-  { id: 'huang', avatarIndex: 4, name: 'Jensen Huang', role: 'NVIDIA', ranks: standard('Huang') },
+  { id: 'huang', avatarIndex: 4, rankImageUrls: HUANG_RANK_IMAGES, sourceLabel: 'Imgflip · Jensen Huang meme templates', name: 'Jensen Huang', role: 'NVIDIA', ranks: standard('Huang') },
   { id: 'zuck', avatarIndex: 5, name: 'Mark Zuckerberg', role: 'Meta', ranks: standard('Zuck') },
   { id: 'dario', avatarIndex: 6, name: 'Dario Amodei', role: 'Anthropic', ranks: standard('Dario') },
   { id: 'demis', avatarIndex: 7, name: 'Demis Hassabis', role: 'Google DeepMind', ranks: standard('Hassabis') },
@@ -68,18 +77,13 @@ function escapeXml(value) {
 }
 
 async function fetchImagePngData(url) {
-  try {
-    const response = await fetch(url, {
-      headers: { 'user-agent': 'awesome-fame-slider-share-card-builder/1.0' },
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const bytes = Buffer.from(await response.arrayBuffer());
-    const png = await sharp(bytes).png().toBuffer();
-    return png.toString('base64');
-  } catch (error) {
-    console.warn(`Could not fetch ${url}; falling back to the local illustrated avatar.`, error);
-    return null;
-  }
+  const response = await fetch(url, {
+    headers: { 'user-agent': 'awesome-fame-slider-share-card-builder/1.0' },
+  });
+  if (!response.ok) throw new Error(`Could not fetch meme asset ${url}: HTTP ${response.status}`);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const png = await sharp(bytes).png().toBuffer();
+  return png.toString('base64');
 }
 
 const avatarSprite = await readFile(path.resolve('public/avatars.svg'));
@@ -93,22 +97,8 @@ for (const person of people) {
 
 function memeAvatar(person, rank, x, y, size) {
   const data = rankImageData.get(person.id)?.[rank];
-  if (data) {
-    return `<image x="${x}" y="${y}" width="${size}" height="${size}" href="data:image/png;base64,${data}" preserveAspectRatio="xMidYMid meet" />`;
-  }
-
-  const avatarViewX = person.avatarIndex * 256;
-  return `
-    <svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="${avatarViewX} 0 256 256">
-      <image
-        x="0"
-        y="0"
-        width="2048"
-        height="256"
-        href="data:image/svg+xml;base64,${avatarData}"
-        preserveAspectRatio="none"
-      />
-    </svg>`;
+  if (!data) throw new Error(`Missing rank image data for ${person.id} rank ${rank}`);
+  return `<image x="${x}" y="${y}" width="${size}" height="${size}" href="data:image/png;base64,${data}" preserveAspectRatio="xMidYMid meet" />`;
 }
 
 function memeCard(person, rank) {
@@ -133,20 +123,16 @@ function memeCard(person, rank) {
       <rect x="28" y="28" width="1144" height="619" fill="none" stroke="#171717" stroke-width="10" />
       <rect x="55" y="55" width="670" height="48" rx="4" fill="#171717" />
       <text x="78" y="90" font-family="DejaVu Sans, Arial, sans-serif" font-size="27" font-weight="800" fill="#f0dfbd" letter-spacing="2">SLIDE RHEOSTAT / ${escapeXml(person.id.toUpperCase())} MEME METER</text>
-
       <text x="72" y="190" font-family="DejaVu Sans, Arial, sans-serif" font-size="70" font-weight="900" fill="#171717">${escapeXml(person.name)}</text>
       <text x="75" y="235" font-family="DejaVu Sans, Arial, sans-serif" font-size="29" font-weight="700" fill="#5f5546">${escapeXml(person.role)} · INTERNET STATUS RHEOSTAT</text>
       <path d="M70 270 H740" stroke="#171717" stroke-width="8" stroke-linecap="square" />
       <text x="72" y="362" font-family="DejaVu Sans, Arial, sans-serif" font-size="78" font-weight="900" fill="#8f271d">${escapeXml(person.ranks[rank])}</text>
       <text x="75" y="399" font-family="DejaVu Sans Mono, monospace" font-size="20" font-weight="700" fill="#6b5c48" letter-spacing="2">THE KNOB MOVES. THE FACE MOVES.</text>
-
       <line x1="100" y1="438" x2="950" y2="438" stroke="#4a3626" stroke-width="14" stroke-linecap="round" />
       ${dots}
-
       <circle cx="1015" cy="220" r="144" fill="#cdbb98" opacity=".7" />
       ${memeAvatar(person, rank, 850, 58, 330)}
       <text x="1014" y="402" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-size="18" font-weight="800" fill="#6b5c48">RANK-SPECIFIC MEME PORTRAIT</text>
-
       <text x="72" y="545" font-family="DejaVu Sans Mono, monospace" font-size="26" font-weight="900" fill="#171717">RANK ${rank + 1} / 6</text>
       <text x="72" y="588" font-family="DejaVu Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#6b5c48">VISUAL SET: ${escapeXml(person.sourceLabel || 'internet meme pack')} · parody / internet sentiment</text>
       <text x="1125" y="585" text-anchor="end" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="900" fill="#171717">CAST YOUR VERDICT →</text>
@@ -167,25 +153,14 @@ function standardCard(person, rank) {
       <rect width="1200" height="675" fill="#eee3cf" />
       <rect x="36" y="36" width="1128" height="603" fill="none" stroke="#171717" stroke-width="8" />
       <text x="76" y="105" font-family="DejaVu Sans, Arial, sans-serif" font-size="34" font-weight="700" fill="#171717" letter-spacing="2">SLIDE RHEOSTAT / REPUTATION METER</text>
-
       <circle cx="1030" cy="190" r="106" fill="#cdbd9f" />
       <svg x="932" y="92" width="196" height="196" viewBox="${avatarViewX} 0 256 256">
-        <image
-          x="0"
-          y="0"
-          width="2048"
-          height="256"
-          href="data:image/svg+xml;base64,${avatarData}"
-          preserveAspectRatio="none"
-        />
+        <image x="0" y="0" width="2048" height="256" href="data:image/svg+xml;base64,${avatarData}" preserveAspectRatio="none" />
       </svg>
-
       <text x="76" y="205" font-family="DejaVu Sans, Arial, sans-serif" font-size="70" font-weight="800" fill="#171717">${escapeXml(person.name)}</text>
       <text x="78" y="252" font-family="DejaVu Sans, Arial, sans-serif" font-size="30" font-weight="500" fill="#625948">${escapeXml(person.role)}</text>
-
       <line x1="95" y1="395" x2="1105" y2="395" stroke="#402b1f" stroke-width="18" stroke-linecap="round" />
       ${dots}
-
       <text x="76" y="535" font-family="DejaVu Sans, Arial, sans-serif" font-size="78" font-weight="900" fill="#171717">${escapeXml(person.ranks[rank])}</text>
       <text x="80" y="582" font-family="DejaVu Sans, Arial, sans-serif" font-size="28" font-weight="700" fill="#625948">YOUR VERDICT</text>
       <text x="1115" y="575" text-anchor="end" font-family="DejaVu Sans Mono, monospace" font-size="28" font-weight="700" fill="#171717">RANK ${rank + 1} / 6</text>
