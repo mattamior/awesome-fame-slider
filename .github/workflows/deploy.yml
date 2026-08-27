@@ -124,29 +124,36 @@ jobs:
           echo "Deployed URL: $deploy_url"
           echo "DEPLOY_URL=$deploy_url" >> "$GITHUB_ENV"
 
-      - name: Verify production health and readiness
+      - name: Verify production health and deployed revision
         shell: bash
         run: |
           set -euo pipefail
-          echo "Checking $DEPLOY_URL/api/health"
-          curl --fail --show-error --silent "$DEPLOY_URL/api/health" | tee /tmp/health.json
-          echo
+          expected_share_rev=4
           ready=0
-          for attempt in $(seq 1 12); do
-            echo "Readiness attempt $attempt/12"
-            if curl --fail --show-error --silent "$DEPLOY_URL/api/ready" | tee /tmp/ready.json; then
+          for attempt in $(seq 1 24); do
+            echo "Revision/readiness attempt $attempt/24"
+            health="$(curl --fail --show-error --silent "$DEPLOY_URL/api/health" || true)"
+            readiness="$(curl --fail --show-error --silent "$DEPLOY_URL/api/ready" || true)"
+            printf '%s\n' "$health" | tee /tmp/health.json
+            printf '%s\n' "$readiness" | tee /tmp/ready.json
+            if HEALTH="$health" READY="$readiness" EXPECTED_REV="$expected_share_rev" node -e '
+              const health = JSON.parse(process.env.HEALTH || "{}");
+              const ready = JSON.parse(process.env.READY || "{}");
+              if (health.ok === true && ready.ok === true &&
+                  health.shareCardRev === process.env.EXPECTED_REV &&
+                  ready.shareCardRev === process.env.EXPECTED_REV) process.exit(0);
+              process.exit(1);
+            '; then
               ready=1
-              echo
               break
             fi
-            echo
-            sleep 5
+            sleep 2
           done
           if [ "$ready" -ne 1 ]; then
-            echo "::error::Production readiness did not become healthy. Last response (if any):"
-            cat /tmp/ready.json 2>/dev/null || true
+            echo "::error::Production did not converge to share-card revision $expected_share_rev with healthy readiness"
             exit 1
           fi
+          echo "Production is healthy and serving share-card revision $expected_share_rev"
 
       - name: Verify production X share card
         shell: bash
