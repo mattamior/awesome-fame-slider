@@ -14,16 +14,27 @@ function emptySummary(personId: string): VoteSummary {
 function Avatar({ person, className, labelled = false }: { person: Person; className: string; labelled?: boolean }) {
   return (
     <span
-      className={`${className} avatar-shell`}
+      className={`${className} avatar-shell${person.avatarUrl ? ' meme-avatar' : ''}`}
       role={labelled ? 'img' : undefined}
-      aria-label={labelled ? `${person.name} stylized portrait` : undefined}
+      aria-label={labelled ? `${person.name} meme portrait` : undefined}
       aria-hidden={labelled ? undefined : true}
     >
       <span className="avatar-fallback">{person.accent}</span>
-      <span
-        className="avatar-image"
-        style={{ backgroundPosition: `${person.avatarIndex / (PEOPLE.length - 1) * 100}% 0` }}
-      />
+      {person.avatarUrl ? (
+        <img
+          className="avatar-photo"
+          src={person.avatarUrl}
+          alt=""
+          loading="eager"
+          referrerPolicy="no-referrer"
+          onError={(event) => { event.currentTarget.hidden = true; }}
+        />
+      ) : (
+        <span
+          className="avatar-image"
+          style={{ backgroundPosition: `${person.avatarIndex / (PEOPLE.length - 1) * 100}% 0` }}
+        />
+      )}
     </span>
   );
 }
@@ -142,7 +153,7 @@ export default function App() {
         ))}
       </nav>
 
-      <section className="instrument">
+      <section className={`instrument${person.avatarUrl ? ' meme-person' : ''}`}>
         <div className="plate-top">
           <div className="subject">
             <Avatar person={person} className="subject-avatar" labelled />
@@ -150,6 +161,9 @@ export default function App() {
               <span className="label">SUBJECT</span>
               <strong>{person.nameZh}</strong>
               <small>{person.name} · {person.role}</small>
+              {person.avatarSourceUrl && (
+                <a className="meme-source" href={person.avatarSourceUrl} target="_blank" rel="noreferrer">原梗素材 ↗</a>
+              )}
             </div>
           </div>
           <div className="community"><span className="label">COMMUNITY NOW</span><strong>{current.zh}</strong><small>{liveResults ? `${summary.total} anonymous vote${summary.total === 1 ? '' : 's'}` : 'live results unavailable'}</small></div>
@@ -190,7 +204,7 @@ export default function App() {
         {!liveResults && <p className="results-note">Live voting data could not be loaded. No sample votes are shown.</p>}
       </section>
 
-      <footer>Parody / internet sentiment toy. Stylized portraits are illustrative and not official likenesses. Not affiliated with the people or companies shown.</footer>
+      <footer>Parody / internet sentiment toy. Meme imagery is used for parody/transformative internet culture commentary. Not affiliated with the people or companies shown.</footer>
     </main>
   );
 }
