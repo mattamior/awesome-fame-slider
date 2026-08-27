@@ -1,0 +1,119 @@
+.meme-person .mini-avatar.meme-avatar,
+.people .mini-avatar.meme-avatar {
+  border: 1px solid #9e8d70;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #241f18;
+}
+
+.meme-person .mini-avatar.meme-avatar .avatar-photo,
+.people .mini-avatar.meme-avatar .avatar-photo {
+  object-fit: cover;
+  transform: scale(1.08);
+}
+
+.meme-person .subject-avatar.meme-avatar {
+  width: 104px;
+  height: 104px;
+  border: 3px solid #b9a27c;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #241f18;
+  box-shadow: 0 9px 22px #332c2240;
+}
+
+.meme-person .subject-avatar.meme-avatar .avatar-photo {
+  object-fit: cover;
+  transform: scale(1.04);
+}
+
+/* Liang's slider uses a mechanical pointer instead of repeating the rank image. */
+.meme-person .thumb-face {
+  top: 2px;
+  width: 66px;
+  height: 86px;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+  transition: left .12s ease;
+}
+
+.meme-person .thumb-face .thumb-avatar {
+  display: none;
+}
+
+.meme-person .thumb-face::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  width: 5px;
+  height: 46px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3f3123 0 22%, #d4b477 22% 58%, #60462d 58% 100%);
+  box-shadow: 0 2px 5px #2b211999;
+}
+
+.meme-person .thumb-face::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 43px;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top: 20px solid #8f271d;
+  filter: drop-shadow(0 3px 2px #2b211977);
+}
+
+/* Rank art changes should feel like a card dissolving into the next meme, not a hard cut. */
+.meme-person .rank-visual img {
+  animation: liang-rank-dissolve .42s cubic-bezier(.22,.75,.24,1) both;
+  will-change: opacity, filter, transform;
+}
+
+@keyframes liang-rank-dissolve {
+  0% {
+    opacity: 0;
+    filter: blur(9px) saturate(.78) drop-shadow(0 18px 20px #332c2245);
+    transform: scale(.975);
+  }
+  45% {
+    opacity: .68;
+    filter: blur(2px) saturate(.92) drop-shadow(0 18px 20px #332c2245);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0) saturate(1) drop-shadow(0 18px 20px #332c2245);
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 720px) {
+  .meme-person .subject-avatar.meme-avatar {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 420px) {
+  .meme-person .subject-avatar.meme-avatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .meme-person .thumb-face {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meme-person .rank-visual img {
+    animation: none;
+  }
+}
