@@ -51,8 +51,6 @@ const ZUCK_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=mark%20zuckerberg'
 const ALTMAN_RANK_IMAGES = ['https://i.imgflip.com/86zdzo.png','https://i.imgflip.com/86ojl6.png','https://i.imgflip.com/80n9l4.jpg','https://i.imgflip.com/aetmra.png','https://i.imgflip.com/9ghfcx.png','https://i.imgflip.com/a2cbqu.jpg'] as const;
 const ALTMAN_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=sam%20altman';
 
-// Existing Dario/Anthropic internet meme frames. The first five are public Imgflip
-// templates; the sixth is an existing Imgflip meme about Amodei's AI-risk commentary.
 const DARIO_RANK_IMAGES = [
   'https://i.imgflip.com/2/aw0dpn.jpg',
   'https://i.imgflip.com/ao4swp.png',
@@ -63,6 +61,19 @@ const DARIO_RANK_IMAGES = [
 ] as const;
 const DARIO_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=dario%20amodei';
 
+// No coherent six-rank Demis meme pack was discoverable. Use six recognizable,
+// stable public video thumbnails from interviews spanning DeepMind, Lex Fridman,
+// Stanford GSB, Nobel Prize Outreach and 60 Minutes.
+const DEMIS_RANK_IMAGES = [
+  'https://i.ytimg.com/vi/vcLU0DhDhi0/hqdefault.jpg',
+  'https://i.ytimg.com/vi/Gfr50f6ZBvo/hqdefault.jpg',
+  'https://i.ytimg.com/vi/DsewHeVbL-0/hqdefault.jpg',
+  'https://i.ytimg.com/vi/AJf23bIjS8w/hqdefault.jpg',
+  'https://i.ytimg.com/vi/nkb4qEuxoJc/hqdefault.jpg',
+  'https://i.ytimg.com/vi/-HzgcbRXUK8/hqdefault.jpg',
+] as const;
+const DEMIS_IMAGE_SOURCE = 'https://www.youtube.com/results?search_query=Demis+Hassabis+interview';
+
 export const PEOPLE: Person[] = [
   { id:'liang', name:'Liang Wenfeng', nameZh:'梁文锋', role:'DeepSeek', accent:'梁', avatarIndex:0, avatarUrl:LIANG_RANK_IMAGES[2], rankImageUrls:LIANG_RANK_IMAGES, avatarSourceUrl:LIANG_MEME_SOURCE, ranks:standard('梁') },
   { id:'musk', name:'Elon Musk', nameZh:'马斯克', role:'xAI · Tesla · SpaceX', accent:'马', avatarIndex:1, avatarUrl:MUSK_RANK_IMAGES[2], rankImageUrls:MUSK_RANK_IMAGES, avatarSourceUrl:MUSK_MEME_SOURCE, ranks:standard('马') },
@@ -71,7 +82,7 @@ export const PEOPLE: Person[] = [
   { id:'huang', name:'Jensen Huang', nameZh:'黄仁勋', role:'NVIDIA', accent:'黄', avatarIndex:4, avatarUrl:HUANG_RANK_IMAGES[2], rankImageUrls:HUANG_RANK_IMAGES, avatarSourceUrl:HUANG_MEME_SOURCE, ranks:standard('黄') },
   { id:'zuck', name:'Mark Zuckerberg', nameZh:'扎克伯格', role:'Meta', accent:'扎', avatarIndex:5, avatarUrl:ZUCK_RANK_IMAGES[2], rankImageUrls:ZUCK_RANK_IMAGES, avatarSourceUrl:ZUCK_MEME_SOURCE, ranks:standard('扎') },
   { id:'dario', name:'Dario Amodei', nameZh:'Dario', role:'Anthropic', accent:'D', avatarIndex:6, avatarUrl:DARIO_RANK_IMAGES[2], rankImageUrls:DARIO_RANK_IMAGES, avatarSourceUrl:DARIO_MEME_SOURCE, ranks:standard('Dario') },
-  { id:'demis', name:'Demis Hassabis', nameZh:'哈萨比斯', role:'Google DeepMind', accent:'哈', avatarIndex:7, ranks:standard('哈') },
+  { id:'demis', name:'Demis Hassabis', nameZh:'哈萨比斯', role:'Google DeepMind', accent:'哈', avatarIndex:7, avatarUrl:DEMIS_RANK_IMAGES[2], rankImageUrls:DEMIS_RANK_IMAGES, avatarSourceUrl:DEMIS_IMAGE_SOURCE, ranks:standard('哈') },
 ];
 
 export const EMPTY_VOTES: Record<string, number[]> = Object.fromEntries(PEOPLE.map((p) => [p.id, [0,0,0,0,0,0]]));
