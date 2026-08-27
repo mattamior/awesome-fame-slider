@@ -76,8 +76,6 @@ const ZUCK_RANK_IMAGES = [
 ] as const;
 const ZUCK_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=mark%20zuckerberg';
 
-// Existing Imgflip Sam Altman frames: skeptical cutout, OpenAI guest badge,
-// goofy selfie, hearing laugh, Uncle-Sam cosplay, and press-sunglasses pose.
 const ALTMAN_RANK_IMAGES = [
   'https://i.imgflip.com/86zdzo.png',
   'https://i.imgflip.com/86ojl6.png',
@@ -87,6 +85,19 @@ const ALTMAN_RANK_IMAGES = [
   'https://i.imgflip.com/a2cbqu.jpg',
 ] as const;
 const ALTMAN_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=sam%20altman';
+
+// No coherent six-rank Dario meme pack was available. Use six stable public
+// Wikimedia Commons TechCrunch Disrupt frames as the internet-image progression.
+const DARIO_COMMONS_BASE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file';
+const DARIO_RANK_IMAGES = [
+  `${DARIO_COMMONS_BASE}/Dario%20Amodei%20at%20TechCrunch%20Disrupt%202023%2001%20(cropped%202).jpg`,
+  `${DARIO_COMMONS_BASE}/Dario%20Amodei%20at%20TechCrunch%20Disrupt%202023%2002.jpg`,
+  `${DARIO_COMMONS_BASE}/Dario%20Amodei%20at%20TechCrunch%20Disrupt%202023%2003.jpg`,
+  `${DARIO_COMMONS_BASE}/Dario%20Amodei%20at%20TechCrunch%20Disrupt%202023%2004.jpg`,
+  `${DARIO_COMMONS_BASE}/Dario%20Amodei%20at%20TechCrunch%20Disrupt%202023%2006.jpg`,
+  `${DARIO_COMMONS_BASE}/Dario%20Amodei%20at%20TechCrunch%20Disrupt%202023%2008.jpg`,
+] as const;
+const DARIO_IMAGE_SOURCE = 'https://commons.wikimedia.org/wiki/Category:Dario_Amodei';
 
 export const PEOPLE: Person[] = [
   {
@@ -113,7 +124,10 @@ export const PEOPLE: Person[] = [
     id: 'zuck', name: 'Mark Zuckerberg', nameZh: '扎克伯格', role: 'Meta', accent: '扎', avatarIndex: 5,
     avatarUrl: ZUCK_RANK_IMAGES[2], rankImageUrls: ZUCK_RANK_IMAGES, avatarSourceUrl: ZUCK_MEME_SOURCE, ranks: standard('扎'),
   },
-  { id: 'dario', name: 'Dario Amodei', nameZh: 'Dario', role: 'Anthropic', accent: 'D', avatarIndex: 6, ranks: standard('Dario') },
+  {
+    id: 'dario', name: 'Dario Amodei', nameZh: 'Dario', role: 'Anthropic', accent: 'D', avatarIndex: 6,
+    avatarUrl: DARIO_RANK_IMAGES[2], rankImageUrls: DARIO_RANK_IMAGES, avatarSourceUrl: DARIO_IMAGE_SOURCE, ranks: standard('Dario'),
+  },
   { id: 'demis', name: 'Demis Hassabis', nameZh: '哈萨比斯', role: 'Google DeepMind', accent: '哈', avatarIndex: 7, ranks: standard('哈') },
 ];
 
