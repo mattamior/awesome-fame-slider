@@ -11,19 +11,31 @@ function emptySummary(personId: string): VoteSummary {
   return { counts, total: 0, leader: NEUTRAL_RANK };
 }
 
-function Avatar({ person, className, labelled = false }: { person: Person; className: string; labelled?: boolean }) {
+function Avatar({
+  person,
+  className,
+  labelled = false,
+  rankIndex = NEUTRAL_RANK,
+}: {
+  person: Person;
+  className: string;
+  labelled?: boolean;
+  rankIndex?: number;
+}) {
+  const avatarUrl = person.rankImageUrls?.[rankIndex] || person.avatarUrl;
+
   return (
     <span
-      className={`${className} avatar-shell${person.avatarUrl ? ' meme-avatar' : ''}`}
+      className={`${className} avatar-shell${avatarUrl ? ' meme-avatar' : ''}`}
       role={labelled ? 'img' : undefined}
       aria-label={labelled ? `${person.name} meme portrait` : undefined}
       aria-hidden={labelled ? undefined : true}
     >
       <span className="avatar-fallback">{person.accent}</span>
-      {person.avatarUrl ? (
+      {avatarUrl ? (
         <img
           className="avatar-photo"
-          src={person.avatarUrl}
+          src={avatarUrl}
           alt=""
           loading="eager"
           referrerPolicy="no-referrer"
@@ -88,6 +100,13 @@ export default function App() {
     };
   }, [refreshSummary, notice]);
 
+  useEffect(() => {
+    for (const src of person.rankImageUrls || []) {
+      const image = new Image();
+      image.src = src;
+    }
+  }, [person]);
+
   const current = person.ranks[summary.leader] || person.ranks[NEUTRAL_RANK];
   const selected = person.ranks[rank] || person.ranks[NEUTRAL_RANK];
   const shareText = useMemo(() => `My vote for ${person.name}: ${selected.zh} (${selected.en}). What's your verdict?`, [person, selected]);
@@ -148,32 +167,44 @@ export default function App() {
       <nav className="people" aria-label="People">
         {PEOPLE.map((p) => (
           <button key={p.id} disabled={voting} className={p.id === person.id ? 'active' : ''} onClick={() => { setPersonId(p.id); setRank(NEUTRAL_RANK); }}>
-            <Avatar person={p} className="mini-avatar" /><span>{p.nameZh}</span>
+            <Avatar person={p} className="mini-avatar" rankIndex={p.id === person.id ? rank : NEUTRAL_RANK} /><span>{p.nameZh}</span>
           </button>
         ))}
       </nav>
 
-      <section className={`instrument${person.avatarUrl ? ' meme-person' : ''}`}>
+      <section className={`instrument${person.rankImageUrls ? ' meme-person' : ''}`}>
         <div className="plate-top">
           <div className="subject">
-            <Avatar person={person} className="subject-avatar" labelled />
+            <Avatar person={person} className="subject-avatar" labelled rankIndex={rank} />
             <div className="subject-copy">
               <span className="label">SUBJECT</span>
               <strong>{person.nameZh}</strong>
               <small>{person.name} · {person.role}</small>
               {person.avatarSourceUrl && (
-                <a className="meme-source" href={person.avatarSourceUrl} target="_blank" rel="noreferrer">原梗素材 ↗</a>
+                <a className="meme-source" href={person.avatarSourceUrl} target="_blank" rel="noreferrer">六档梗图来源 ↗</a>
               )}
             </div>
           </div>
           <div className="community"><span className="label">COMMUNITY NOW</span><strong>{current.zh}</strong><small>{liveResults ? `${summary.total} anonymous vote${summary.total === 1 ? '' : 's'}` : 'live results unavailable'}</small></div>
         </div>
 
+        {person.rankImageUrls && (
+          <div className="rank-visual" aria-live="polite">
+            <img
+              key={`${person.id}-${rank}`}
+              src={person.rankImageUrls[rank]}
+              alt={`${person.name} — ${selected.zh}`}
+              referrerPolicy="no-referrer"
+            />
+            <span className="rank-visual-tag">RANK {rank + 1} / 6 · {selected.zh}</span>
+          </div>
+        )}
+
         <div className="track-wrap">
           <div className="coil" />
           <input disabled={voting} aria-label="Reputation rank" type="range" min="0" max="5" step="1" value={rank} onChange={(e) => setRank(Number(e.target.value))} />
           <div className="thumb-face" style={{ left: `calc(${rank / 5 * 100}% - 33px)` }}>
-            <Avatar person={person} className="thumb-avatar" />
+            <Avatar person={person} className="thumb-avatar" rankIndex={rank} />
           </div>
         </div>
 
