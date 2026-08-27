@@ -5,7 +5,7 @@ import './styles.css';
 type VoteSummary = { counts: number[]; total: number; leader: number };
 
 const NEUTRAL_RANK = 2;
-const SHARE_CARD_REV = '3';
+const SHARE_CARD_REV = '4';
 
 function emptySummary(personId: string): VoteSummary {
   const counts = EMPTY_VOTES[personId] || [0, 0, 0, 0, 0, 0];
@@ -204,7 +204,7 @@ export default function App() {
 
   async function shareToX() {
     const shareUrl = `${location.origin}/share/${encodeURIComponent(person.id)}/${rank}?v=${SHARE_CARD_REV}`;
-    const imageUrl = `${location.origin}/share-cards/${encodeURIComponent(person.id)}-${rank}.png`;
+    const imageUrl = `${location.origin}/share-cards/${encodeURIComponent(person.id)}-${rank}.png?v=${SHARE_CARD_REV}`;
     const intentUrl = buildXIntent(shareUrl);
     const coarsePointer = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
     const canTryNativeShare = coarsePointer && typeof navigator.share === 'function';

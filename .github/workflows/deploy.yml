@@ -152,8 +152,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          share_url="$DEPLOY_URL/share/liang/5?v=3"
-          card_url="$DEPLOY_URL/share-cards/liang-5.png"
+          share_rev=4
+          share_url="$DEPLOY_URL/share/liang/5?v=$share_rev"
+          card_url="$DEPLOY_URL/share-cards/liang-5.png?v=$share_rev"
 
           echo "Checking crawler metadata at $share_url"
           curl --fail --show-error --silent \
@@ -186,12 +187,13 @@ jobs:
         run: |
           set -euo pipefail
           people=(liang musk altman tibo huang zuck dario demis)
+          share_rev=4
           sweep_dir="$(mktemp -d)"
 
           for person in "${people[@]}"; do
             for rank in 0 1 2 3 4 5; do
-              share_url="$DEPLOY_URL/share/$person/$rank?verify=$DEPLOY_SHA"
-              card_url="$DEPLOY_URL/share-cards/$person-$rank.png"
+              share_url="$DEPLOY_URL/share/$person/$rank?v=$share_rev&verify=$DEPLOY_SHA"
+              card_url="$DEPLOY_URL/share-cards/$person-$rank.png?v=$share_rev"
               html="$sweep_dir/$person-$rank.html"
               headers="$sweep_dir/$person-$rank.headers"
               png="$sweep_dir/$person-$rank.png"
@@ -237,7 +239,7 @@ jobs:
               }
             }
           }
-          console.log('Verified all 48 production share pages and 48 PNG cards at 1200x675');
+          console.log('Verified all 48 production share pages and 48 versioned PNG cards at 1200x675');
           NODE
 
       - name: Verify production anonymous vote upsert
