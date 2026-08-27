@@ -56,9 +56,6 @@ const MUSK_RANK_IMAGES = [
 ] as const;
 const MUSK_MEME_SOURCE = `https://github.com/makerjackie/bianzu/tree/${BIANZU_REV}/public/ranks/musk`;
 
-// Existing public Imgflip meme templates. These are intentionally not generated likenesses:
-// the six stops use recognizable Jensen internet-culture frames (suit, tiny-P gesture,
-// shiny jacket, RTX 3090, giant chip, keynote pose).
 const HUANG_RANK_IMAGES = [
   'https://i.imgflip.com/8fdvq3.png',
   'https://i.imgflip.com/619cwz.png',
@@ -69,63 +66,44 @@ const HUANG_RANK_IMAGES = [
 ] as const;
 const HUANG_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=jensen%20huang';
 
+// Six existing Zuckerberg meme frames: sunscreen/Data cosplay, congressional "human" hearing,
+// cheerful survey-taker, smoking meats, window stare, and Metaverse presentation.
+const ZUCK_RANK_IMAGES = [
+  'https://i.kym-cdn.com/photos/images/original/001/875/863/04d.png',
+  'https://i.kym-cdn.com/photos/images/original/001/361/248/ce2.jpeg',
+  'https://i.imgflip.com/37gc2f.png',
+  'https://i.imgflip.com/4g9c0h.jpg',
+  'https://i.imgflip.com/7s77r8.jpg',
+  'https://i.imgflip.com/66fabj.jpg',
+] as const;
+const ZUCK_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=mark%20zuckerberg';
+
 export const PEOPLE: Person[] = [
   {
-    id: 'liang',
-    name: 'Liang Wenfeng',
-    nameZh: '梁文锋',
-    role: 'DeepSeek',
-    accent: '梁',
-    avatarIndex: 0,
-    avatarUrl: LIANG_RANK_IMAGES[2],
-    rankImageUrls: LIANG_RANK_IMAGES,
-    avatarSourceUrl: LIANG_MEME_SOURCE,
-    ranks: standard('梁'),
+    id: 'liang', name: 'Liang Wenfeng', nameZh: '梁文锋', role: 'DeepSeek', accent: '梁', avatarIndex: 0,
+    avatarUrl: LIANG_RANK_IMAGES[2], rankImageUrls: LIANG_RANK_IMAGES, avatarSourceUrl: LIANG_MEME_SOURCE, ranks: standard('梁'),
   },
   {
-    id: 'musk',
-    name: 'Elon Musk',
-    nameZh: '马斯克',
-    role: 'xAI · Tesla · SpaceX',
-    accent: '马',
-    avatarIndex: 1,
-    avatarUrl: MUSK_RANK_IMAGES[2],
-    rankImageUrls: MUSK_RANK_IMAGES,
-    avatarSourceUrl: MUSK_MEME_SOURCE,
-    ranks: standard('马'),
+    id: 'musk', name: 'Elon Musk', nameZh: '马斯克', role: 'xAI · Tesla · SpaceX', accent: '马', avatarIndex: 1,
+    avatarUrl: MUSK_RANK_IMAGES[2], rankImageUrls: MUSK_RANK_IMAGES, avatarSourceUrl: MUSK_MEME_SOURCE, ranks: standard('马'),
   },
   { id: 'altman', name: 'Sam Altman', nameZh: '奥特曼', role: 'OpenAI', accent: '奥', avatarIndex: 2, ranks: standard('奥') },
   {
-    id: 'tibo',
-    name: 'Tibo Sottiaux',
-    nameZh: 'Tibo',
-    role: 'Codex',
-    accent: 'T',
-    avatarIndex: 3,
-    avatarUrl: TIBO_RANK_IMAGES[2],
-    rankImageUrls: TIBO_RANK_IMAGES,
-    avatarSourceUrl: TIBO_MEME_SOURCE,
-    ranks: standard('Tibo'),
+    id: 'tibo', name: 'Tibo Sottiaux', nameZh: 'Tibo', role: 'Codex', accent: 'T', avatarIndex: 3,
+    avatarUrl: TIBO_RANK_IMAGES[2], rankImageUrls: TIBO_RANK_IMAGES, avatarSourceUrl: TIBO_MEME_SOURCE, ranks: standard('Tibo'),
   },
   {
-    id: 'huang',
-    name: 'Jensen Huang',
-    nameZh: '黄仁勋',
-    role: 'NVIDIA',
-    accent: '黄',
-    avatarIndex: 4,
-    avatarUrl: HUANG_RANK_IMAGES[2],
-    rankImageUrls: HUANG_RANK_IMAGES,
-    avatarSourceUrl: HUANG_MEME_SOURCE,
-    ranks: standard('黄'),
+    id: 'huang', name: 'Jensen Huang', nameZh: '黄仁勋', role: 'NVIDIA', accent: '黄', avatarIndex: 4,
+    avatarUrl: HUANG_RANK_IMAGES[2], rankImageUrls: HUANG_RANK_IMAGES, avatarSourceUrl: HUANG_MEME_SOURCE, ranks: standard('黄'),
   },
-  { id: 'zuck', name: 'Mark Zuckerberg', nameZh: '扎克伯格', role: 'Meta', accent: '扎', avatarIndex: 5, ranks: standard('扎') },
+  {
+    id: 'zuck', name: 'Mark Zuckerberg', nameZh: '扎克伯格', role: 'Meta', accent: '扎', avatarIndex: 5,
+    avatarUrl: ZUCK_RANK_IMAGES[2], rankImageUrls: ZUCK_RANK_IMAGES, avatarSourceUrl: ZUCK_MEME_SOURCE, ranks: standard('扎'),
+  },
   { id: 'dario', name: 'Dario Amodei', nameZh: 'Dario', role: 'Anthropic', accent: 'D', avatarIndex: 6, ranks: standard('Dario') },
   { id: 'demis', name: 'Demis Hassabis', nameZh: '哈萨比斯', role: 'Google DeepMind', accent: '哈', avatarIndex: 7, ranks: standard('哈') },
 ];
 
-// Never fabricate community sentiment when the API is unavailable. Zero votes render
-// the neutral rank while the UI clearly marks live results as unavailable.
 export const EMPTY_VOTES: Record<string, number[]> = Object.fromEntries(
   PEOPLE.map((p) => [p.id, [0, 0, 0, 0, 0, 0]]),
 );
