@@ -28,7 +28,7 @@ const VOTE_WRITE_LIMIT = 24;
 const VOTER_COOKIE = 'sr_voter';
 const VOTER_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 const HASH_NAMESPACE = 'awesome-fame-slider-v1';
-const SHARE_CARD_REV = '4';
+const SHARE_CARD_REV = '5';
 
 function json(data: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
@@ -98,7 +98,7 @@ export function sharePageHtml(personId: string, rank: number, requestUrl: string
   const pageUrl = `${origin}${sharePath(personId, rank)}${requested.search}`;
   const appUrl = `${origin}/?who=${encodeURIComponent(personId)}&rank=${rank}&from=share`;
   const imageUrl = `${origin}${shareCardPath(personId, rank)}?v=${SHARE_CARD_REV}`;
-  const title = `${verdict.zh} · ${person.name} | Slide Rheostat`;
+  const title = `${verdict.zh} · ${person.name} | Awesome Fame Slider`;
   const description = shareCopy(personId, rank);
 
   return `<!doctype html>
@@ -129,7 +129,7 @@ export function sharePageHtml(personId: string, rank: number, requestUrl: string
   <script>window.location.replace(${JSON.stringify(appUrl)});</script>
 </head>
 <body>
-  <p><a href="${escapeHtml(appUrl)}">Open this verdict in Slide Rheostat</a></p>
+  <p><a href="${escapeHtml(appUrl)}">Open this verdict in Awesome Fame Slider</a></p>
 </body>
 </html>`;
 }
