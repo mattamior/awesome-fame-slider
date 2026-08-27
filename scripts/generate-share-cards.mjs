@@ -12,6 +12,7 @@ const HUANG_RANK_IMAGES=['https://i.imgflip.com/8fdvq3.png','https://i.imgflip.c
 const ZUCK_RANK_IMAGES=['https://i.kym-cdn.com/photos/images/original/001/875/863/04d.png','https://i.kym-cdn.com/photos/images/original/001/361/248/ce2.jpeg','https://i.imgflip.com/37gc2f.png','https://i.imgflip.com/4g9c0h.jpg','https://i.imgflip.com/7s77r8.jpg','https://i.imgflip.com/66fabj.jpg'];
 const ALTMAN_RANK_IMAGES=['https://i.imgflip.com/86zdzo.png','https://i.imgflip.com/86ojl6.png','https://i.imgflip.com/80n9l4.jpg','https://i.imgflip.com/aetmra.png','https://i.imgflip.com/9ghfcx.png','https://i.imgflip.com/a2cbqu.jpg'];
 const DARIO_RANK_IMAGES=['https://i.imgflip.com/2/aw0dpn.jpg','https://i.imgflip.com/ao4swp.png','https://i.imgflip.com/2/apqq2f.jpg','https://i.imgflip.com/2/avgcsc.jpg','https://i.imgflip.com/attuh6.png','https://i.imgflip.com/am7eh2.jpg'];
+const DEMIS_RANK_IMAGES=['https://i.ytimg.com/vi/vcLU0DhDhi0/hqdefault.jpg','https://i.ytimg.com/vi/Gfr50f6ZBvo/hqdefault.jpg','https://i.ytimg.com/vi/DsewHeVbL-0/hqdefault.jpg','https://i.ytimg.com/vi/AJf23bIjS8w/hqdefault.jpg','https://i.ytimg.com/vi/nkb4qEuxoJc/hqdefault.jpg','https://i.ytimg.com/vi/-HzgcbRXUK8/hqdefault.jpg'];
 
 const people=[
 {id:'liang',avatarIndex:0,rankImageUrls:LIANG_RANK_IMAGES,sourceLabel:'makerjackie/bianzu · liang',name:'Liang Wenfeng',role:'DeepSeek',ranks:standard('Liang')},
@@ -21,7 +22,7 @@ const people=[
 {id:'huang',avatarIndex:4,rankImageUrls:HUANG_RANK_IMAGES,sourceLabel:'Imgflip · Jensen Huang meme templates',name:'Jensen Huang',role:'NVIDIA',ranks:standard('Huang')},
 {id:'zuck',avatarIndex:5,rankImageUrls:ZUCK_RANK_IMAGES,sourceLabel:'Know Your Meme + Imgflip · Zuckerberg memes',name:'Mark Zuckerberg',role:'Meta',ranks:standard('Zuck')},
 {id:'dario',avatarIndex:6,rankImageUrls:DARIO_RANK_IMAGES,sourceLabel:'Imgflip · Dario Amodei / Anthropic memes',name:'Dario Amodei',role:'Anthropic',ranks:standard('Dario')},
-{id:'demis',avatarIndex:7,name:'Demis Hassabis',role:'Google DeepMind',ranks:standard('Hassabis')}];
+{id:'demis',avatarIndex:7,rankImageUrls:DEMIS_RANK_IMAGES,sourceLabel:'YouTube · Demis Hassabis interview frames',name:'Demis Hassabis',role:'Google DeepMind',ranks:standard('Hassabis')}];
 
 const outputDir=path.resolve('public/share-cards');
 await rm(outputDir,{recursive:true,force:true}); await mkdir(outputDir,{recursive:true});
