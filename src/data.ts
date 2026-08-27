@@ -51,17 +51,17 @@ const ZUCK_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=mark%20zuckerberg'
 const ALTMAN_RANK_IMAGES = ['https://i.imgflip.com/86zdzo.png','https://i.imgflip.com/86ojl6.png','https://i.imgflip.com/80n9l4.jpg','https://i.imgflip.com/aetmra.png','https://i.imgflip.com/9ghfcx.png','https://i.imgflip.com/a2cbqu.jpg'] as const;
 const ALTMAN_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=sam%20altman';
 
-// No coherent six-rank Dario meme pack was available. These are stable public
-// Wikimedia Commons TechCrunch Disrupt frames, ordered as an image progression.
+// Existing Dario/Anthropic internet meme frames. The first five are public Imgflip
+// templates; the sixth is an existing Imgflip meme about Amodei's AI-risk commentary.
 const DARIO_RANK_IMAGES = [
-  'https://upload.wikimedia.org/wikipedia/commons/1/17/Dario_Amodei_at_TechCrunch_Disrupt_2023_01_%28cropped_2%29.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/d/d8/Dario_Amodei_at_TechCrunch_Disrupt_2023_02.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/d/df/Dario_Amodei_at_TechCrunch_Disrupt_2023_03.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/3/35/Dario_Amodei_at_TechCrunch_Disrupt_2023_04.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/8/8b/Dario_Amodei_at_TechCrunch_Disrupt_2023_06.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/3/37/Dario_Amodei_at_TechCrunch_Disrupt_2023_08.jpg',
+  'https://i.imgflip.com/2/aw0dpn.jpg',
+  'https://i.imgflip.com/ao4swp.png',
+  'https://i.imgflip.com/2/apqq2f.jpg',
+  'https://i.imgflip.com/2/avgcsc.jpg',
+  'https://i.imgflip.com/attuh6.png',
+  'https://i.imgflip.com/am7eh2.jpg',
 ] as const;
-const DARIO_IMAGE_SOURCE = 'https://commons.wikimedia.org/wiki/Category:Dario_Amodei';
+const DARIO_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=dario%20amodei';
 
 export const PEOPLE: Person[] = [
   { id:'liang', name:'Liang Wenfeng', nameZh:'梁文锋', role:'DeepSeek', accent:'梁', avatarIndex:0, avatarUrl:LIANG_RANK_IMAGES[2], rankImageUrls:LIANG_RANK_IMAGES, avatarSourceUrl:LIANG_MEME_SOURCE, ranks:standard('梁') },
@@ -70,7 +70,7 @@ export const PEOPLE: Person[] = [
   { id:'tibo', name:'Tibo Sottiaux', nameZh:'Tibo', role:'Codex', accent:'T', avatarIndex:3, avatarUrl:TIBO_RANK_IMAGES[2], rankImageUrls:TIBO_RANK_IMAGES, avatarSourceUrl:TIBO_MEME_SOURCE, ranks:standard('Tibo') },
   { id:'huang', name:'Jensen Huang', nameZh:'黄仁勋', role:'NVIDIA', accent:'黄', avatarIndex:4, avatarUrl:HUANG_RANK_IMAGES[2], rankImageUrls:HUANG_RANK_IMAGES, avatarSourceUrl:HUANG_MEME_SOURCE, ranks:standard('黄') },
   { id:'zuck', name:'Mark Zuckerberg', nameZh:'扎克伯格', role:'Meta', accent:'扎', avatarIndex:5, avatarUrl:ZUCK_RANK_IMAGES[2], rankImageUrls:ZUCK_RANK_IMAGES, avatarSourceUrl:ZUCK_MEME_SOURCE, ranks:standard('扎') },
-  { id:'dario', name:'Dario Amodei', nameZh:'Dario', role:'Anthropic', accent:'D', avatarIndex:6, avatarUrl:DARIO_RANK_IMAGES[2], rankImageUrls:DARIO_RANK_IMAGES, avatarSourceUrl:DARIO_IMAGE_SOURCE, ranks:standard('Dario') },
+  { id:'dario', name:'Dario Amodei', nameZh:'Dario', role:'Anthropic', accent:'D', avatarIndex:6, avatarUrl:DARIO_RANK_IMAGES[2], rankImageUrls:DARIO_RANK_IMAGES, avatarSourceUrl:DARIO_MEME_SOURCE, ranks:standard('Dario') },
   { id:'demis', name:'Demis Hassabis', nameZh:'哈萨比斯', role:'Google DeepMind', accent:'哈', avatarIndex:7, ranks:standard('哈') },
 ];
 
