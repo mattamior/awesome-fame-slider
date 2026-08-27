@@ -1,23 +1,24 @@
 project: awesome-fame-slider
 status: active
-phase: production-verification
+phase: final-device-verification
 repository: mattamior/awesome-fame-slider
-updated_at: 2026-08-27
+updated_at: 2026-08-28
 summary: >-
-  Slide Rheostat is live at https://awesome-fame-slider.mattamior.workers.dev with anonymous D1 voting,
-  community-rank state, rank-specific social cards, X Web Intent sharing, and CI-gated automatic Cloudflare
-  deployment. All eight initial subjects now use six-rank internet image/meme packs with fixed roster avatars,
-  community-driven SUBJECT art, user-selection-driven large art, mechanical slider pointers, and rank-specific
-  X share images. Demis Hassabis completed the eight-person rollout in production.
+  Slide Rheostat is live at https://awesome-fame-slider.mattamior.workers.dev. All eight initial subjects have
+  six-rank internet meme/image packs in production. Automated launch verification is now complete: Deploy waits
+  for the new Worker revision to converge at the edge, verifies the X/OG metadata and actual 1200x675 PNG for
+  all 48 person/rank combinations, and performs a self-cleaning production D1 vote-upsert smoke test.
 current_focus: >-
-  Production verification: add and run the full 48-combination crawler/card sweep, then verify anonymous vote
-  upsert semantics and mobile/X in-app browser behavior before final launch checkpoint.
+  Only true-device verification remains: exercise the production site from a mobile browser and X in-app browser
+  to confirm native share/Web Intent UX and cookie persistence in those actual clients. This cannot be faithfully
+  simulated by repository CI. The workers.dev hostname is the v1 public launch origin; a custom domain is optional later.
 production:
   url: https://awesome-fame-slider.mattamior.workers.dev
   worker: awesome-fame-slider
   database: awesome-fame-slider-db
-  latest_verified_worker_version: a94f65c2-9c39-4742-a176-886fab5d8a30
-  latest_verified_commit: 5fc92bcd239e7d8dbd6e5a82ca2d3f1553784e3b
+  latest_verified_worker_version: fab64469-4208-457d-948b-58f5f09ec499
+  latest_verified_commit: 3924110b697b48d548cacff07c24a0c2d5a7f82a
+  share_card_revision: '4'
 confirmed_constraints:
   - Product display name is Slide Rheostat.
   - Frontend is Vite + React + TypeScript.
@@ -26,24 +27,30 @@ confirmed_constraints:
   - Voting and X sharing are independent actions.
   - One active anonymous vote is kept per browser device/person; later votes update that row.
   - Community results never fall back to fabricated sample votes.
-  - X sharing uses free Web Intent / web share mechanics; no X Developer App or paid X write API is required.
+  - X sharing uses free Web Intent / native Web Share mechanics; no X Developer App or paid X write API is required.
   - Shared verdict pages expose crawler-friendly metadata and a 1200x675 PNG for the exact selected rank.
+  - Social-card URLs carry an explicit revision query parameter so crawler and CDN caches can be invalidated safely.
   - Top roster art is the person's fixed default/neutral image.
   - SUBJECT art follows the current community leader image.
   - The large rank image follows the community leader after refresh until the user explicitly selects a rank; then it follows the user's selection.
   - Meme/image subjects use a mechanical pointer on the slider instead of repeating the rank image in the thumb.
-  - Production delivery is zero-local: GitHub PR/CI -> main CI -> automatic serialized Deploy -> health/readiness/social-card smoke checks.
+  - Production delivery is zero-local: GitHub PR/CI -> main CI -> automatic serialized Deploy -> convergence/readiness/card/vote smoke checks.
   - Pure .chatgpt/**, docs/**, and README.md commits do not trigger production deployment.
+  - The workers.dev URL is the v1 public launch origin; custom-domain work is deferred until there is a concrete branding need.
 implemented:
   - Six-position rheostat, rank labels, community vote distribution, neutral zero-vote state, and neutral-biased tie breaking.
   - D1-backed anonymous vote upsert and per-network write limiter without raw IP persistence.
   - Aggregate polling every 30 seconds while visible plus refresh on foreground/person changes.
   - Worker share pages with Open Graph and X summary_large_image metadata.
-  - Build-time generation of 48 1200x675 PNG result cards with Sharp.
-  - Mobile-safe layout, reduced-motion handling, and rank-image dissolve transition.
+  - Build-time generation of 48 exact 1200x675 PNG result cards with Sharp and build-time dimension assertions.
+  - Versioned v4 X/OG card URLs to prevent stale crawler/CDN image reuse after deploys.
+  - Deploy waits for /api/health and /api/ready to report shareCardRev=4 before post-deploy verification, avoiding edge-propagation races.
+  - Every Deploy performs a full 8-person x 6-rank production sweep of crawler metadata and actual PNG dimensions.
+  - Every Deploy performs a self-cleaning anonymous-vote upsert smoke: the same temporary voter/person row moves ranks without duplication and is deleted afterward.
+  - Mobile-safe layout, safe-area handling, horizontal roster scrolling, coarse-pointer native-share preference, Web Intent fallback, reduced-motion handling, and rank-image dissolve transition.
   - Fixed roster avatar, community SUBJECT image, and community-vs-explicit-selection large-image semantics.
   - Mechanical slider pointer for meme/image subjects.
-  - Share flow that preserves the selected rank; production X metadata/card smoke test runs after each deploy.
+  - Share flow preserves the selected rank; sharing never changes the D1 vote.
   - Configured remote assets are build-required; share-card generation fails rather than silently substituting the old illustrated avatar.
   - Liang Wenfeng full six-rank makerjackie/bianzu image pack.
   - Tibo Sottiaux full six-rank makerjackie/bianzu image pack.
@@ -53,68 +60,34 @@ implemented:
   - Sam Altman six-rank public Imgflip meme-template pack.
   - Dario Amodei six-rank public Imgflip Dario/Anthropic meme pack.
   - Demis Hassabis six-rank public interview-thumbnail image pack.
+automated_verification:
+  status: passed
+  deploy_run: 33092712647
+  validation:
+    - Main CI passed for commit 3924110b697b48d548cacff07c24a0c2d5a7f82a.
+    - Production Worker version fab64469-4208-457d-948b-58f5f09ec499 deployed successfully.
+    - Edge convergence required two probes; the first still hit the previous Worker, and the second confirmed shareCardRev=4 on both health and readiness.
+    - Single selected-rank X-card sentinel passed with versioned v4 image URL.
+    - All 48 production share pages passed exact Twitter/Open Graph metadata checks with no meta refresh.
+    - All 48 production card responses were non-empty image/png and Sharp confirmed every image is exactly 1200x675.
+    - Production anonymous vote smoke inserted one temporary Demis vote at rank 1, moved the same voter/person row to rank 4 without duplication, then deleted the temporary row and confirmed zero rows remained.
 meme_rollout:
   source_policy: >-
     Prefer recognizable existing internet meme/rank packs and record their source. Use pinned immutable URLs
     when possible. If no coherent six-rank meme pack exists, assemble six recognizable public internet images
     from stable sources. Do not substitute the old generic illustrated avatar when a subject is marked complete.
   completed:
-    - person: Liang Wenfeng
-      id: liang
-      source: makerjackie/bianzu public/ranks/liang
-      state: production
-      x_card_manual_verification: passed
-    - person: Tibo Sottiaux
-      id: tibo
-      source: makerjackie/bianzu public/ranks/tibo
-      state: production
-      deployment_commit: bfa8a720cde75e771e84f72d2168eacb59abdea5
-      deployment_version: dee7f102-a03f-47cb-a4a5-316f8f35913a
-    - person: Elon Musk
-      id: musk
-      source: makerjackie/bianzu public/ranks/musk
-      state: production
-      deployment_commit: a39ab79b35c415c58ed18c4692a954989a342196
-      deployment_version: 646f517b-9e63-487c-8480-54eea390a4e5
-    - person: Jensen Huang
-      id: huang
-      source: Imgflip public Jensen Huang/NVIDIA meme templates
-      state: production
-      deployment_commit: 24ad58f0dc4dd807949fcc7fb416fb89590404df
-      deployment_version: 6461c6eb-8814-4d7f-91ef-35b3fa0fb31d
-    - person: Mark Zuckerberg
-      id: zuck
-      source: public Know Your Meme + Imgflip Zuckerberg meme templates
-      state: production
-      deployment_commit: e48592b241455622a7a3178d33984769f8547980
-      deployment_version: 255e2b4c-1cca-4bf2-8ab9-241a0382461b
-    - person: Sam Altman
-      id: altman
-      source: Imgflip public Sam Altman meme templates
-      state: production
-      deployment_commit: 390962bc8ee8f19693d5933c7f256b47b1647ea8
-      deployment_version: 7c1dc13f-d212-411d-8025-c592be91bea9
-    - person: Dario Amodei
-      id: dario
-      source: Imgflip public Dario Amodei / Anthropic templates and existing meme
-      state: production
-      deployment_commit: fe4ee7203bec49629278c8ea188b38d8c1a0f331
-      deployment_version: 89823803-1648-42e5-b40e-60feddeb6c56
-    - person: Demis Hassabis
-      id: demis
-      source: public YouTube interview thumbnails from Google DeepMind, Lex Fridman, Stanford GSB, Nobel Prize Outreach, and 60 Minutes
-      state: production
-      deployment_commit: 5fc92bcd239e7d8dbd6e5a82ca2d3f1553784e3b
-      deployment_version: a94f65c2-9c39-4742-a176-886fab5d8a30
-      validation: >-
-        PR CI and main CI passed under strict remote-asset mode; Deploy generated all 48 cards and explicitly
-        uploaded demis-0.png through demis-5.png; production health/readiness and crawler-card smoke tests passed.
-  remaining_order: []
+    - { person: Liang Wenfeng, id: liang, source: makerjackie/bianzu public/ranks/liang, state: production }
+    - { person: Tibo Sottiaux, id: tibo, source: makerjackie/bianzu public/ranks/tibo, state: production }
+    - { person: Elon Musk, id: musk, source: makerjackie/bianzu public/ranks/musk, state: production }
+    - { person: Jensen Huang, id: huang, source: Imgflip public Jensen Huang/NVIDIA meme templates, state: production }
+    - { person: Mark Zuckerberg, id: zuck, source: public Know Your Meme + Imgflip Zuckerberg meme templates, state: production }
+    - { person: Sam Altman, id: altman, source: Imgflip public Sam Altman meme templates, state: production }
+    - { person: Dario Amodei, id: dario, source: Imgflip public Dario Amodei / Anthropic memes, state: production }
+    - { person: Demis Hassabis, id: demis, source: public YouTube interview thumbnails, state: production }
 open_verification:
-  - Add and run a production crawler/card sweep across all 8 people and 6 ranks.
-  - End-to-end browser verification of anonymous vote upsert semantics remains a launch-level manual check.
-  - Mobile/X in-app browser behavior remains a launch-level manual check.
-  - Decide whether to keep the workers.dev URL or attach a custom domain for public launch.
+  - True-device mobile browser verification of layout, cookie persistence, and native share sheet behavior.
+  - True-device X in-app browser verification of Web Intent/native-share handoff and return-to-site behavior.
 last_checkpoint:
-  saved_at: 2026-08-27T23:40:00+08:00
-  reason: Demis Hassabis six-rank image pack completed, deployed, and verified; all eight initial visual packs are now in production
+  saved_at: 2026-08-28T00:25:00+08:00
+  reason: automated production verification completed after fixing card dimensions, cache versioning, and Worker edge-convergence races
