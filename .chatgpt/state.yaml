@@ -1,108 +1,81 @@
 project: awesome-fame-slider
-status: paused
-phase: production-verification
+status: active
+phase: meme-pack-rollout
 repository: mattamior/awesome-fame-slider
-updated_at: 2026-08-26
+updated_at: 2026-08-27
 summary: >-
-  The MVP is live at https://awesome-fame-slider.mattamior.workers.dev and the repository implements
-  zero-local, CI-gated, zero-touch delivery: ChatGPT operates GitHub directly, CI validates product-relevant
-  main-branch commits, and successful push CI automatically triggers a serialized production Deploy for
-  the exact passing SHA. Deploy reuses/provisions D1 as needed, applies migrations, deploys Worker/assets,
-  discovers the workers.dev URL, and requires /api/health plus /api/ready to pass. The reusable methodology
-  discovered through this project is being spun out under the public-facing name ZeroLocal into a separate
-  ChatGPT Project and planned iorLab repositories.
+  Slide Rheostat is live at https://awesome-fame-slider.mattamior.workers.dev with anonymous D1 voting,
+  community-rank state, rank-specific social cards, X Web Intent sharing, and CI-gated automatic Cloudflare
+  deployment. Liang Wenfeng and Tibo Sottiaux now use full six-rank internet meme packs with fixed roster
+  avatars, community-driven SUBJECT art, user-selection-driven large art, mechanical slider pointers, and
+  rank-specific X share images. The user explicitly verified that Liang X posts render the selected large image.
 current_focus: >-
-  Product work is paused at production verification while the reusable delivery model is handed off into
-  a dedicated ZeroLocal project. When resuming this repository, verify live anonymous vote semantics,
-  aggregate refresh, X Web Intent composition, social-card rendering, and mobile/X in-app browser behavior.
-zerolocal_handoff:
-  brand: ZeroLocal
-  technical_description: AI-native repository delivery
-  chatgpt_project: ZeroLocal
-  memory_mode: project-only
-  canonical_spec_repo: iorLab/zerolocal
-  cloudflare_reference_repo: iorLab/zerolocal-cloudflare-starter
-  founding_case_study: mattamior/awesome-fame-slider
-  github_org_access: >-
-    The ChatGPT GitHub App installation for iorLab has been authorized for all organization repositories
-    and access was verified from ChatGPT.
-  bootstrap_status: >-
-    The new ZeroLocal ChatGPT Project and the two iorLab repositories have not yet been created.
-  first_turn: >-
-    Treat iorLab/zerolocal as canonical, initialize RPM, use iorLab/zerolocal-cloudflare-starter as the
-    reference implementation repository, cite mattamior/awesome-fame-slider as the founding case study,
-    and begin ZeroLocal Specification v0.1.
+  Continue the meme-pack rollout one person at a time. After each person reaches production, write an RPM
+  checkpoint before moving to the next subject. Current next subject: Elon Musk.
+production:
+  url: https://awesome-fame-slider.mattamior.workers.dev
+  worker: awesome-fame-slider
+  database: awesome-fame-slider-db
+  latest_verified_worker_version: dee7f102-a03f-47cb-a4a5-316f8f35913a
+  latest_verified_commit: bfa8a720cde75e771e84f72d2168eacb59abdea5
 confirmed_constraints:
-  - GitHub repository: mattamior/awesome-fame-slider.
-  - Product display name remains Slide Rheostat for now.
-  - Production URL: https://awesome-fame-slider.mattamior.workers.dev.
-  - Vite + React + TypeScript frontend.
-  - Cloudflare Worker name: awesome-fame-slider.
-  - Cloudflare D1 database name: awesome-fame-slider-db.
-  - Cloudflare Worker and D1 exist in production.
-  - Cloudflare Workers is the unified deployment target.
-  - Cloudflare D1 stores anonymous active votes and lightweight rate-limit state.
-  - Initial roster: Liang Wenfeng, Elon Musk, Sam Altman, Jensen Huang, Mark Zuckerberg, Dario Amodei, Demis Hassabis, and Tibo Sottiaux.
+  - Product display name is Slide Rheostat.
+  - Frontend is Vite + React + TypeScript.
+  - Cloudflare Workers is the unified deployment target; D1 stores anonymous active votes and rate-limit state.
+  - Initial roster is Liang Wenfeng, Elon Musk, Sam Altman, Tibo Sottiaux, Jensen Huang, Mark Zuckerberg, Dario Amodei, and Demis Hassabis.
   - Voting and X sharing are independent actions.
-  - One active vote per anonymous browser device per person; later votes from the same device/person update that vote.
-  - The browser identifier is a random HttpOnly cookie; only its SHA-256-derived identifier is stored in D1.
-  - Voter/rate-limit hashing uses a fixed application namespace rather than deployment origin.
-  - Network rate limiting discourages rapid vote abuse without storing raw request IPs.
-  - X sharing uses Web Intent and must not require an X Developer App, OAuth credentials, or paid X API writes.
-  - Shared result URLs expose crawler-friendly metadata and a 1200x675 PNG result card.
-  - Share metadata derives its origin from the incoming request, so workers.dev and future custom domains work without APP_ORIGIN configuration.
-  - Each person page displays aggregate voting distribution and the modal community rank.
-  - Community results must never fall back to fabricated sample votes.
-  - Production deployment requires only CF_API_TOKEN and CF_ACCOUNT_ID.
-  - Normal production delivery is CI-gated and automatic after successful push CI on main.
-  - Deploy checks out the exact workflow_run.head_sha that passed CI.
-  - Pull-request CI cannot enter the production deploy path; automatic deploy requires workflow_run.event == push and head_branch == main.
-  - Production deploys are serialized with a production-deploy concurrency group and are not cancelled mid-run.
-  - Pure .chatgpt/**, docs/**, and README.md commits are ignored by push CI so RPM/docs updates do not deploy production.
-  - workflow_dispatch remains available only as a manual recovery/re-run path.
+  - One active anonymous vote is kept per browser device/person; later votes update that row.
+  - Community results never fall back to fabricated sample votes.
+  - X sharing uses free Web Intent / web share mechanics; no X Developer App or paid X write API is required.
+  - Shared verdict pages expose crawler-friendly metadata and a 1200x675 PNG for the exact selected rank.
+  - Top roster art is the person's fixed default/neutral image.
+  - SUBJECT art follows the current community leader image.
+  - The large rank image follows the community leader after refresh until the user explicitly selects a rank; then it follows the user's selection.
+  - Meme subjects use a mechanical pointer on the slider instead of repeating the rank image in the thumb.
+  - Production delivery is zero-local: GitHub PR/CI -> main CI -> automatic serialized Deploy -> health/readiness/social-card smoke checks.
+  - Pure .chatgpt/**, docs/**, and README.md commits do not trigger production deployment.
 implemented:
-  - React/Vite/TypeScript project scaffold and eight-person data-driven roster.
-  - Six-position rheostat interaction, rank labels, community vote distribution, and leader display.
-  - Neutral rank for zero-vote community state and neutral-biased tie-breaking in Worker and client.
-  - No fabricated fallback vote counts; failed API loads display explicit offline state and zero bars.
-  - Aggregate vote polling every 30 seconds while visible plus refresh on foreground/person changes.
-  - D1-backed anonymous vote endpoint at POST /api/people/:personId/vote.
-  - Random HttpOnly browser-device cookie with only a SHA-256-derived voter identifier persisted in D1.
-  - One anonymous active vote per device/person via D1 upsert semantics.
-  - D1-backed per-network vote-write rate limiting with raw IPs never stored.
-  - Free X Web Intent sharing with pre-populated verdict text and a stable /share/:person/:rank URL.
-  - Worker-generated share landing pages with Open Graph and X summary_large_image metadata.
-  - Build-time generation of 48 1200x675 PNG result cards using Sharp.
-  - Human share-link visitors are redirected into the app with person/rank preselected.
-  - /api/ready requires only the anonymous-vote/rate-limit tables.
-  - Cloudflare static-asset routing runs Worker-first for /api/* and /share/*.
-  - Mobile hardening for safe areas, narrow layouts, touch targets, horizontal roster scrolling, and reduced motion.
-  - GitHub Actions CI for install, tests, build/share-card generation, and Wrangler type generation.
-  - CI ignores pure RPM/docs/README changes to avoid meaningless releases.
-  - GitHub Actions Deploy is triggered automatically by successful push CI on main and retains manual workflow_dispatch fallback.
-  - Deploy verifies and checks out the exact CI-passing SHA before building/deploying.
-  - Deploy automatically discovers or creates awesome-fame-slider-db, applies migrations, deploys Worker/assets, discovers the workers.dev URL, and checks health/readiness.
-  - Production deployment concurrency prevents overlapping deploy/migration runs.
-  - Repository/package/frontend links and infrastructure naming are synchronized to awesome-fame-slider.
-  - Production deployment is live at https://awesome-fame-slider.mattamior.workers.dev.
-  - Reusable delivery playbook is stored at docs/CHATGPT_GITHUB_CLOUDFLARE_PLAYBOOK.md.
-removed_from_current_flow:
-  - X OAuth 2.0 PKCE authorization.
-  - X media upload and POST /2/tweets calls.
-  - X_CLIENT_ID and X_CLIENT_SECRET deployment requirements.
-  - Vote-on-successful-X-post semantics.
-  - X-account identity as the voting key.
-  - APP_ORIGIN runtime/deployment requirement.
-  - Manual Run workflow as a normal release requirement.
-blockers:
-  - End-to-end browser verification of anonymous vote/upsert behavior has not yet been completed.
-  - X Web Intent and X/Open Graph card rendering still need live manual verification before public announcement.
-validation_notes:
-  - Deploy run 1 created awesome-fame-slider-db, applied migrations 0001 through 0004, uploaded assets, and deployed the Worker; only the obsolete APP_ORIGIN smoke check failed.
-  - Deploy run 2 completed successfully on the request-derived-origin design and passed /api/health plus /api/ready.
-  - CI run 86 for commit 052cc4a9a800803ed8ff398e22ea832e505a474b passed automatically after enabling CI-gated production delivery.
-  - Automatic Deploy run 4 was created by workflow_run without any human Run workflow action, checked out exact SHA 052cc4a9a800803ed8ff398e22ea832e505a474b, reused D1 with no pending migrations, deployed Worker version daae83d8-4ee2-46d1-8674-1c23391260ff, and passed /api/health plus /api/ready on the first attempt.
-  - ChatGPT GitHub App access to the iorLab organization was verified after organization-wide authorization.
+  - Six-position rheostat, rank labels, community vote distribution, neutral zero-vote state, and neutral-biased tie breaking.
+  - D1-backed anonymous vote upsert and per-network write limiter without raw IP persistence.
+  - Aggregate polling every 30 seconds while visible plus refresh on foreground/person changes.
+  - Worker share pages with Open Graph and X summary_large_image metadata.
+  - Build-time generation of 48 1200x675 PNG result cards with Sharp.
+  - Mobile-safe layout, reduced-motion handling, and rank-image dissolve transition.
+  - Fixed roster avatar, community SUBJECT image, and community-vs-explicit-selection large-image semantics.
+  - Mechanical slider pointer for meme-pack subjects.
+  - Share flow that preserves the selected rank; production X metadata/card smoke test runs after each deploy.
+  - Liang Wenfeng full six-rank makerjackie/bianzu image pack.
+  - Tibo Sottiaux full six-rank makerjackie/bianzu image pack.
+meme_rollout:
+  source_policy: >-
+    Prefer recognizable existing internet meme/rank packs and record their source. Use pinned immutable URLs
+    when possible. Do not substitute the old generic illustrated avatar when a subject is marked complete.
+  completed:
+    - person: Liang Wenfeng
+      id: liang
+      source: makerjackie/bianzu public/ranks/liang
+      state: production
+      x_card_manual_verification: passed
+    - person: Tibo Sottiaux
+      id: tibo
+      source: makerjackie/bianzu public/ranks/tibo
+      state: production
+      deployment_commit: bfa8a720cde75e771e84f72d2168eacb59abdea5
+      deployment_version: dee7f102-a03f-47cb-a4a5-316f8f35913a
+      validation: >-
+        PR CI and main CI passed; Deploy generated all 48 cards and explicitly uploaded tibo-0.png through
+        tibo-5.png; production health/readiness and crawler-card smoke tests passed.
+  remaining_order:
+    - musk
+    - huang
+    - zuck
+    - altman
+    - dario
+    - demis
+open_verification:
+  - End-to-end browser verification of anonymous vote upsert semantics remains a launch-level check.
+  - Mobile/X in-app browser behavior remains a launch-level check.
+  - After all meme packs are complete, run a production crawler/card sweep across all 8 people and 6 ranks.
 last_checkpoint:
-  saved_at: 2026-08-26T18:51:00+08:00
-  reason: user requested checkpoint before creating the separate ZeroLocal project and repositories
+  saved_at: 2026-08-27T22:13:00+08:00
+  reason: Tibo six-rank meme pack completed, deployed, and verified before moving to Elon Musk
