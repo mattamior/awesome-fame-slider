@@ -1,23 +1,23 @@
 project: awesome-fame-slider
 status: active
-phase: meme-pack-rollout
+phase: production-verification
 repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-27
 summary: >-
   Slide Rheostat is live at https://awesome-fame-slider.mattamior.workers.dev with anonymous D1 voting,
   community-rank state, rank-specific social cards, X Web Intent sharing, and CI-gated automatic Cloudflare
-  deployment. Seven of eight initial subjects now use six-rank internet image/meme packs with fixed roster
-  avatars, community-driven SUBJECT art, user-selection-driven large art, mechanical slider pointers, and
-  rank-specific X share images. Dario Amodei is complete in production after switching away from rate-limited
-  Wikimedia assets to stable Imgflip Dario/Anthropic meme assets.
+  deployment. All eight initial subjects now use six-rank internet image/meme packs with fixed roster avatars,
+  community-driven SUBJECT art, user-selection-driven large art, mechanical slider pointers, and rank-specific
+  X share images. Demis Hassabis completed the eight-person rollout in production.
 current_focus: >-
-  Complete the final subject, Demis Hassabis, then run the full 48-combination production crawler/card sweep.
+  Production verification: add and run the full 48-combination crawler/card sweep, then verify anonymous vote
+  upsert semantics and mobile/X in-app browser behavior before final launch checkpoint.
 production:
   url: https://awesome-fame-slider.mattamior.workers.dev
   worker: awesome-fame-slider
   database: awesome-fame-slider-db
-  latest_verified_worker_version: 89823803-1648-42e5-b40e-60feddeb6c56
-  latest_verified_commit: fe4ee7203bec49629278c8ea188b38d8c1a0f331
+  latest_verified_worker_version: a94f65c2-9c39-4742-a176-886fab5d8a30
+  latest_verified_commit: 5fc92bcd239e7d8dbd6e5a82ca2d3f1553784e3b
 confirmed_constraints:
   - Product display name is Slide Rheostat.
   - Frontend is Vite + React + TypeScript.
@@ -52,6 +52,7 @@ implemented:
   - Mark Zuckerberg six-rank public Know Your Meme + Imgflip pack.
   - Sam Altman six-rank public Imgflip meme-template pack.
   - Dario Amodei six-rank public Imgflip Dario/Anthropic meme pack.
+  - Demis Hassabis six-rank public interview-thumbnail image pack.
 meme_rollout:
   source_policy: >-
     Prefer recognizable existing internet meme/rank packs and record their source. Use pinned immutable URLs
@@ -99,16 +100,21 @@ meme_rollout:
       state: production
       deployment_commit: fe4ee7203bec49629278c8ea188b38d8c1a0f331
       deployment_version: 89823803-1648-42e5-b40e-60feddeb6c56
+    - person: Demis Hassabis
+      id: demis
+      source: public YouTube interview thumbnails from Google DeepMind, Lex Fridman, Stanford GSB, Nobel Prize Outreach, and 60 Minutes
+      state: production
+      deployment_commit: 5fc92bcd239e7d8dbd6e5a82ca2d3f1553784e3b
+      deployment_version: a94f65c2-9c39-4742-a176-886fab5d8a30
       validation: >-
-        Initial Wikimedia source attempts failed under GitHub-hosted CI due HTTP 429. The final Imgflip pack
-        passed PR CI and main CI; Deploy generated all 48 cards and explicitly uploaded dario-0.png through
-        dario-5.png; production health/readiness and crawler-card smoke tests passed.
-  remaining_order:
-    - demis
+        PR CI and main CI passed under strict remote-asset mode; Deploy generated all 48 cards and explicitly
+        uploaded demis-0.png through demis-5.png; production health/readiness and crawler-card smoke tests passed.
+  remaining_order: []
 open_verification:
-  - After Demis is complete, run a production crawler/card sweep across all 8 people and 6 ranks.
+  - Add and run a production crawler/card sweep across all 8 people and 6 ranks.
   - End-to-end browser verification of anonymous vote upsert semantics remains a launch-level manual check.
   - Mobile/X in-app browser behavior remains a launch-level manual check.
+  - Decide whether to keep the workers.dev URL or attach a custom domain for public launch.
 last_checkpoint:
-  saved_at: 2026-08-27T23:32:00+08:00
-  reason: Dario Amodei six-rank image pack completed, deployed, and verified before moving to Demis Hassabis
+  saved_at: 2026-08-27T23:40:00+08:00
+  reason: Demis Hassabis six-rank image pack completed, deployed, and verified; all eight initial visual packs are now in production
