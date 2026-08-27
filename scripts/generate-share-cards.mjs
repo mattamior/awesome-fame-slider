@@ -11,13 +11,7 @@ const MUSK_RANK_IMAGES=bianzu('musk',['v2-00-nan.webp','v1-02-lao.webp','v1-03-z
 const HUANG_RANK_IMAGES=['https://i.imgflip.com/8fdvq3.png','https://i.imgflip.com/619cwz.png','https://i.imgflip.com/9fxjcj.png','https://i.imgflip.com/4eh9y9.jpg','https://i.imgflip.com/9fvflj.jpg','https://i.imgflip.com/8z7k4x.png'];
 const ZUCK_RANK_IMAGES=['https://i.kym-cdn.com/photos/images/original/001/875/863/04d.png','https://i.kym-cdn.com/photos/images/original/001/361/248/ce2.jpeg','https://i.imgflip.com/37gc2f.png','https://i.imgflip.com/4g9c0h.jpg','https://i.imgflip.com/7s77r8.jpg','https://i.imgflip.com/66fabj.jpg'];
 const ALTMAN_RANK_IMAGES=['https://i.imgflip.com/86zdzo.png','https://i.imgflip.com/86ojl6.png','https://i.imgflip.com/80n9l4.jpg','https://i.imgflip.com/aetmra.png','https://i.imgflip.com/9ghfcx.png','https://i.imgflip.com/a2cbqu.jpg'];
-const DARIO_RANK_IMAGES=[
-'https://upload.wikimedia.org/wikipedia/commons/1/17/Dario_Amodei_at_TechCrunch_Disrupt_2023_01_%28cropped_2%29.jpg',
-'https://upload.wikimedia.org/wikipedia/commons/d/d8/Dario_Amodei_at_TechCrunch_Disrupt_2023_02.jpg',
-'https://upload.wikimedia.org/wikipedia/commons/d/df/Dario_Amodei_at_TechCrunch_Disrupt_2023_03.jpg',
-'https://upload.wikimedia.org/wikipedia/commons/3/35/Dario_Amodei_at_TechCrunch_Disrupt_2023_04.jpg',
-'https://upload.wikimedia.org/wikipedia/commons/8/8b/Dario_Amodei_at_TechCrunch_Disrupt_2023_06.jpg',
-'https://upload.wikimedia.org/wikipedia/commons/3/37/Dario_Amodei_at_TechCrunch_Disrupt_2023_08.jpg'];
+const DARIO_RANK_IMAGES=['https://i.imgflip.com/2/aw0dpn.jpg','https://i.imgflip.com/ao4swp.png','https://i.imgflip.com/2/apqq2f.jpg','https://i.imgflip.com/2/avgcsc.jpg','https://i.imgflip.com/attuh6.png','https://i.imgflip.com/am7eh2.jpg'];
 
 const people=[
 {id:'liang',avatarIndex:0,rankImageUrls:LIANG_RANK_IMAGES,sourceLabel:'makerjackie/bianzu · liang',name:'Liang Wenfeng',role:'DeepSeek',ranks:standard('Liang')},
@@ -26,7 +20,7 @@ const people=[
 {id:'tibo',avatarIndex:3,rankImageUrls:TIBO_RANK_IMAGES,sourceLabel:'makerjackie/bianzu · tibo',name:'Tibo Sottiaux',role:'Codex',ranks:standard('Tibo')},
 {id:'huang',avatarIndex:4,rankImageUrls:HUANG_RANK_IMAGES,sourceLabel:'Imgflip · Jensen Huang meme templates',name:'Jensen Huang',role:'NVIDIA',ranks:standard('Huang')},
 {id:'zuck',avatarIndex:5,rankImageUrls:ZUCK_RANK_IMAGES,sourceLabel:'Know Your Meme + Imgflip · Zuckerberg memes',name:'Mark Zuckerberg',role:'Meta',ranks:standard('Zuck')},
-{id:'dario',avatarIndex:6,rankImageUrls:DARIO_RANK_IMAGES,sourceLabel:'Wikimedia Commons · TechCrunch Disrupt 2023',name:'Dario Amodei',role:'Anthropic',ranks:standard('Dario')},
+{id:'dario',avatarIndex:6,rankImageUrls:DARIO_RANK_IMAGES,sourceLabel:'Imgflip · Dario Amodei / Anthropic memes',name:'Dario Amodei',role:'Anthropic',ranks:standard('Dario')},
 {id:'demis',avatarIndex:7,name:'Demis Hassabis',role:'Google DeepMind',ranks:standard('Hassabis')}];
 
 const outputDir=path.resolve('public/share-cards');
