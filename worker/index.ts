@@ -87,13 +87,14 @@ export function shareCardPath(personId: string, rank: number) {
   return `/share-cards/${encodeURIComponent(personId)}-${rank}.png`;
 }
 
-export function sharePageHtml(personId: string, rank: number, requestOrigin: string) {
+export function sharePageHtml(personId: string, rank: number, requestUrl: string) {
   const person = PEOPLE[personId];
   const verdict = person?.ranks[rank];
   if (!person || !verdict) return null;
 
-  const origin = new URL(requestOrigin).origin;
-  const pageUrl = `${origin}${sharePath(personId, rank)}`;
+  const requested = new URL(requestUrl);
+  const origin = requested.origin;
+  const pageUrl = `${origin}${sharePath(personId, rank)}${requested.search}`;
   const appUrl = `${origin}/?who=${encodeURIComponent(personId)}&rank=${rank}&from=share`;
   const imageUrl = `${origin}${shareCardPath(personId, rank)}`;
   const title = `${verdict.zh} · ${person.name} | Slide Rheostat`;
@@ -106,20 +107,25 @@ export function sharePageHtml(personId: string, rank: number, requestOrigin: str
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
   <link rel="canonical" href="${escapeHtml(pageUrl)}" />
+  <link rel="preload" as="image" href="${escapeHtml(imageUrl)}" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="${escapeHtml(title)}" />
   <meta property="og:description" content="${escapeHtml(description)}" />
   <meta property="og:url" content="${escapeHtml(pageUrl)}" />
   <meta property="og:image" content="${escapeHtml(imageUrl)}" />
+  <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}" />
+  <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="675" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${escapeHtml(title)}" />
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
+  <meta name="twitter:image:src" content="${escapeHtml(imageUrl)}" />
   <meta name="twitter:image:alt" content="${escapeHtml(`${person.name}: ${verdict.en}, rank ${rank + 1} of 6`)}" />
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(appUrl)}" />
+  <script>window.location.replace(${JSON.stringify(appUrl)});</script>
 </head>
 <body>
   <p><a href="${escapeHtml(appUrl)}">Open this verdict in Slide Rheostat</a></p>
@@ -233,12 +239,13 @@ async function readiness(env: Env) {
 }
 
 function sharePage(personId: string, rank: number, request: Request) {
-  const page = sharePageHtml(personId, rank, new URL(request.url).origin);
+  const page = sharePageHtml(personId, rank, request.url);
   if (!page) return new Response('Unknown verdict', { status: 404 });
   return new Response(page, {
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, max-age=3600',
+      'cache-control': 'public, max-age=300, s-maxage=300',
+      'x-robots-tag': 'all',
     },
   });
 }
