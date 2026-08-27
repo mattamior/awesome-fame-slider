@@ -66,8 +66,6 @@ const HUANG_RANK_IMAGES = [
 ] as const;
 const HUANG_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=jensen%20huang';
 
-// Six existing Zuckerberg meme frames: sunscreen/Data cosplay, congressional "human" hearing,
-// cheerful survey-taker, smoking meats, window stare, and Metaverse presentation.
 const ZUCK_RANK_IMAGES = [
   'https://i.kym-cdn.com/photos/images/original/001/875/863/04d.png',
   'https://i.kym-cdn.com/photos/images/original/001/361/248/ce2.jpeg',
@@ -78,6 +76,18 @@ const ZUCK_RANK_IMAGES = [
 ] as const;
 const ZUCK_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=mark%20zuckerberg';
 
+// Existing Imgflip Sam Altman frames: skeptical cutout, OpenAI guest badge,
+// goofy selfie, hearing laugh, Uncle-Sam cosplay, and press-sunglasses pose.
+const ALTMAN_RANK_IMAGES = [
+  'https://i.imgflip.com/86zdzo.png',
+  'https://i.imgflip.com/86ojl6.png',
+  'https://i.imgflip.com/80n9l4.jpg',
+  'https://i.imgflip.com/aetmra.png',
+  'https://i.imgflip.com/9ghfcx.png',
+  'https://i.imgflip.com/a2cbqu.jpg',
+] as const;
+const ALTMAN_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=sam%20altman';
+
 export const PEOPLE: Person[] = [
   {
     id: 'liang', name: 'Liang Wenfeng', nameZh: '梁文锋', role: 'DeepSeek', accent: '梁', avatarIndex: 0,
@@ -87,7 +97,10 @@ export const PEOPLE: Person[] = [
     id: 'musk', name: 'Elon Musk', nameZh: '马斯克', role: 'xAI · Tesla · SpaceX', accent: '马', avatarIndex: 1,
     avatarUrl: MUSK_RANK_IMAGES[2], rankImageUrls: MUSK_RANK_IMAGES, avatarSourceUrl: MUSK_MEME_SOURCE, ranks: standard('马'),
   },
-  { id: 'altman', name: 'Sam Altman', nameZh: '奥特曼', role: 'OpenAI', accent: '奥', avatarIndex: 2, ranks: standard('奥') },
+  {
+    id: 'altman', name: 'Sam Altman', nameZh: '奥特曼', role: 'OpenAI', accent: '奥', avatarIndex: 2,
+    avatarUrl: ALTMAN_RANK_IMAGES[2], rankImageUrls: ALTMAN_RANK_IMAGES, avatarSourceUrl: ALTMAN_MEME_SOURCE, ranks: standard('奥'),
+  },
   {
     id: 'tibo', name: 'Tibo Sottiaux', nameZh: 'Tibo', role: 'Codex', accent: 'T', avatarIndex: 3,
     avatarUrl: TIBO_RANK_IMAGES[2], rankImageUrls: TIBO_RANK_IMAGES, avatarSourceUrl: TIBO_MEME_SOURCE, ranks: standard('Tibo'),

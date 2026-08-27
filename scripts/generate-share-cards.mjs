@@ -12,11 +12,12 @@ const TIBO_RANK_IMAGES = bianzu('tibo', ['y-00-nan.webp','y-02-lao.webp','y-03-z
 const MUSK_RANK_IMAGES = bianzu('musk', ['v2-00-nan.webp','v1-02-lao.webp','v1-03-zi.webp','v1-04-saint.webp','v1-05-god.webp','v1-06-ancestor.webp']);
 const HUANG_RANK_IMAGES = ['https://i.imgflip.com/8fdvq3.png','https://i.imgflip.com/619cwz.png','https://i.imgflip.com/9fxjcj.png','https://i.imgflip.com/4eh9y9.jpg','https://i.imgflip.com/9fvflj.jpg','https://i.imgflip.com/8z7k4x.png'];
 const ZUCK_RANK_IMAGES = ['https://i.kym-cdn.com/photos/images/original/001/875/863/04d.png','https://i.kym-cdn.com/photos/images/original/001/361/248/ce2.jpeg','https://i.imgflip.com/37gc2f.png','https://i.imgflip.com/4g9c0h.jpg','https://i.imgflip.com/7s77r8.jpg','https://i.imgflip.com/66fabj.jpg'];
+const ALTMAN_RANK_IMAGES = ['https://i.imgflip.com/86zdzo.png','https://i.imgflip.com/86ojl6.png','https://i.imgflip.com/80n9l4.jpg','https://i.imgflip.com/aetmra.png','https://i.imgflip.com/9ghfcx.png','https://i.imgflip.com/a2cbqu.jpg'];
 
 const people = [
   { id:'liang', avatarIndex:0, rankImageUrls:LIANG_RANK_IMAGES, sourceLabel:'makerjackie/bianzu · liang', name:'Liang Wenfeng', role:'DeepSeek', ranks:standard('Liang') },
   { id:'musk', avatarIndex:1, rankImageUrls:MUSK_RANK_IMAGES, sourceLabel:'makerjackie/bianzu · musk', name:'Elon Musk', role:'xAI / Tesla / SpaceX', ranks:standard('Musk') },
-  { id:'altman', avatarIndex:2, name:'Sam Altman', role:'OpenAI', ranks:standard('Altman') },
+  { id:'altman', avatarIndex:2, rankImageUrls:ALTMAN_RANK_IMAGES, sourceLabel:'Imgflip · Sam Altman meme templates', name:'Sam Altman', role:'OpenAI', ranks:standard('Altman') },
   { id:'tibo', avatarIndex:3, rankImageUrls:TIBO_RANK_IMAGES, sourceLabel:'makerjackie/bianzu · tibo', name:'Tibo Sottiaux', role:'Codex', ranks:standard('Tibo') },
   { id:'huang', avatarIndex:4, rankImageUrls:HUANG_RANK_IMAGES, sourceLabel:'Imgflip · Jensen Huang meme templates', name:'Jensen Huang', role:'NVIDIA', ranks:standard('Huang') },
   { id:'zuck', avatarIndex:5, rankImageUrls:ZUCK_RANK_IMAGES, sourceLabel:'Know Your Meme + Imgflip · Zuckerberg memes', name:'Mark Zuckerberg', role:'Meta', ranks:standard('Zuck') },
