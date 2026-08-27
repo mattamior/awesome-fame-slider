@@ -11,8 +11,9 @@ const standard = (surname) => [
   `Ancestor ${surname}`,
 ];
 
-const LIANG_BIANZU_REV = '3f6f20fd260dd791e0a2ccd4676db1e47f793fa0';
-const LIANG_BIANZU_BASE = `https://raw.githubusercontent.com/makerjackie/bianzu/${LIANG_BIANZU_REV}/public/ranks/liang`;
+const BIANZU_REV = '3f6f20fd260dd791e0a2ccd4676db1e47f793fa0';
+
+const LIANG_BIANZU_BASE = `https://raw.githubusercontent.com/makerjackie/bianzu/${BIANZU_REV}/public/ranks/liang`;
 const LIANG_RANK_IMAGES = [
   `${LIANG_BIANZU_BASE}/y-00-nan.webp`,
   `${LIANG_BIANZU_BASE}/y-02-lao.webp`,
@@ -22,11 +23,21 @@ const LIANG_RANK_IMAGES = [
   `${LIANG_BIANZU_BASE}/y-06-zu.webp`,
 ];
 
+const TIBO_BIANZU_BASE = `https://raw.githubusercontent.com/makerjackie/bianzu/${BIANZU_REV}/public/ranks/tibo`;
+const TIBO_RANK_IMAGES = [
+  `${TIBO_BIANZU_BASE}/y-00-nan.webp`,
+  `${TIBO_BIANZU_BASE}/y-02-lao.webp`,
+  `${TIBO_BIANZU_BASE}/y-03-zi.webp`,
+  `${TIBO_BIANZU_BASE}/y-04-saint.webp`,
+  `${TIBO_BIANZU_BASE}/y-05-god.webp`,
+  `${TIBO_BIANZU_BASE}/y-06-zu.webp`,
+];
+
 const people = [
-  { id: 'liang', avatarIndex: 0, rankImageUrls: LIANG_RANK_IMAGES, name: 'Liang Wenfeng', role: 'DeepSeek', ranks: standard('Liang') },
+  { id: 'liang', avatarIndex: 0, rankImageUrls: LIANG_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · liang', name: 'Liang Wenfeng', role: 'DeepSeek', ranks: standard('Liang') },
   { id: 'musk', avatarIndex: 1, name: 'Elon Musk', role: 'xAI / Tesla / SpaceX', ranks: standard('Musk') },
   { id: 'altman', avatarIndex: 2, name: 'Sam Altman', role: 'OpenAI', ranks: standard('Altman') },
-  { id: 'tibo', avatarIndex: 3, name: 'Tibo Sottiaux', role: 'Codex', ranks: standard('Tibo') },
+  { id: 'tibo', avatarIndex: 3, rankImageUrls: TIBO_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · tibo', name: 'Tibo Sottiaux', role: 'Codex', ranks: standard('Tibo') },
   { id: 'huang', avatarIndex: 4, name: 'Jensen Huang', role: 'NVIDIA', ranks: standard('Huang') },
   { id: 'zuck', avatarIndex: 5, name: 'Mark Zuckerberg', role: 'Meta', ranks: standard('Zuck') },
   { id: 'dario', avatarIndex: 6, name: 'Dario Amodei', role: 'Anthropic', ranks: standard('Dario') },
@@ -63,11 +74,17 @@ async function fetchImagePngData(url) {
 
 const avatarSprite = await readFile(path.resolve('public/avatars.svg'));
 const avatarData = avatarSprite.toString('base64');
-const liangRankData = await Promise.all(LIANG_RANK_IMAGES.map(fetchImagePngData));
+const rankImageData = new Map();
+for (const person of people) {
+  if (person.rankImageUrls) {
+    rankImageData.set(person.id, await Promise.all(person.rankImageUrls.map(fetchImagePngData)));
+  }
+}
 
 function memeAvatar(person, rank, x, y, size) {
-  if (person.id === 'liang' && liangRankData[rank]) {
-    return `<image x="${x}" y="${y}" width="${size}" height="${size}" href="data:image/png;base64,${liangRankData[rank]}" preserveAspectRatio="xMidYMid meet" />`;
+  const data = rankImageData.get(person.id)?.[rank];
+  if (data) {
+    return `<image x="${x}" y="${y}" width="${size}" height="${size}" href="data:image/png;base64,${data}" preserveAspectRatio="xMidYMid meet" />`;
   }
 
   const avatarViewX = person.avatarIndex * 256;
@@ -84,7 +101,7 @@ function memeAvatar(person, rank, x, y, size) {
     </svg>`;
 }
 
-function liangCard(person, rank) {
+function memeCard(person, rank) {
   const dots = Array.from({ length: 6 }, (_, index) => {
     const x = 100 + index * 170;
     const selected = index === rank;
@@ -105,7 +122,7 @@ function liangCard(person, rank) {
       <rect width="1200" height="675" fill="url(#paper-lines)" />
       <rect x="28" y="28" width="1144" height="619" fill="none" stroke="#171717" stroke-width="10" />
       <rect x="55" y="55" width="670" height="48" rx="4" fill="#171717" />
-      <text x="78" y="90" font-family="DejaVu Sans, Arial, sans-serif" font-size="27" font-weight="800" fill="#f0dfbd" letter-spacing="2">SLIDE RHEOSTAT / LIANG MEME METER</text>
+      <text x="78" y="90" font-family="DejaVu Sans, Arial, sans-serif" font-size="27" font-weight="800" fill="#f0dfbd" letter-spacing="2">SLIDE RHEOSTAT / ${escapeXml(person.id.toUpperCase())} MEME METER</text>
 
       <text x="72" y="190" font-family="DejaVu Sans, Arial, sans-serif" font-size="70" font-weight="900" fill="#171717">${escapeXml(person.name)}</text>
       <text x="75" y="235" font-family="DejaVu Sans, Arial, sans-serif" font-size="29" font-weight="700" fill="#5f5546">${escapeXml(person.role)} · INTERNET STATUS RHEOSTAT</text>
@@ -121,7 +138,7 @@ function liangCard(person, rank) {
       <text x="1014" y="402" text-anchor="middle" font-family="DejaVu Sans Mono, monospace" font-size="18" font-weight="800" fill="#6b5c48">RANK-SPECIFIC MEME PORTRAIT</text>
 
       <text x="72" y="545" font-family="DejaVu Sans Mono, monospace" font-size="26" font-weight="900" fill="#171717">RANK ${rank + 1} / 6</text>
-      <text x="72" y="588" font-family="DejaVu Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#6b5c48">VISUAL SET: makerjackie/bianzu · parody / internet sentiment</text>
+      <text x="72" y="588" font-family="DejaVu Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#6b5c48">VISUAL SET: ${escapeXml(person.sourceLabel || 'internet meme pack')} · parody / internet sentiment</text>
       <text x="1125" y="585" text-anchor="end" font-family="DejaVu Sans, Arial, sans-serif" font-size="22" font-weight="900" fill="#171717">CAST YOUR VERDICT →</text>
     </svg>`;
 }
@@ -167,7 +184,7 @@ function standardCard(person, rank) {
 
 for (const person of people) {
   for (let rank = 0; rank < 6; rank += 1) {
-    const svg = person.id === 'liang' ? liangCard(person, rank) : standardCard(person, rank);
+    const svg = person.rankImageUrls ? memeCard(person, rank) : standardCard(person, rank);
     await sharp(Buffer.from(svg), { density: 144 }).png().toFile(path.join(outputDir, `${person.id}-${rank}.png`));
   }
 }
