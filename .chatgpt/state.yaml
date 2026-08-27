@@ -93,5 +93,5 @@ open_verification:
   - True-device mobile browser verification of layout, cookie persistence, and native share sheet behavior.
   - True-device X in-app browser verification of Web Intent/native-share handoff and return-to-site behavior.
 last_checkpoint:
-  saved_at: 2026-08-28T00:46:00+08:00
-  reason: checkpoint after automated production verification reached full green; only true-device mobile and X in-app verification remains
+  saved_at: 2026-08-28T01:49:00+08:00
+  reason: checkpoint after public branding was fully aligned to Awesome Fame Slider and production revision v5 passed all automated verification
