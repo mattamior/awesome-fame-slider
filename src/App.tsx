@@ -5,7 +5,7 @@ import './styles.css';
 type VoteSummary = { counts: number[]; total: number; leader: number };
 
 const NEUTRAL_RANK = 2;
-const SHARE_CARD_REV = '4';
+const SHARE_CARD_REV = '5';
 
 function emptySummary(personId: string): VoteSummary {
   const counts = EMPTY_VOTES[personId] || [0, 0, 0, 0, 0, 0];
@@ -256,7 +256,7 @@ export default function App() {
       <header>
         <div>
           <p className="eyebrow">REPUTATION RHEOSTAT</p>
-          <h1>Slide Rheostat</h1>
+          <h1>Awesome Fame Slider</h1>
           <p className="dek">Pick a person. Slide their status. Cast your vote. Share the verdict.</p>
         </div>
         <a className="github" href="https://github.com/mattamior/awesome-fame-slider" target="_blank" rel="noreferrer">GitHub ↗</a>

@@ -128,7 +128,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          expected_share_rev=4
+          expected_share_rev=5
           ready=0
           for attempt in $(seq 1 24); do
             echo "Revision/readiness attempt $attempt/24"
@@ -159,7 +159,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          share_rev=4
+          share_rev=5
           share_url="$DEPLOY_URL/share/liang/5?v=$share_rev"
           card_url="$DEPLOY_URL/share-cards/liang-5.png?v=$share_rev"
 
@@ -194,7 +194,7 @@ jobs:
         run: |
           set -euo pipefail
           people=(liang musk altman tibo huang zuck dario demis)
-          share_rev=4
+          share_rev=5
           sweep_dir="$(mktemp -d)"
 
           for person in "${people[@]}"; do
