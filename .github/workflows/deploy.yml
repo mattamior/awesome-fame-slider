@@ -180,3 +180,144 @@ jobs:
           tr -d '\r' < /tmp/card-headers.txt | grep -Ei '^content-type: image/png'
           test -s /tmp/liang-5.png
           echo "Production X-card smoke test passed"
+
+      - name: Verify all 48 production share cards
+        shell: bash
+        run: |
+          set -euo pipefail
+          people=(liang musk altman tibo huang zuck dario demis)
+          sweep_dir="$(mktemp -d)"
+
+          for person in "${people[@]}"; do
+            for rank in 0 1 2 3 4 5; do
+              share_url="$DEPLOY_URL/share/$person/$rank?verify=$DEPLOY_SHA"
+              card_url="$DEPLOY_URL/share-cards/$person-$rank.png"
+              html="$sweep_dir/$person-$rank.html"
+              headers="$sweep_dir/$person-$rank.headers"
+              png="$sweep_dir/$person-$rank.png"
+
+              echo "Checking $person rank $rank"
+              curl --fail --show-error --silent \
+                -A 'Twitterbot/1.0' \
+                -o "$html" \
+                "$share_url"
+
+              grep -F '<meta name="twitter:card" content="summary_large_image"' "$html" >/dev/null
+              grep -F "<meta name=\"twitter:image\" content=\"$card_url\"" "$html" >/dev/null
+              grep -F "<meta property=\"og:image\" content=\"$card_url\"" "$html" >/dev/null
+              grep -F '<meta property="og:image:type" content="image/png"' "$html" >/dev/null
+              grep -F '<meta property="og:image:width" content="1200"' "$html" >/dev/null
+              grep -F '<meta property="og:image:height" content="675"' "$html" >/dev/null
+              if grep -F 'http-equiv="refresh"' "$html" >/dev/null; then
+                echo "::error::$share_url contains a crawler-hostile meta refresh"
+                exit 1
+              fi
+
+              curl --fail --show-error --silent \
+                -A 'Twitterbot/1.0' \
+                -D "$headers" \
+                -o "$png" \
+                "$card_url"
+              tr -d '\r' < "$headers" | grep -Ei '^content-type: image/png' >/dev/null
+              test -s "$png"
+            done
+          done
+
+          SWEEP_DIR="$sweep_dir" node --input-type=module <<'NODE'
+          import path from 'node:path';
+          import sharp from 'sharp';
+
+          const people = ['liang', 'musk', 'altman', 'tibo', 'huang', 'zuck', 'dario', 'demis'];
+          for (const person of people) {
+            for (let rank = 0; rank < 6; rank += 1) {
+              const file = path.join(process.env.SWEEP_DIR, `${person}-${rank}.png`);
+              const metadata = await sharp(file).metadata();
+              if (metadata.format !== 'png' || metadata.width !== 1200 || metadata.height !== 675) {
+                throw new Error(`${person}-${rank}.png is ${metadata.format} ${metadata.width}x${metadata.height}, expected png 1200x675`);
+              }
+            }
+          }
+          console.log('Verified all 48 production share pages and 48 PNG cards at 1200x675');
+          NODE
+
+      - name: Verify production anonymous vote upsert
+        shell: bash
+        run: |
+          set -euo pipefail
+          person='demis'
+          first_rank=1
+          second_rank=4
+          token="$(node -e "process.stdout.write(require('node:crypto').randomBytes(24).toString('base64url'))")"
+          voter_id="$(TOKEN="$token" node -e "const c=require('node:crypto');process.stdout.write(c.createHash('sha256').update('awesome-fame-slider-v1|voter|'+process.env.TOKEN).digest('base64url'))")"
+
+          cleanup_vote() {
+            npx wrangler d1 execute awesome-fame-slider-db --remote \
+              --command "DELETE FROM anonymous_votes WHERE voter_id = '$voter_id' AND person_id = '$person';" \
+              >/dev/null 2>&1 || true
+          }
+          trap cleanup_vote EXIT
+          cleanup_vote
+
+          vote_url="$DEPLOY_URL/api/people/$person/vote"
+          curl --fail --show-error --silent \
+            -X POST \
+            -H 'content-type: application/json' \
+            -H "origin: $DEPLOY_URL" \
+            -H "cookie: sr_voter=$token" \
+            --data "{\"rank\":$first_rank}" \
+            "$vote_url" >/tmp/vote-first.json
+
+          first_state="$(npx wrangler d1 execute awesome-fame-slider-db --remote --json \
+            --command "SELECT rank, COUNT(*) OVER () AS rows_for_voter FROM anonymous_votes WHERE voter_id = '$voter_id' AND person_id = '$person';" \
+            | node -e '
+                let input="";
+                process.stdin.setEncoding("utf8");
+                process.stdin.on("data",chunk=>input+=chunk);
+                process.stdin.on("end",()=>{
+                  const payload=JSON.parse(input);
+                  const rows=(Array.isArray(payload)?payload[0]?.results:payload?.results)||[];
+                  if(rows.length!==1) process.exit(2);
+                  process.stdout.write(`${rows[0].rank}:${rows[0].rows_for_voter}`);
+                });
+              ')"
+          test "$first_state" = "$first_rank:1"
+
+          curl --fail --show-error --silent \
+            -X POST \
+            -H 'content-type: application/json' \
+            -H "origin: $DEPLOY_URL" \
+            -H "cookie: sr_voter=$token" \
+            --data "{\"rank\":$second_rank}" \
+            "$vote_url" >/tmp/vote-second.json
+
+          second_state="$(npx wrangler d1 execute awesome-fame-slider-db --remote --json \
+            --command "SELECT rank, COUNT(*) OVER () AS rows_for_voter FROM anonymous_votes WHERE voter_id = '$voter_id' AND person_id = '$person';" \
+            | node -e '
+                let input="";
+                process.stdin.setEncoding("utf8");
+                process.stdin.on("data",chunk=>input+=chunk);
+                process.stdin.on("end",()=>{
+                  const payload=JSON.parse(input);
+                  const rows=(Array.isArray(payload)?payload[0]?.results:payload?.results)||[];
+                  if(rows.length!==1) process.exit(2);
+                  process.stdout.write(`${rows[0].rank}:${rows[0].rows_for_voter}`);
+                });
+              ')"
+          test "$second_state" = "$second_rank:1"
+
+          cleanup_vote
+          remaining="$(npx wrangler d1 execute awesome-fame-slider-db --remote --json \
+            --command "SELECT COUNT(*) AS count FROM anonymous_votes WHERE voter_id = '$voter_id' AND person_id = '$person';" \
+            | node -e '
+                let input="";
+                process.stdin.setEncoding("utf8");
+                process.stdin.on("data",chunk=>input+=chunk);
+                process.stdin.on("end",()=>{
+                  const payload=JSON.parse(input);
+                  const rows=(Array.isArray(payload)?payload[0]?.results:payload?.results)||[];
+                  process.stdout.write(String(rows[0]?.count ?? -1));
+                });
+              ')"
+          test "$remaining" = '0'
+          trap - EXIT
+          echo 'Production anonymous vote upsert smoke test passed and temporary vote was removed'
