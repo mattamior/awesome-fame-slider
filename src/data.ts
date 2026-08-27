@@ -45,6 +45,17 @@ const TIBO_RANK_IMAGES = [
 ] as const;
 const TIBO_MEME_SOURCE = `https://github.com/makerjackie/bianzu/tree/${BIANZU_REV}/public/ranks/tibo`;
 
+const MUSK_BIANZU_BASE = `https://raw.githubusercontent.com/makerjackie/bianzu/${BIANZU_REV}/public/ranks/musk`;
+const MUSK_RANK_IMAGES = [
+  `${MUSK_BIANZU_BASE}/v2-00-nan.webp`,
+  `${MUSK_BIANZU_BASE}/v1-02-lao.webp`,
+  `${MUSK_BIANZU_BASE}/v1-03-zi.webp`,
+  `${MUSK_BIANZU_BASE}/v1-04-saint.webp`,
+  `${MUSK_BIANZU_BASE}/v1-05-god.webp`,
+  `${MUSK_BIANZU_BASE}/v1-06-ancestor.webp`,
+] as const;
+const MUSK_MEME_SOURCE = `https://github.com/makerjackie/bianzu/tree/${BIANZU_REV}/public/ranks/musk`;
+
 export const PEOPLE: Person[] = [
   {
     id: 'liang',
@@ -58,7 +69,18 @@ export const PEOPLE: Person[] = [
     avatarSourceUrl: LIANG_MEME_SOURCE,
     ranks: standard('梁'),
   },
-  { id: 'musk', name: 'Elon Musk', nameZh: '马斯克', role: 'xAI · Tesla · SpaceX', accent: '马', avatarIndex: 1, ranks: standard('马') },
+  {
+    id: 'musk',
+    name: 'Elon Musk',
+    nameZh: '马斯克',
+    role: 'xAI · Tesla · SpaceX',
+    accent: '马',
+    avatarIndex: 1,
+    avatarUrl: MUSK_RANK_IMAGES[2],
+    rankImageUrls: MUSK_RANK_IMAGES,
+    avatarSourceUrl: MUSK_MEME_SOURCE,
+    ranks: standard('马'),
+  },
   { id: 'altman', name: 'Sam Altman', nameZh: '奥特曼', role: 'OpenAI', accent: '奥', avatarIndex: 2, ranks: standard('奥') },
   {
     id: 'tibo',
