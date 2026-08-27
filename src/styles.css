@@ -54,8 +54,20 @@ h1{font-size:clamp(42px,8vw,86px);line-height:.9;letter-spacing:-.065em;margin:1
   background-repeat:no-repeat;
   background-size:800% 100%;
 }
+.avatar-photo{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+}
 .avatar-fallback{position:relative;z-index:1;font-weight:900}
+.meme-avatar{background:transparent}
+.meme-avatar .avatar-photo{transform:scale(1.06)}
 .mini-avatar{width:30px;height:30px;border-radius:50%;border:1px solid #9e8d70}
+.mini-avatar.meme-avatar{border:0;overflow:visible}
 .subject-avatar{
   width:88px;
   height:88px;
@@ -63,6 +75,15 @@ h1{font-size:clamp(42px,8vw,86px);line-height:.9;letter-spacing:-.065em;margin:1
   border:4px solid #cdbd9f;
   box-shadow:0 9px 22px #332c2240;
 }
+.subject-avatar.meme-avatar{
+  width:104px;
+  height:104px;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  overflow:visible;
+}
+.subject-avatar.meme-avatar .avatar-photo{transform:scale(1.12)}
 .subject-avatar .avatar-fallback{font-size:28px}
 
 .instrument{
@@ -73,11 +94,25 @@ h1{font-size:clamp(42px,8vw,86px);line-height:.9;letter-spacing:-.065em;margin:1
   background:linear-gradient(145deg,#eee5d0,#d7cdb8);
   box-shadow:0 30px 70px #5b51372f,inset 0 1px #fff9;
 }
+.instrument.meme-person{
+  background:
+    radial-gradient(circle at 16% 22%,#fff7dfaa 0,transparent 26%),
+    linear-gradient(145deg,#eee5d0,#d7cdb8);
+}
 .plate-top{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}
 .subject{display:flex;align-items:center;gap:16px;min-width:0}
 .subject-copy{display:grid;gap:5px;min-width:0}
 .plate-top strong{font-size:30px}
 .plate-top small{color:#6c6251}
+.meme-source{
+  width:max-content;
+  color:#7b3428;
+  font:800 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.08em;
+  text-decoration:none;
+  border-bottom:1px dotted currentColor;
+  margin-top:3px;
+}
 .community{display:grid;gap:5px;text-align:right}
 .track-wrap{position:relative;margin:58px 34px 40px;height:112px}
 .coil{
@@ -90,6 +125,11 @@ h1{font-size:clamp(42px,8vw,86px);line-height:.9;letter-spacing:-.065em;margin:1
   background:repeating-linear-gradient(90deg,#a84531 0 7px,#6c2b20 7px 11px);
   border-radius:10px;
   box-shadow:0 4px 0 #3f3328;
+}
+.meme-person .coil{
+  border-color:#66533c;
+  background:repeating-linear-gradient(90deg,#b99261 0 8px,#70583a 8px 11px);
+  box-shadow:0 4px 0 #3f3328,0 0 0 2px #d9c49e55;
 }
 input[type=range]{position:absolute;inset:0;width:100%;opacity:0;cursor:grab;z-index:4;touch-action:pan-y}
 input[type=range]:disabled{cursor:default}
@@ -108,7 +148,15 @@ input[type=range]:disabled{cursor:default}
   transition:left .12s ease;
   overflow:hidden;
 }
+.meme-person .thumb-face{
+  background:transparent;
+  border:0;
+  box-shadow:0 10px 18px #332c2255;
+  overflow:visible;
+}
 .thumb-avatar{width:100%;height:100%;border-radius:50%;background:#252119}
+.thumb-avatar.meme-avatar{background:transparent;border-radius:0;overflow:visible}
+.thumb-avatar.meme-avatar .avatar-photo{transform:scale(1.18)}
 .thumb-avatar .avatar-fallback{font-size:25px}
 .rank-labels{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .rank-labels button{
@@ -121,10 +169,12 @@ input[type=range]:disabled{cursor:default}
   touch-action:manipulation;
 }
 .rank-labels button.chosen{color:#211e18;font-weight:900;border-top:4px solid #211e18}
+.meme-person .rank-labels button.chosen{color:#7b241b;border-color:#7b241b}
 .selected-card{margin:28px 0 18px;border:1px dashed #8d816d;border-radius:14px;padding:18px;display:flex;align-items:baseline;gap:12px}
 .selected-card span{font:700 11px ui-monospace;letter-spacing:.14em}
 .selected-card strong{font-size:30px}
 .selected-card em{color:#6e6453}
+.meme-person .selected-card strong{color:#7b241b}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .vote,.share{width:100%;border-radius:12px;padding:16px 20px;font-weight:900;font-size:17px;cursor:pointer;touch-action:manipulation}
 .vote{border:0;background:#111;color:white}
@@ -152,6 +202,7 @@ footer{text-align:center;color:#756a58;padding:28px 0 0;font-size:12px}
   .instrument{padding:18px;border-radius:18px}
   .plate-top{gap:14px}
   .subject-avatar{width:68px;height:68px;border-width:3px}
+  .subject-avatar.meme-avatar{width:80px;height:80px}
   .subject{gap:11px}
   .plate-top strong{font-size:21px}
   .plate-top small{font-size:11px}
@@ -173,6 +224,7 @@ footer{text-align:center;color:#756a58;padding:28px 0 0;font-size:12px}
 }
 @media(max-width:420px){
   .subject-avatar{width:60px;height:60px}
+  .subject-avatar.meme-avatar{width:72px;height:72px}
   .track-wrap{margin-inline:12px}
   .rank-labels{font-size:9px}
   .thumb-face{transition:none}
