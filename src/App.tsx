@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { EMPTY_VOTES, PEOPLE } from './data';
+import { EMPTY_VOTES, PEOPLE, type Person } from './data';
 import './styles.css';
 
 type VoteSummary = { counts: number[]; total: number; leader: number };
@@ -9,6 +9,23 @@ const NEUTRAL_RANK = 2;
 function emptySummary(personId: string): VoteSummary {
   const counts = EMPTY_VOTES[personId] || [0, 0, 0, 0, 0, 0];
   return { counts, total: 0, leader: NEUTRAL_RANK };
+}
+
+function Avatar({ person, className, labelled = false }: { person: Person; className: string; labelled?: boolean }) {
+  return (
+    <span
+      className={`${className} avatar-shell`}
+      role={labelled ? 'img' : undefined}
+      aria-label={labelled ? `${person.name} stylized portrait` : undefined}
+      aria-hidden={labelled ? undefined : true}
+    >
+      <span className="avatar-fallback">{person.accent}</span>
+      <span
+        className="avatar-image"
+        style={{ backgroundPosition: `${person.avatarIndex / (PEOPLE.length - 1) * 100}% 0` }}
+      />
+    </span>
+  );
 }
 
 export default function App() {
@@ -120,21 +137,30 @@ export default function App() {
       <nav className="people" aria-label="People">
         {PEOPLE.map((p) => (
           <button key={p.id} disabled={voting} className={p.id === person.id ? 'active' : ''} onClick={() => { setPersonId(p.id); setRank(NEUTRAL_RANK); }}>
-            <span className="mini-avatar">{p.accent}</span><span>{p.nameZh}</span>
+            <Avatar person={p} className="mini-avatar" /><span>{p.nameZh}</span>
           </button>
         ))}
       </nav>
 
       <section className="instrument">
         <div className="plate-top">
-          <div><span className="label">SUBJECT</span><strong>{person.nameZh}</strong><small>{person.name} · {person.role}</small></div>
+          <div className="subject">
+            <Avatar person={person} className="subject-avatar" labelled />
+            <div className="subject-copy">
+              <span className="label">SUBJECT</span>
+              <strong>{person.nameZh}</strong>
+              <small>{person.name} · {person.role}</small>
+            </div>
+          </div>
           <div className="community"><span className="label">COMMUNITY NOW</span><strong>{current.zh}</strong><small>{liveResults ? `${summary.total} anonymous vote${summary.total === 1 ? '' : 's'}` : 'live results unavailable'}</small></div>
         </div>
 
         <div className="track-wrap">
           <div className="coil" />
           <input disabled={voting} aria-label="Reputation rank" type="range" min="0" max="5" step="1" value={rank} onChange={(e) => setRank(Number(e.target.value))} />
-          <div className="thumb-face" style={{ left: `calc(${rank / 5 * 100}% - 33px)` }}>{person.accent}</div>
+          <div className="thumb-face" style={{ left: `calc(${rank / 5 * 100}% - 33px)` }}>
+            <Avatar person={person} className="thumb-avatar" />
+          </div>
         </div>
 
         <div className="rank-labels">
@@ -164,7 +190,7 @@ export default function App() {
         {!liveResults && <p className="results-note">Live voting data could not be loaded. No sample votes are shown.</p>}
       </section>
 
-      <footer>Parody / internet sentiment toy. Not affiliated with the people or companies shown.</footer>
+      <footer>Parody / internet sentiment toy. Stylized portraits are illustrative and not official likenesses. Not affiliated with the people or companies shown.</footer>
     </main>
   );
 }
