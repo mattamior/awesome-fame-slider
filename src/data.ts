@@ -56,6 +56,19 @@ const MUSK_RANK_IMAGES = [
 ] as const;
 const MUSK_MEME_SOURCE = `https://github.com/makerjackie/bianzu/tree/${BIANZU_REV}/public/ranks/musk`;
 
+// Existing public Imgflip meme templates. These are intentionally not generated likenesses:
+// the six stops use recognizable Jensen internet-culture frames (suit, tiny-P gesture,
+// shiny jacket, RTX 3090, giant chip, keynote pose).
+const HUANG_RANK_IMAGES = [
+  'https://i.imgflip.com/8fdvq3.png',
+  'https://i.imgflip.com/619cwz.png',
+  'https://i.imgflip.com/9fxjcj.png',
+  'https://i.imgflip.com/4eh9y9.jpg',
+  'https://i.imgflip.com/9fvflj.jpg',
+  'https://i.imgflip.com/8z7k4x.png',
+] as const;
+const HUANG_MEME_SOURCE = 'https://imgflip.com/memetemplates?q=jensen%20huang';
+
 export const PEOPLE: Person[] = [
   {
     id: 'liang',
@@ -94,7 +107,18 @@ export const PEOPLE: Person[] = [
     avatarSourceUrl: TIBO_MEME_SOURCE,
     ranks: standard('Tibo'),
   },
-  { id: 'huang', name: 'Jensen Huang', nameZh: '黄仁勋', role: 'NVIDIA', accent: '黄', avatarIndex: 4, ranks: standard('黄') },
+  {
+    id: 'huang',
+    name: 'Jensen Huang',
+    nameZh: '黄仁勋',
+    role: 'NVIDIA',
+    accent: '黄',
+    avatarIndex: 4,
+    avatarUrl: HUANG_RANK_IMAGES[2],
+    rankImageUrls: HUANG_RANK_IMAGES,
+    avatarSourceUrl: HUANG_MEME_SOURCE,
+    ranks: standard('黄'),
+  },
   { id: 'zuck', name: 'Mark Zuckerberg', nameZh: '扎克伯格', role: 'Meta', accent: '扎', avatarIndex: 5, ranks: standard('扎') },
   { id: 'dario', name: 'Dario Amodei', nameZh: 'Dario', role: 'Anthropic', accent: 'D', avatarIndex: 6, ranks: standard('Dario') },
   { id: 'demis', name: 'Demis Hassabis', nameZh: '哈萨比斯', role: 'Google DeepMind', accent: '哈', avatarIndex: 7, ranks: standard('哈') },
