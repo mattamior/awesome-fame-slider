@@ -147,3 +147,36 @@ jobs:
             cat /tmp/ready.json 2>/dev/null || true
             exit 1
           fi
+
+      - name: Verify production X share card
+        shell: bash
+        run: |
+          set -euo pipefail
+          share_url="$DEPLOY_URL/share/liang/5?v=3"
+          card_url="$DEPLOY_URL/share-cards/liang-5.png"
+
+          echo "Checking crawler metadata at $share_url"
+          curl --fail --show-error --silent \
+            -A 'Twitterbot/1.0' \
+            -D /tmp/share-headers.txt \
+            -o /tmp/share.html \
+            "$share_url"
+
+          grep -F '<meta name="twitter:card" content="summary_large_image"' /tmp/share.html
+          grep -F "<meta name=\"twitter:image\" content=\"$card_url\"" /tmp/share.html
+          grep -F "<meta property=\"og:image\" content=\"$card_url\"" /tmp/share.html
+          grep -F '<meta property="og:image:type" content="image/png"' /tmp/share.html
+          if grep -F 'http-equiv="refresh"' /tmp/share.html; then
+            echo "::error::Share page still contains a meta refresh that may interfere with card crawlers"
+            exit 1
+          fi
+
+          echo "Checking selected share image at $card_url"
+          curl --fail --show-error --silent \
+            -A 'Twitterbot/1.0' \
+            -D /tmp/card-headers.txt \
+            -o /tmp/liang-5.png \
+            "$card_url"
+          tr -d '\r' < /tmp/card-headers.txt | grep -Ei '^content-type: image/png'
+          test -s /tmp/liang-5.png
+          echo "Production X-card smoke test passed"
