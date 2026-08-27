@@ -5,7 +5,7 @@ repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-28
 summary: >-
   Slide Rheostat is live at https://awesome-fame-slider.mattamior.workers.dev. All eight initial subjects have
-  six-rank internet meme/image packs in production. Automated launch verification is now complete: Deploy waits
+  six-rank internet meme/image packs in production. Automated launch verification is complete: Deploy waits
   for the new Worker revision to converge at the edge, verifies the X/OG metadata and actual 1200x675 PNG for
   all 48 person/rank combinations, and performs a self-cleaning production D1 vote-upsert smoke test.
 current_focus: >-
@@ -89,5 +89,5 @@ open_verification:
   - True-device mobile browser verification of layout, cookie persistence, and native share sheet behavior.
   - True-device X in-app browser verification of Web Intent/native-share handoff and return-to-site behavior.
 last_checkpoint:
-  saved_at: 2026-08-28T00:25:00+08:00
-  reason: automated production verification completed after fixing card dimensions, cache versioning, and Worker edge-convergence races
+  saved_at: 2026-08-28T00:46:00+08:00
+  reason: checkpoint after automated production verification reached full green; only true-device mobile and X in-app verification remains
