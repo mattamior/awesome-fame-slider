@@ -6,18 +6,18 @@ updated_at: 2026-08-27
 summary: >-
   Slide Rheostat is live at https://awesome-fame-slider.mattamior.workers.dev with anonymous D1 voting,
   community-rank state, rank-specific social cards, X Web Intent sharing, and CI-gated automatic Cloudflare
-  deployment. Liang Wenfeng, Tibo Sottiaux, Elon Musk, Jensen Huang, Mark Zuckerberg, and Sam Altman now use
-  full six-rank internet image/meme packs with fixed roster avatars, community-driven SUBJECT art,
-  user-selection-driven large art, mechanical slider pointers, and rank-specific X share images.
+  deployment. Seven of eight initial subjects now use six-rank internet image/meme packs with fixed roster
+  avatars, community-driven SUBJECT art, user-selection-driven large art, mechanical slider pointers, and
+  rank-specific X share images. Dario Amodei is complete in production after switching away from rate-limited
+  Wikimedia assets to stable Imgflip Dario/Anthropic meme assets.
 current_focus: >-
-  Continue the meme-pack rollout one person at a time. After each person reaches production, write an RPM
-  checkpoint before moving to the next subject. Current next subject: Dario Amodei.
+  Complete the final subject, Demis Hassabis, then run the full 48-combination production crawler/card sweep.
 production:
   url: https://awesome-fame-slider.mattamior.workers.dev
   worker: awesome-fame-slider
   database: awesome-fame-slider-db
-  latest_verified_worker_version: 7c1dc13f-d212-411d-8025-c592be91bea9
-  latest_verified_commit: 390962bc8ee8f19693d5933c7f256b47b1647ea8
+  latest_verified_worker_version: 89823803-1648-42e5-b40e-60feddeb6c56
+  latest_verified_commit: fe4ee7203bec49629278c8ea188b38d8c1a0f331
 confirmed_constraints:
   - Product display name is Slide Rheostat.
   - Frontend is Vite + React + TypeScript.
@@ -31,7 +31,7 @@ confirmed_constraints:
   - Top roster art is the person's fixed default/neutral image.
   - SUBJECT art follows the current community leader image.
   - The large rank image follows the community leader after refresh until the user explicitly selects a rank; then it follows the user's selection.
-  - Meme subjects use a mechanical pointer on the slider instead of repeating the rank image in the thumb.
+  - Meme/image subjects use a mechanical pointer on the slider instead of repeating the rank image in the thumb.
   - Production delivery is zero-local: GitHub PR/CI -> main CI -> automatic serialized Deploy -> health/readiness/social-card smoke checks.
   - Pure .chatgpt/**, docs/**, and README.md commits do not trigger production deployment.
 implemented:
@@ -42,15 +42,16 @@ implemented:
   - Build-time generation of 48 1200x675 PNG result cards with Sharp.
   - Mobile-safe layout, reduced-motion handling, and rank-image dissolve transition.
   - Fixed roster avatar, community SUBJECT image, and community-vs-explicit-selection large-image semantics.
-  - Mechanical slider pointer for meme-pack subjects.
+  - Mechanical slider pointer for meme/image subjects.
   - Share flow that preserves the selected rank; production X metadata/card smoke test runs after each deploy.
-  - Configured meme-pack assets are build-required; share-card generation fails rather than silently substituting the old illustrated avatar if a configured source cannot be fetched.
+  - Configured remote assets are build-required; share-card generation fails rather than silently substituting the old illustrated avatar.
   - Liang Wenfeng full six-rank makerjackie/bianzu image pack.
   - Tibo Sottiaux full six-rank makerjackie/bianzu image pack.
   - Elon Musk full six-rank makerjackie/bianzu image pack.
   - Jensen Huang six-rank public Imgflip meme-template pack.
-  - Mark Zuckerberg six-rank public Imgflip/internet meme-template pack.
+  - Mark Zuckerberg six-rank public Know Your Meme + Imgflip pack.
   - Sam Altman six-rank public Imgflip meme-template pack.
+  - Dario Amodei six-rank public Imgflip Dario/Anthropic meme pack.
 meme_rollout:
   source_policy: >-
     Prefer recognizable existing internet meme/rank packs and record their source. Use pinned immutable URLs
@@ -92,16 +93,22 @@ meme_rollout:
       state: production
       deployment_commit: 390962bc8ee8f19693d5933c7f256b47b1647ea8
       deployment_version: 7c1dc13f-d212-411d-8025-c592be91bea9
+    - person: Dario Amodei
+      id: dario
+      source: Imgflip public Dario Amodei / Anthropic templates and existing meme
+      state: production
+      deployment_commit: fe4ee7203bec49629278c8ea188b38d8c1a0f331
+      deployment_version: 89823803-1648-42e5-b40e-60feddeb6c56
       validation: >-
-        PR CI and main CI passed under strict asset-fetch mode; Deploy generated all 48 cards and explicitly
-        uploaded altman-0.png through altman-5.png; production health/readiness and crawler-card smoke tests passed.
+        Initial Wikimedia source attempts failed under GitHub-hosted CI due HTTP 429. The final Imgflip pack
+        passed PR CI and main CI; Deploy generated all 48 cards and explicitly uploaded dario-0.png through
+        dario-5.png; production health/readiness and crawler-card smoke tests passed.
   remaining_order:
-    - dario
     - demis
 open_verification:
-  - End-to-end browser verification of anonymous vote upsert semantics remains a launch-level check.
-  - Mobile/X in-app browser behavior remains a launch-level check.
-  - After all meme packs are complete, run a production crawler/card sweep across all 8 people and 6 ranks.
+  - After Demis is complete, run a production crawler/card sweep across all 8 people and 6 ranks.
+  - End-to-end browser verification of anonymous vote upsert semantics remains a launch-level manual check.
+  - Mobile/X in-app browser behavior remains a launch-level manual check.
 last_checkpoint:
-  saved_at: 2026-08-27T23:19:00+08:00
-  reason: Sam Altman six-rank meme pack completed, deployed, and verified before moving to Dario Amodei
+  saved_at: 2026-08-27T23:32:00+08:00
+  reason: Dario Amodei six-rank image pack completed, deployed, and verified before moving to Demis Hassabis
