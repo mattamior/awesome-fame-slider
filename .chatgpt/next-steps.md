@@ -2,9 +2,9 @@
 
 ## Meme-pack rollout — active
 
-1. Complete Elon Musk next: source or adapt a recognizable six-rank internet meme pack, wire fixed roster / community SUBJECT / explicit-selection large art, regenerate his six X cards, pass CI/Deploy, then RPM checkpoint.
-2. Continue in this order, checkpointing after each production deployment: Jensen Huang -> Mark Zuckerberg -> Sam Altman -> Dario Amodei -> Demis Hassabis.
-3. For every completed person, keep the same state semantics already established by Liang/Tibo: fixed default roster image; SUBJECT follows community leader; refresh defaults large art to community leader; explicit user selection takes over large art; slider uses a mechanical pointer; X shares preserve the user's selected rank image.
+1. Complete Jensen Huang next: source or assemble a recognizable six-rank internet meme/image pack, wire fixed roster / community SUBJECT / explicit-selection large art, regenerate his six X cards, pass CI/Deploy, then RPM checkpoint.
+2. Continue in this order, checkpointing after each production deployment: Mark Zuckerberg -> Sam Altman -> Dario Amodei -> Demis Hassabis.
+3. For every completed person, keep the same state semantics already established by Liang/Tibo/Musk: fixed default roster image; SUBJECT follows community leader; refresh defaults large art to community leader; explicit user selection takes over large art; slider uses a mechanical pointer; X shares preserve the user's selected rank image.
 4. Prefer pinned, existing internet meme/rank-pack assets and record source URLs. If no coherent six-rank pack exists, assemble six recognizable internet-culture images from stable sources rather than returning to generic illustrated avatars.
 5. After all eight people are complete, run a production sweep of `/share/:person/:rank` and `/share-cards/:person-:rank.png` for all 48 combinations, checking crawler metadata and `image/png` responses.
 
