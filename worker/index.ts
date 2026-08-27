@@ -233,9 +233,10 @@ async function readiness(env: Env) {
       database: { ok: ready, missingTables },
       originMode: 'request',
       xApiRequired: false,
+      shareCardRev: SHARE_CARD_REV,
     }, { status: ready ? 200 : 503 });
   } catch (error) {
-    return json({ ok: false, database: { ok: false, error: error instanceof Error ? error.message : String(error) } }, { status: 503 });
+    return json({ ok: false, database: { ok: false, error: error instanceof Error ? error.message : String(error) }, shareCardRev: SHARE_CARD_REV }, { status: 503 });
   }
 }
 
@@ -255,7 +256,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    if (url.pathname === '/api/health') return json({ ok: true, service: 'awesome-fame-slider' });
+    if (url.pathname === '/api/health') return json({ ok: true, service: 'awesome-fame-slider', shareCardRev: SHARE_CARD_REV });
     if (url.pathname === '/api/ready') return readiness(env);
 
     const personMatch = url.pathname.match(/^\/api\/people\/([^/]+)$/);
