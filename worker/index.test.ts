@@ -43,11 +43,18 @@ describe('free share flow', () => {
     expect(shareCardPath('liang', 1)).toBe('/share-cards/liang-1.png');
   });
 
-  it('renders large-image metadata using the request origin', () => {
-    const html = sharePageHtml('liang', 1, 'https://slide.example/some/path');
+  it('renders crawler-safe large-image metadata for the selected rank', () => {
+    const html = sharePageHtml('liang', 1, 'https://slide.example/share/liang/1?v=3');
     expect(html).toContain('twitter:card');
     expect(html).toContain('summary_large_image');
+    expect(html).toContain('twitter:image:src');
+    expect(html).toContain('og:image:secure_url');
+    expect(html).toContain('og:image:type');
+    expect(html).toContain('image/png');
     expect(html).toContain('https://slide.example/share-cards/liang-1.png');
+    expect(html).toContain('https://slide.example/share/liang/1?v=3');
     expect(html).toContain('https://slide.example/?who=liang&amp;rank=1&amp;from=share');
+    expect(html).toContain('window.location.replace');
+    expect(html).not.toContain('http-equiv="refresh"');
   });
 });
