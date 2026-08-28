@@ -154,3 +154,16 @@ This decision supersedes the earlier clause that intentionally kept `Slide Rheos
 - The social-card cache revision was bumped from v4 to v5 so X/OG crawlers and CDN caches do not retain the old Slide Rheostat branding.
 - The rename shipped through PR #17 and main commit `8a345198c6cd21f711b3198694ddf03b80cfc563`.
 - Production Worker version `1b2654c4-ea95-4b19-ba76-7f027b02f5af` serves share-card revision v5; the selected-rank sentinel, all 48 share-page/card checks, and the self-cleaning vote-upsert smoke passed on Deploy run `33096079530` after edge propagation settled.
+
+## 2026-08-28 — Add persistent bilingual UI and light/dark themes
+
+- Awesome Fame Slider supports explicit **Chinese / English** switching as a product-level setting rather than translating only isolated labels.
+- On first visit, locale follows the browser language; once the user chooses a locale, that preference persists in `localStorage` and updates the document language.
+- Person/rank labels, community state, vote/share actions, notices, results, explanatory copy, and share text localize together. English rank labels use Latin surnames/names rather than mixed Chinese/Latin forms.
+- Rank/deep links and X share URLs carry `lang=zh` or `lang=en`, and Worker-rendered share pages localize `html lang`, title, description, link text, and X/Open Graph metadata from that parameter.
+- Awesome Fame Slider also supports explicit **light / dark** switching. First visit follows `prefers-color-scheme`; an explicit theme choice persists in `localStorage`.
+- Theme is applied before React renders to avoid a light-theme flash, and dark mode is visually adapted to the existing paper/mechanical design rather than implemented as a simple inversion.
+- Locale/theme preferences are client-side presentation state only; they do not alter the anonymous voter cookie/hash or D1 vote identity.
+- The social metadata/cache revision was bumped from v5 to v6 for the bilingual share-page rollout.
+- The feature shipped through PR #18 and main commit `7cbbbbc2c15fb43744536a161001dcd9782bb13d`.
+- Production Worker version `a2d41be0-2b04-44ea-9bde-a16eb727b31b` serves share revision v6. After the first bilingual crawler sentinel briefly raced stale edge metadata, rerunning the same Deploy after propagation passed the Chinese sentinel, the complete 48-share-page/card sweep, exact 1200×675 PNG checks, and the self-cleaning anonymous vote-upsert smoke on Deploy run `33102973784`.
