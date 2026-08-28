@@ -128,7 +128,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          expected_share_rev=6
+          expected_share_rev=7
           ready=0
           for attempt in $(seq 1 24); do
             echo "Revision/readiness attempt $attempt/24"
@@ -155,13 +155,13 @@ jobs:
           fi
           echo "Production is healthy and serving share-card revision $expected_share_rev"
 
-      - name: Verify production X share card
+      - name: Verify production Chinese X share card
         shell: bash
         run: |
           set -euo pipefail
-          share_rev=6
+          share_rev=7
           share_url="$DEPLOY_URL/share/liang/5?v=$share_rev&lang=zh"
-          card_url="$DEPLOY_URL/share-cards/liang-5.png?v=$share_rev"
+          card_url="$DEPLOY_URL/share-cards/liang-5-zh.png?v=$share_rev"
 
           echo "Checking crawler metadata at $share_url"
           curl --fail --show-error --silent \
@@ -171,7 +171,7 @@ jobs:
             "$share_url"
 
           grep -F '<html lang="zh-CN">' /tmp/share.html
-          grep -F '梁祖 · 梁文锋 | Awesome Fame Slider' /tmp/share.html
+          grep -F '梁祖 · 梁文锋 | 弟位变祖器' /tmp/share.html
           grep -F '<meta name="twitter:card" content="summary_large_image"' /tmp/share.html
           grep -F "<meta name=\"twitter:image\" content=\"$card_url\"" /tmp/share.html
           grep -F "<meta property=\"og:image\" content=\"$card_url\"" /tmp/share.html
@@ -181,57 +181,66 @@ jobs:
             exit 1
           fi
 
-          echo "Checking selected share image at $card_url"
+          echo "Checking selected Chinese share image at $card_url"
           curl --fail --show-error --silent \
             -A 'Twitterbot/1.0' \
             -D /tmp/card-headers.txt \
-            -o /tmp/liang-5.png \
+            -o /tmp/liang-5-zh.png \
             "$card_url"
           tr -d '\r' < /tmp/card-headers.txt | grep -Ei '^content-type: image/png'
-          test -s /tmp/liang-5.png
-          echo "Production bilingual X-card smoke test passed"
+          test -s /tmp/liang-5-zh.png
+          echo "Production Chinese X-card smoke test passed"
 
-      - name: Verify all 48 production share cards
+      - name: Verify all 96 localized production share cards
         shell: bash
         run: |
           set -euo pipefail
           people=(liang musk altman tibo huang zuck dario demis)
-          share_rev=6
+          locales=(en zh)
+          share_rev=7
           sweep_dir="$(mktemp -d)"
 
           for person in "${people[@]}"; do
             for rank in 0 1 2 3 4 5; do
-              share_url="$DEPLOY_URL/share/$person/$rank?v=$share_rev&lang=en&verify=$DEPLOY_SHA"
-              card_url="$DEPLOY_URL/share-cards/$person-$rank.png?v=$share_rev"
-              html="$sweep_dir/$person-$rank.html"
-              headers="$sweep_dir/$person-$rank.headers"
-              png="$sweep_dir/$person-$rank.png"
+              for locale in "${locales[@]}"; do
+                suffix=''
+                expected_lang='en'
+                if [ "$locale" = 'zh' ]; then
+                  suffix='-zh'
+                  expected_lang='zh-CN'
+                fi
+                share_url="$DEPLOY_URL/share/$person/$rank?v=$share_rev&lang=$locale&verify=$DEPLOY_SHA"
+                card_url="$DEPLOY_URL/share-cards/$person-$rank$suffix.png?v=$share_rev"
+                html="$sweep_dir/$person-$rank-$locale.html"
+                headers="$sweep_dir/$person-$rank-$locale.headers"
+                png="$sweep_dir/$person-$rank-$locale.png"
 
-              echo "Checking $person rank $rank"
-              curl --fail --show-error --silent \
-                -A 'Twitterbot/1.0' \
-                -o "$html" \
-                "$share_url"
+                echo "Checking $person rank $rank locale $locale"
+                curl --fail --show-error --silent \
+                  -A 'Twitterbot/1.0' \
+                  -o "$html" \
+                  "$share_url"
 
-              grep -F '<html lang="en">' "$html" >/dev/null
-              grep -F '<meta name="twitter:card" content="summary_large_image"' "$html" >/dev/null
-              grep -F "<meta name=\"twitter:image\" content=\"$card_url\"" "$html" >/dev/null
-              grep -F "<meta property=\"og:image\" content=\"$card_url\"" "$html" >/dev/null
-              grep -F '<meta property="og:image:type" content="image/png"' "$html" >/dev/null
-              grep -F '<meta property="og:image:width" content="1200"' "$html" >/dev/null
-              grep -F '<meta property="og:image:height" content="675"' "$html" >/dev/null
-              if grep -F 'http-equiv="refresh"' "$html" >/dev/null; then
-                echo "::error::$share_url contains a crawler-hostile meta refresh"
-                exit 1
-              fi
+                grep -F "<html lang=\"$expected_lang\">" "$html" >/dev/null
+                grep -F '<meta name="twitter:card" content="summary_large_image"' "$html" >/dev/null
+                grep -F "<meta name=\"twitter:image\" content=\"$card_url\"" "$html" >/dev/null
+                grep -F "<meta property=\"og:image\" content=\"$card_url\"" "$html" >/dev/null
+                grep -F '<meta property="og:image:type" content="image/png"' "$html" >/dev/null
+                grep -F '<meta property="og:image:width" content="1200"' "$html" >/dev/null
+                grep -F '<meta property="og:image:height" content="675"' "$html" >/dev/null
+                if grep -F 'http-equiv="refresh"' "$html" >/dev/null; then
+                  echo "::error::$share_url contains a crawler-hostile meta refresh"
+                  exit 1
+                fi
 
-              curl --fail --show-error --silent \
-                -A 'Twitterbot/1.0' \
-                -D "$headers" \
-                -o "$png" \
-                "$card_url"
-              tr -d '\r' < "$headers" | grep -Ei '^content-type: image/png' >/dev/null
-              test -s "$png"
+                curl --fail --show-error --silent \
+                  -A 'Twitterbot/1.0' \
+                  -D "$headers" \
+                  -o "$png" \
+                  "$card_url"
+                tr -d '\r' < "$headers" | grep -Ei '^content-type: image/png' >/dev/null
+                test -s "$png"
+              done
             done
           done
 
@@ -240,16 +249,19 @@ jobs:
           import sharp from 'sharp';
 
           const people = ['liang', 'musk', 'altman', 'tibo', 'huang', 'zuck', 'dario', 'demis'];
+          const locales = ['en', 'zh'];
           for (const person of people) {
             for (let rank = 0; rank < 6; rank += 1) {
-              const file = path.join(process.env.SWEEP_DIR, `${person}-${rank}.png`);
-              const metadata = await sharp(file).metadata();
-              if (metadata.format !== 'png' || metadata.width !== 1200 || metadata.height !== 675) {
-                throw new Error(`${person}-${rank}.png is ${metadata.format} ${metadata.width}x${metadata.height}, expected png 1200x675`);
+              for (const locale of locales) {
+                const file = path.join(process.env.SWEEP_DIR, `${person}-${rank}-${locale}.png`);
+                const metadata = await sharp(file).metadata();
+                if (metadata.format !== 'png' || metadata.width !== 1200 || metadata.height !== 675) {
+                  throw new Error(`${person}-${rank}-${locale}.png is ${metadata.format} ${metadata.width}x${metadata.height}, expected png 1200x675`);
+                }
               }
             }
           }
-          console.log('Verified all 48 production share pages and 48 versioned PNG cards at 1200x675');
+          console.log('Verified all 96 localized production share pages/cards at 1200x675');
           NODE
 
       - name: Verify production anonymous vote upsert
