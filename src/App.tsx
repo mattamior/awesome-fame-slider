@@ -16,7 +16,7 @@ import './styles.css';
 type VoteSummary = { counts: number[]; total: number; leader: number };
 
 const NEUTRAL_RANK = 2;
-const SHARE_CARD_REV = '6';
+const SHARE_CARD_REV = '7';
 
 function emptySummary(personId: string): VoteSummary {
   const counts = EMPTY_VOTES[personId] || [0, 0, 0, 0, 0, 0];
@@ -90,10 +90,14 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
+    document.title = ui.brand;
     localStorage.setItem(LOCALE_STORAGE_KEY, locale);
     const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (description) description.content = ui.dek;
-  }, [locale, ui.dek]);
+    for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[property="og:title"], meta[name="twitter:title"]')) {
+      meta.content = ui.brand;
+    }
+  }, [locale, ui.brand, ui.dek]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -243,7 +247,10 @@ export default function App() {
 
   async function shareToX() {
     const shareUrl = `${location.origin}/share/${encodeURIComponent(person.id)}/${rank}?v=${SHARE_CARD_REV}&lang=${locale}`;
-    const imageUrl = `${location.origin}/share-cards/${encodeURIComponent(person.id)}-${rank}.png?v=${SHARE_CARD_REV}`;
+    const cardFile = locale === 'zh'
+      ? `${encodeURIComponent(person.id)}-${rank}-zh.png`
+      : `${encodeURIComponent(person.id)}-${rank}.png`;
+    const imageUrl = `${location.origin}/share-cards/${cardFile}?v=${SHARE_CARD_REV}`;
     const intentUrl = buildXIntent(shareUrl);
     const coarsePointer = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
     const canTryNativeShare = coarsePointer && typeof navigator.share === 'function';
@@ -257,7 +264,7 @@ export default function App() {
       const response = await fetch(imageUrl, { cache: 'no-store' });
       if (!response.ok) throw new Error('share image unavailable');
       const blob = await response.blob();
-      const file = new File([blob], `${person.id}-${rank}.png`, { type: blob.type || 'image/png' });
+      const file = new File([blob], `${person.id}-${rank}-${locale}.png`, { type: blob.type || 'image/png' });
 
       if (canTryNativeShare) {
         const supportsFiles = typeof navigator.canShare !== 'function' || navigator.canShare({ files: [file] });
@@ -297,7 +304,7 @@ export default function App() {
       <header>
         <div>
           <p className="eyebrow">{ui.eyebrow}</p>
-          <h1>Awesome Fame Slider</h1>
+          <h1>{ui.brand}</h1>
           <p className="dek">{ui.dek}</p>
         </div>
         <div className="header-actions">
