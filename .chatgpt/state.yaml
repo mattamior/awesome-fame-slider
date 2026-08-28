@@ -4,24 +4,30 @@ phase: final-device-verification
 repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-28
 summary: >-
-  Awesome Fame Slider is live at https://awesome-fame-slider.mattamior.workers.dev. All eight initial subjects have
-  six-rank internet meme/image packs in production. The public app now supports persistent Chinese/English switching
-  and persistent light/dark themes in addition to the completed voting and X sharing flow. Automated production
-  verification remains green: Deploy waits for the new Worker revision to converge at the edge, validates crawler
-  metadata and all 48 1200x675 PNG share cards, and performs a self-cleaning D1 vote-upsert smoke test.
+  Awesome Fame Slider / 弟位变祖器 is live at https://awesome-fame-slider.mattamior.workers.dev. English uses
+  Awesome Fame Slider as the product brand and Chinese uses 弟位变祖器. All eight initial subjects have six-rank
+  internet meme/image packs in production. The app supports persistent Chinese/English switching, persistent light/dark
+  themes, anonymous D1 voting, and X sharing. Share-card revision v7 provides locale-specific social metadata and 96
+  exact 1200x675 PNG cards (8 people x 6 ranks x 2 locales). Automated production verification is green.
 current_focus: >-
-  Only true-device verification remains: exercise the current production build from a mobile browser and the X in-app
-  browser, including the new language/theme controls, native share/Web Intent UX, deep-link locale preservation, and
-  anonymous cookie persistence. The workers.dev hostname remains the v1 public origin; a custom domain is optional later.
+  Only true-device verification remains: exercise the production build from a mobile browser and the X in-app browser,
+  including language/theme controls, the Chinese 弟位变祖器 brand, native share/Web Intent UX, locale-specific social
+  previews, deep-link locale preservation, and anonymous cookie persistence. The workers.dev hostname remains the v1
+  public origin; a custom domain is optional later.
 production:
   url: https://awesome-fame-slider.mattamior.workers.dev
   worker: awesome-fame-slider
   database: awesome-fame-slider-db
-  latest_verified_worker_version: a2d41be0-2b04-44ea-9bde-a16eb727b31b
-  latest_verified_commit: 7cbbbbc2c15fb43744536a161001dcd9782bb13d
-  share_card_revision: '6'
+  latest_verified_commit: 24fdeac4c02322cf3cd221694a598b2e73d92373
+  share_card_revision: '7'
+  pr: 19
+  pr_ci_run: 33136363743
+  main_ci_run: 33136427980
+  deploy_run: 33136461527
 confirmed_constraints:
-  - Product display name is Awesome Fame Slider.
+  - English product display name is Awesome Fame Slider.
+  - Chinese product display name is 弟位变祖器.
+  - Repository, package, Worker, D1, and application identity namespaces remain awesome-fame-slider; localized branding does not rename infrastructure.
   - The phrase reputation rheostat remains a descriptive concept/tagline, not the product name.
   - Frontend is Vite + React + TypeScript.
   - Cloudflare Workers is the unified deployment target; D1 stores anonymous active votes and rate-limit state.
@@ -30,11 +36,12 @@ confirmed_constraints:
   - One active anonymous vote is kept per browser device/person; later votes update that row.
   - Community results never fall back to fabricated sample votes.
   - X sharing uses free Web Intent / native Web Share mechanics; no X Developer App or paid X write API is required.
-  - Shared verdict pages expose crawler-friendly metadata and a 1200x675 PNG for the exact selected rank.
+  - Shared verdict pages expose crawler-friendly metadata and a 1200x675 PNG for the exact selected rank and locale.
+  - English card paths retain the stable person-rank.png form; Chinese cards use person-rank-zh.png.
   - Social-card URLs carry an explicit revision query parameter so crawler and CDN caches can be invalidated safely.
   - Chinese/English is a user-facing product setting. First visit follows browser language; an explicit choice persists locally.
   - Light/dark is a user-facing product setting. First visit follows prefers-color-scheme; an explicit choice persists locally.
-  - Share/deep links preserve locale with lang=zh or lang=en; Worker share metadata localizes to that locale.
+  - Share/deep links preserve locale with lang=zh or lang=en; Worker share metadata and cards localize to that locale.
   - Theme preference is client-only and does not affect anonymous voter identity.
   - Top roster art is the person's fixed default/neutral image.
   - SUBJECT art follows the current community leader image.
@@ -44,21 +51,23 @@ confirmed_constraints:
   - Pure .chatgpt/**, docs/**, and README.md commits do not trigger production deployment.
   - The workers.dev URL is the v1 public launch origin; custom-domain work is deferred until there is a concrete branding need.
 implemented:
-  - Public product branding aligned to Awesome Fame Slider in the page header, browser title, Open Graph title, shared verdict pages, and generated social cards.
-  - Persistent Chinese/English switch across app copy, person/rank labels, notices, controls, results, and share copy.
+  - Locale-specific product branding: Awesome Fame Slider in English and 弟位变祖器 in Chinese.
+  - Visible app header and runtime browser title follow the active locale; Chinese shared verdict titles/link text use 弟位变祖器 while English keeps Awesome Fame Slider.
+  - Chinese sharing uses dedicated -zh.png cards with Chinese brand/person/rank/caption text; English card paths and branding remain compatible.
+  - Share-card generation uses a pinned Noto Sans CJK SC font source so Chinese glyph rendering is deterministic on CI runners.
+  - Build-time generation of 96 exact 1200x675 PNG result cards with Sharp and dimension assertions.
+  - Versioned v7 X/OG card URLs invalidate earlier metadata/cache revisions.
+  - Deploy waits for /api/health and /api/ready to report shareCardRev=7 before post-deploy verification.
+  - Every Deploy performs a full 8-person x 6-rank x 2-locale production sweep of crawler metadata and actual PNG dimensions.
+  - Persistent Chinese/English switch across app copy, person/rank labels, notices, controls, results, share copy, and branding.
   - First-visit locale follows browser language; explicit locale is stored in localStorage and reflected in document language metadata.
   - Persistent light/dark switch with first-visit system-color preference, localStorage persistence, and pre-render theme bootstrapping to avoid a light-theme flash.
   - Dark theme is visually adapted to the existing paper/mechanical motif rather than implemented as a simple color inversion.
-  - Share URLs preserve lang=zh/en; Worker-generated share-page titles, descriptions, link text, html lang, and X/OG metadata localize accordingly.
   - English rank labels use Latin surnames/names rather than mixed strings such as Jailed 梁.
   - Six-position rheostat, rank labels, community vote distribution, neutral zero-vote state, and neutral-biased tie breaking.
   - D1-backed anonymous vote upsert and per-network write limiter without raw IP persistence.
   - Aggregate polling every 30 seconds while visible plus refresh on foreground/person changes.
   - Worker share pages with Open Graph and X summary_large_image metadata.
-  - Build-time generation of 48 exact 1200x675 PNG result cards with Sharp and build-time dimension assertions.
-  - Versioned v6 X/OG card URLs invalidate earlier metadata/cache revisions.
-  - Deploy waits for /api/health and /api/ready to report shareCardRev=6 before post-deploy verification, avoiding edge-propagation races.
-  - Every Deploy performs a full 8-person x 6-rank production sweep of crawler metadata and actual PNG dimensions.
   - Every Deploy performs a self-cleaning anonymous-vote upsert smoke: the same temporary voter/person row moves ranks without duplication and is deleted afterward.
   - Mobile-safe layout, safe-area handling, horizontal roster scrolling, coarse-pointer native-share preference, Web Intent fallback, reduced-motion handling, and rank-image dissolve transition.
   - Fixed roster avatar, community SUBJECT image, and community-vs-explicit-selection large-image semantics.
@@ -75,15 +84,14 @@ implemented:
   - Demis Hassabis six-rank public interview-thumbnail image pack.
 automated_verification:
   status: passed
-  deploy_run: 33102973784
   validation:
-    - PR #18 CI passed, then main CI passed for commit 7cbbbbc2c15fb43744536a161001dcd9782bb13d.
-    - Production Worker version a2d41be0-2b04-44ea-9bde-a16eb727b31b deployed successfully.
-    - Production health and readiness confirmed shareCardRev=6.
-    - The first bilingual X-card verification attempt raced stale edge share metadata; rerunning the same Deploy after propagation succeeded without code changes.
-    - Chinese crawler sentinel passed with html lang=zh-CN and localized 梁祖 / 梁文锋 title while retaining the selected v6 image card.
-    - All 48 production share pages passed exact Twitter/Open Graph metadata checks with no meta refresh.
-    - All 48 production card responses were non-empty image/png and Sharp confirmed every image is exactly 1200x675.
+    - PR #19 CI run 33136363743 passed tests, the 96-card localized build, and Worker type generation.
+    - PR #19 was squash-merged to main as commit 24fdeac4c02322cf3cd221694a598b2e73d92373.
+    - Main CI run 33136427980 passed for that exact commit.
+    - Automatic Deploy run 33136461527 checked out the exact main SHA and completed successfully.
+    - Production health and readiness confirmed shareCardRev=7.
+    - Chinese crawler sentinel passed with html lang=zh-CN, title 梁祖 · 梁文锋 | 弟位变祖器, and the locale-specific liang-5-zh.png card.
+    - All 96 localized production share pages/cards passed Twitter/Open Graph metadata checks, returned non-empty image/png, and Sharp confirmed exact 1200x675 dimensions.
     - Production anonymous vote smoke inserted one temporary Demis vote, moved the same voter/person row to another rank without duplication, then deleted the temporary row and confirmed cleanup.
 meme_rollout:
   source_policy: >-
@@ -97,11 +105,11 @@ meme_rollout:
     - { person: Jensen Huang, id: huang, source: Imgflip public Jensen Huang/NVIDIA meme templates, state: production }
     - { person: Mark Zuckerberg, id: zuck, source: public Know Your Meme + Imgflip Zuckerberg meme templates, state: production }
     - { person: Sam Altman, id: altman, source: Imgflip public Sam Altman meme templates, state: production }
-    - { person: Dario Amodei, id: dario, source: Imgflip public Dario Amodei / Anthropic memes, state: production }
+    - { person: Dario Amodei, id: dario, source: Imgflip public Dario/Anthropic memes, state: production }
     - { person: Demis Hassabis, id: demis, source: public YouTube interview thumbnails, state: production }
 open_verification:
-  - True-device mobile browser verification of layout, language/theme persistence, cookie persistence, and native share sheet behavior.
-  - True-device X in-app browser verification of localized deep links, Web Intent/native-share handoff, theme rendering, and return-to-site behavior.
+  - True-device mobile browser verification of layout, localized branding, language/theme persistence, cookie persistence, and native share sheet behavior.
+  - True-device X in-app browser verification of localized deep links, Chinese/English social previews, Web Intent/native-share handoff, theme rendering, and return-to-site behavior.
 last_checkpoint:
   saved_at: 2026-08-28T10:23:00+08:00
   reason: checkpoint after Chinese/English and light/dark switching shipped to production on share revision v6 and passed automated production verification
