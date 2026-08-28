@@ -167,3 +167,19 @@ This decision supersedes the earlier clause that intentionally kept `Slide Rheos
 - The social metadata/cache revision was bumped from v5 to v6 for the bilingual share-page rollout.
 - The feature shipped through PR #18 and main commit `7cbbbbc2c15fb43744536a161001dcd9782bb13d`.
 - Production Worker version `a2d41be0-2b04-44ea-9bde-a16eb727b31b` serves share revision v6. After the first bilingual crawler sentinel briefly raced stale edge metadata, rerunning the same Deploy after propagation passed the Chinese sentinel, the complete 48-share-page/card sweep, exact 1200×675 PNG checks, and the self-cleaning anonymous vote-upsert smoke on Deploy run `33102973784`.
+
+## 2026-08-28 — Localize the Chinese product brand as 弟位变祖器
+
+This decision refines the earlier Awesome Fame Slider branding decision by making the public product brand locale-specific rather than forcing the English name into Chinese mode.
+
+- **English brand:** Awesome Fame Slider.
+- **Chinese brand:** 弟位变祖器.
+- The Chinese app header, runtime browser title, Chinese shared-verdict page title/link text, and Chinese social cards use 弟位变祖器.
+- English UI, English shared-verdict metadata, and the existing English `person-rank.png` social-card paths continue to use Awesome Fame Slider for compatibility.
+- Chinese social cards use dedicated `person-rank-zh.png` files and Chinese brand/person/rank/caption text.
+- Repository, package, Cloudflare Worker, D1 database, and anonymous-voter namespace remain `awesome-fame-slider`; the localized product name does not rename infrastructure or identity boundaries.
+- Share-card cache revision was bumped from v6 to v7.
+- Build generation expanded from 48 cards to 96 localized cards (8 people × 6 ranks × 2 locales). A pinned Noto Sans CJK SC font is loaded for deterministic Chinese glyph rendering in CI.
+- The change shipped through PR #19 and main commit `24fdeac4c02322cf3cd221694a598b2e73d92373`.
+- PR CI run `33136363743` and main CI run `33136427980` passed.
+- Automatic production Deploy run `33136461527` passed v7 health/readiness convergence, the Chinese crawler/card sentinel, all 96 localized metadata/image checks with exact 1200×675 PNG dimensions, and the self-cleaning anonymous vote-upsert smoke.
