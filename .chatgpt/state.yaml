@@ -5,21 +5,21 @@ repository: mattamior/awesome-fame-slider
 updated_at: 2026-08-28
 summary: >-
   Awesome Fame Slider is live at https://awesome-fame-slider.mattamior.workers.dev. All eight initial subjects have
-  six-rank internet meme/image packs in production. Public branding is now aligned across the app shell, browser/OG
-  metadata, shared verdict pages, and all 48 generated social cards. Automated launch verification is complete: Deploy
-  waits for the new Worker revision to converge at the edge, verifies the X/OG metadata and actual 1200x675 PNG for
-  all 48 person/rank combinations, and performs a self-cleaning production D1 vote-upsert smoke test.
+  six-rank internet meme/image packs in production. The public app now supports persistent Chinese/English switching
+  and persistent light/dark themes in addition to the completed voting and X sharing flow. Automated production
+  verification remains green: Deploy waits for the new Worker revision to converge at the edge, validates crawler
+  metadata and all 48 1200x675 PNG share cards, and performs a self-cleaning D1 vote-upsert smoke test.
 current_focus: >-
-  Only true-device verification remains: exercise the production site from a mobile browser and X in-app browser
-  to confirm native share/Web Intent UX and cookie persistence in those actual clients. This cannot be faithfully
-  simulated by repository CI. The workers.dev hostname is the v1 public launch origin; a custom domain is optional later.
+  Only true-device verification remains: exercise the current production build from a mobile browser and the X in-app
+  browser, including the new language/theme controls, native share/Web Intent UX, deep-link locale preservation, and
+  anonymous cookie persistence. The workers.dev hostname remains the v1 public origin; a custom domain is optional later.
 production:
   url: https://awesome-fame-slider.mattamior.workers.dev
   worker: awesome-fame-slider
   database: awesome-fame-slider-db
-  latest_verified_worker_version: 1b2654c4-ea95-4b19-ba76-7f027b02f5af
-  latest_verified_commit: 8a345198c6cd21f711b3198694ddf03b80cfc563
-  share_card_revision: '5'
+  latest_verified_worker_version: a2d41be0-2b04-44ea-9bde-a16eb727b31b
+  latest_verified_commit: 7cbbbbc2c15fb43744536a161001dcd9782bb13d
+  share_card_revision: '6'
 confirmed_constraints:
   - Product display name is Awesome Fame Slider.
   - The phrase reputation rheostat remains a descriptive concept/tagline, not the product name.
@@ -32,6 +32,10 @@ confirmed_constraints:
   - X sharing uses free Web Intent / native Web Share mechanics; no X Developer App or paid X write API is required.
   - Shared verdict pages expose crawler-friendly metadata and a 1200x675 PNG for the exact selected rank.
   - Social-card URLs carry an explicit revision query parameter so crawler and CDN caches can be invalidated safely.
+  - Chinese/English is a user-facing product setting. First visit follows browser language; an explicit choice persists locally.
+  - Light/dark is a user-facing product setting. First visit follows prefers-color-scheme; an explicit choice persists locally.
+  - Share/deep links preserve locale with lang=zh or lang=en; Worker share metadata localizes to that locale.
+  - Theme preference is client-only and does not affect anonymous voter identity.
   - Top roster art is the person's fixed default/neutral image.
   - SUBJECT art follows the current community leader image.
   - The large rank image follows the community leader after refresh until the user explicitly selects a rank; then it follows the user's selection.
@@ -41,13 +45,19 @@ confirmed_constraints:
   - The workers.dev URL is the v1 public launch origin; custom-domain work is deferred until there is a concrete branding need.
 implemented:
   - Public product branding aligned to Awesome Fame Slider in the page header, browser title, Open Graph title, shared verdict pages, and generated social cards.
+  - Persistent Chinese/English switch across app copy, person/rank labels, notices, controls, results, and share copy.
+  - First-visit locale follows browser language; explicit locale is stored in localStorage and reflected in document language metadata.
+  - Persistent light/dark switch with first-visit system-color preference, localStorage persistence, and pre-render theme bootstrapping to avoid a light-theme flash.
+  - Dark theme is visually adapted to the existing paper/mechanical motif rather than implemented as a simple color inversion.
+  - Share URLs preserve lang=zh/en; Worker-generated share-page titles, descriptions, link text, html lang, and X/OG metadata localize accordingly.
+  - English rank labels use Latin surnames/names rather than mixed strings such as Jailed 梁.
   - Six-position rheostat, rank labels, community vote distribution, neutral zero-vote state, and neutral-biased tie breaking.
   - D1-backed anonymous vote upsert and per-network write limiter without raw IP persistence.
   - Aggregate polling every 30 seconds while visible plus refresh on foreground/person changes.
   - Worker share pages with Open Graph and X summary_large_image metadata.
   - Build-time generation of 48 exact 1200x675 PNG result cards with Sharp and build-time dimension assertions.
-  - Versioned v5 X/OG card URLs to prevent stale crawler/CDN image reuse after deploys and invalidate the old Slide Rheostat card branding.
-  - Deploy waits for /api/health and /api/ready to report shareCardRev=5 before post-deploy verification, avoiding edge-propagation races.
+  - Versioned v6 X/OG card URLs invalidate earlier metadata/cache revisions.
+  - Deploy waits for /api/health and /api/ready to report shareCardRev=6 before post-deploy verification, avoiding edge-propagation races.
   - Every Deploy performs a full 8-person x 6-rank production sweep of crawler metadata and actual PNG dimensions.
   - Every Deploy performs a self-cleaning anonymous-vote upsert smoke: the same temporary voter/person row moves ranks without duplication and is deleted afterward.
   - Mobile-safe layout, safe-area handling, horizontal roster scrolling, coarse-pointer native-share preference, Web Intent fallback, reduced-motion handling, and rank-image dissolve transition.
@@ -65,21 +75,21 @@ implemented:
   - Demis Hassabis six-rank public interview-thumbnail image pack.
 automated_verification:
   status: passed
-  deploy_run: 33096079530
+  deploy_run: 33102973784
   validation:
-    - PR CI passed for the public-brand rename, then main CI passed for commit 8a345198c6cd21f711b3198694ddf03b80cfc563.
-    - Production Worker version 1b2654c4-ea95-4b19-ba76-7f027b02f5af deployed successfully.
-    - Production health and readiness both confirmed shareCardRev=5.
-    - The first Deploy verification attempt hit stale share-page metadata immediately after rollout; rerunning the same deploy job after propagation succeeded without code changes.
-    - Single selected-rank X-card sentinel passed with versioned v5 image URL.
+    - PR #18 CI passed, then main CI passed for commit 7cbbbbc2c15fb43744536a161001dcd9782bb13d.
+    - Production Worker version a2d41be0-2b04-44ea-9bde-a16eb727b31b deployed successfully.
+    - Production health and readiness confirmed shareCardRev=6.
+    - The first bilingual X-card verification attempt raced stale edge share metadata; rerunning the same Deploy after propagation succeeded without code changes.
+    - Chinese crawler sentinel passed with html lang=zh-CN and localized 梁祖 / 梁文锋 title while retaining the selected v6 image card.
     - All 48 production share pages passed exact Twitter/Open Graph metadata checks with no meta refresh.
     - All 48 production card responses were non-empty image/png and Sharp confirmed every image is exactly 1200x675.
-    - Production anonymous vote smoke inserted one temporary Demis vote at rank 1, moved the same voter/person row to rank 4 without duplication, then deleted the temporary row and confirmed zero rows remained.
+    - Production anonymous vote smoke inserted one temporary Demis vote, moved the same voter/person row to another rank without duplication, then deleted the temporary row and confirmed cleanup.
 meme_rollout:
   source_policy: >-
-    Prefer recognizable existing internet meme/rank packs and record their source. Use pinned immutable URLs
-    when possible. If no coherent six-rank meme pack exists, assemble six recognizable public internet images
-    from stable sources. Do not substitute the old generic illustrated avatar when a subject is marked complete.
+    Prefer recognizable existing internet meme/rank packs and record their source. Use pinned immutable URLs when
+    possible. If no coherent six-rank meme pack exists, assemble six recognizable public internet images from stable
+    sources. Do not substitute the old generic illustrated avatar when a subject is marked complete.
   completed:
     - { person: Liang Wenfeng, id: liang, source: makerjackie/bianzu public/ranks/liang, state: production }
     - { person: Tibo Sottiaux, id: tibo, source: makerjackie/bianzu public/ranks/tibo, state: production }
@@ -90,8 +100,8 @@ meme_rollout:
     - { person: Dario Amodei, id: dario, source: Imgflip public Dario Amodei / Anthropic memes, state: production }
     - { person: Demis Hassabis, id: demis, source: public YouTube interview thumbnails, state: production }
 open_verification:
-  - True-device mobile browser verification of layout, cookie persistence, and native share sheet behavior.
-  - True-device X in-app browser verification of Web Intent/native-share handoff and return-to-site behavior.
+  - True-device mobile browser verification of layout, language/theme persistence, cookie persistence, and native share sheet behavior.
+  - True-device X in-app browser verification of localized deep links, Web Intent/native-share handoff, theme rendering, and return-to-site behavior.
 last_checkpoint:
-  saved_at: 2026-08-28T01:49:00+08:00
-  reason: checkpoint after public branding was fully aligned to Awesome Fame Slider and production revision v5 passed all automated verification
+  saved_at: 2026-08-28T10:23:00+08:00
+  reason: checkpoint after Chinese/English and light/dark switching shipped to production on share revision v6 and passed automated production verification
