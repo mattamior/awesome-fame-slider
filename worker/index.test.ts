@@ -39,13 +39,14 @@ describe('free share flow', () => {
     expect(shareCopy('tibo', 4)).toContain('Tibo神');
   });
 
-  it('uses stable share and card paths', () => {
+  it('uses stable English share cards and locale-specific Chinese cards', () => {
     expect(sharePath('liang', 1)).toBe('/share/liang/1');
     expect(shareCardPath('liang', 1)).toBe('/share-cards/liang-1.png');
+    expect(shareCardPath('liang', 1, 'zh')).toBe('/share-cards/liang-1-zh.png');
   });
 
   it('renders crawler-safe large-image metadata for the selected rank', () => {
-    const html = sharePageHtml('liang', 1, 'https://slide.example/share/liang/1?v=6&lang=en');
+    const html = sharePageHtml('liang', 1, 'https://slide.example/share/liang/1?v=7&lang=en');
     expect(html).toContain('twitter:card');
     expect(html).toContain('summary_large_image');
     expect(html).toContain('twitter:image:src');
@@ -54,18 +55,20 @@ describe('free share flow', () => {
     expect(html).toContain('image/png');
     expect(html).toContain('Awesome Fame Slider');
     expect(html).toContain('Jailed Liang');
-    expect(html).toContain('https://slide.example/share-cards/liang-1.png?v=6');
-    expect(html).toContain('https://slide.example/share/liang/1?v=6&amp;lang=en');
+    expect(html).toContain('https://slide.example/share-cards/liang-1.png?v=7');
+    expect(html).toContain('https://slide.example/share/liang/1?v=7&amp;lang=en');
     expect(html).toContain('https://slide.example/?who=liang&amp;rank=1&amp;from=share&amp;lang=en');
     expect(html).toContain('window.location.replace');
     expect(html).not.toContain('http-equiv="refresh"');
   });
 
-  it('localizes Chinese share pages and preserves language in the app deep link', () => {
-    const html = sharePageHtml('liang', 4, 'https://slide.example/share/liang/4?v=6&lang=zh');
+  it('localizes Chinese share pages, brand, image, and deep link', () => {
+    const html = sharePageHtml('liang', 4, 'https://slide.example/share/liang/4?v=7&lang=zh');
     expect(html).toContain('<html lang="zh-CN">');
-    expect(html).toContain('梁神 · 梁文锋 | Awesome Fame Slider');
+    expect(html).toContain('梁神 · 梁文锋 | 弟位变祖器');
     expect(html).toContain('我给梁文锋的评级：梁神。你怎么看？');
+    expect(html).toContain('https://slide.example/share-cards/liang-4-zh.png?v=7');
+    expect(html).toContain('在弟位变祖器中打开这个判定');
     expect(html).toContain('lang=zh');
   });
 });

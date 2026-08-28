@@ -29,7 +29,7 @@ const VOTE_WRITE_LIMIT = 24;
 const VOTER_COOKIE = 'sr_voter';
 const VOTER_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 const HASH_NAMESPACE = 'awesome-fame-slider-v1';
-const SHARE_CARD_REV = '6';
+const SHARE_CARD_REV = '7';
 
 function json(data: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
@@ -93,8 +93,9 @@ export function sharePath(personId: string, rank: number) {
   return `/share/${encodeURIComponent(personId)}/${rank}`;
 }
 
-export function shareCardPath(personId: string, rank: number) {
-  return `/share-cards/${encodeURIComponent(personId)}-${rank}.png`;
+export function shareCardPath(personId: string, rank: number, locale: Locale = 'en') {
+  const suffix = locale === 'zh' ? '-zh' : '';
+  return `/share-cards/${encodeURIComponent(personId)}-${rank}${suffix}.png`;
 }
 
 export function sharePageHtml(personId: string, rank: number, requestUrl: string) {
@@ -107,15 +108,15 @@ export function sharePageHtml(personId: string, rank: number, requestUrl: string
   const origin = requested.origin;
   const pageUrl = `${origin}${sharePath(personId, rank)}${requested.search}`;
   const appUrl = `${origin}/?who=${encodeURIComponent(personId)}&rank=${rank}&from=share&lang=${locale}`;
-  const imageUrl = `${origin}${shareCardPath(personId, rank)}?v=${SHARE_CARD_REV}`;
+  const imageUrl = `${origin}${shareCardPath(personId, rank, locale)}?v=${SHARE_CARD_REV}`;
   const title = locale === 'zh'
-    ? `${verdict.zh} · ${person.nameZh} | Awesome Fame Slider`
+    ? `${verdict.zh} · ${person.nameZh} | 弟位变祖器`
     : `${verdict.en} · ${person.name} | Awesome Fame Slider`;
   const description = shareCopy(personId, rank, locale);
   const imageAlt = locale === 'zh'
     ? `${person.nameZh}：${verdict.zh}，第 ${rank + 1} / 6 档`
     : `${person.name}: ${verdict.en}, rank ${rank + 1} of 6`;
-  const openCopy = locale === 'zh' ? '在 Awesome Fame Slider 中打开这个判定' : 'Open this verdict in Awesome Fame Slider';
+  const openCopy = locale === 'zh' ? '在弟位变祖器中打开这个判定' : 'Open this verdict in Awesome Fame Slider';
 
   return `<!doctype html>
 <html lang="${locale === 'zh' ? 'zh-CN' : 'en'}">
