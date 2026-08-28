@@ -30,6 +30,7 @@ export function rankLabel(rank: Rank, locale: Locale) {
 
 export const UI = {
   en: {
+    brand: 'Awesome Fame Slider',
     eyebrow: 'REPUTATION RHEOSTAT',
     dek: 'Pick a person. Slide their status. Cast your vote. Share the verdict.',
     people: 'People',
@@ -70,6 +71,7 @@ export const UI = {
     shareText: (person: Person, rank: Rank) => `My vote for ${person.name}: ${rank.zh} (${rank.en}). What's your verdict?`,
   },
   zh: {
+    brand: '弟位变祖器',
     eyebrow: '声望滑动变阻器',
     dek: '选一个人，滑动他的江湖地位，投票，再分享你的判定。',
     people: '人物',
