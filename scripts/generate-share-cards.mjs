@@ -88,7 +88,12 @@ function escapeXml(value) {
 }
 
 async function fetchImagePngData(url) {
-  return sharp(await fetchBuffer(url, 'meme asset')).png().toBuffer().then((buffer) => buffer.toString('base64'));
+  const source = await fetchBuffer(url, 'meme asset');
+  return sharp(source)
+    .resize(900, 900, { fit: 'inside', withoutEnlargement: true })
+    .png()
+    .toBuffer()
+    .then((buffer) => buffer.toString('base64'));
 }
 
 const rankImageData = new Map();
