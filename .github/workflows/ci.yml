@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths-ignore:
       - '.chatgpt/**'
+      - '.agnir/**'
+      - 'AGENTS.md'
+      - 'AGNIR.md'
+      - 'AGNIR.yaml'
       - 'docs/**'
       - 'README.md'
   pull_request:

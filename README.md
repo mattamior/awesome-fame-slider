@@ -55,7 +55,7 @@ Cloudflare Worker + assets deploy
 Production
 ```
 
-`workflow_dispatch` remains available as a manual recovery/re-run mechanism, but a normal release requires no **Run workflow** click. Pure RPM/documentation changes under `.chatgpt/**`, `docs/**`, or `README.md` are ignored by CI so project-memory checkpoints do not cause unnecessary production deployments.
+`workflow_dispatch` remains available as a manual recovery/re-run mechanism, but a normal release requires no **Run workflow** click. Pure Agnir continuity files under `.agnir/**`, Agnir activation files (`AGENTS.md`, `AGNIR.md`, `AGNIR.yaml`), legacy RPM files under `.chatgpt/**`, `docs/**`, and `README.md` are ignored by main-branch CI so continuity checkpoints and documentation edits do not create unnecessary production deployments.
 
 The deployment is idempotent: it discovers an existing D1 database named `awesome-fame-slider-db` or creates it if absent, injects its UUID into the runner-only Wrangler config, applies pending migrations, deploys `awesome-fame-slider`, discovers the deployed `workers.dev` URL, and smoke-tests `/api/health` plus `/api/ready`.
 
@@ -111,3 +111,7 @@ Sharing and voting are deliberately independent: opening or publishing an X comp
 - Current community results are never replaced with fabricated sample data when the API is unavailable.
 - A short SHA-256-derived network identifier is used for rate limiting; raw request IPs are not stored in D1.
 - Old OAuth/share-event tables remain in historical migrations for compatibility with databases created from earlier versions, but the current application does not use them.
+
+## Agnir Project Instructions
+
+Agnir is the canonical durable-continuity system for this Project. Start with [`AGNIR.md`](AGNIR.md); it points to `AGNIR.yaml` and the selected `.agnir/` continuity. This section is a compatibility locator only and intentionally does not duplicate the procedure.
