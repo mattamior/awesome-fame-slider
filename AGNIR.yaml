@@ -1,0 +1,40 @@
+agnir:
+  version: "1.0"
+  discovery_profile: "repository-filesystem/1.0"
+
+project:
+  identity: "urn:agnir:project:github:mattamior:awesome-fame-slider"
+  profiles:
+    - generic
+
+continuity:
+  lineage: "urn:agnir:lineage:awesome-fame-slider:main"
+
+memory:
+  state: ".agnir/state.md"
+  next_actions: ".agnir/next-actions.md"
+  decisions: ".agnir/decisions.md"
+  evidence: ".agnir/evidence/"
+
+policy:
+  checkpoint: event-driven
+
+extensions:
+  agnir/repository:
+    canonical: "mattamior/awesome-fame-slider"
+    authoritative_ref: "main"
+  agnir/vcs:
+    branch_continuity: "lineage-bound"
+    integration_reconciliation: "required"
+    lineage_binding:
+      kind: "vcs-ref"
+      selector: "refs/heads/main"
+  agnir/operations:
+    distribution: "agnir-agent-skill"
+    release: "1.0.1"
+    source: "iorLab/agnir"
+    applied_revision: "f56d25b22997c259c660651e7357334b063093e1"
+  agnir/migration:
+    from: "RPM"
+    legacy_manifest: ".chatgpt/project-memory.yaml"
+    cutover_date: "2026-09-14"

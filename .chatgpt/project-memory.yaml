@@ -3,11 +3,21 @@ project:
   name: awesome-fame-slider
   repository: mattamior/awesome-fame-slider
 canonical_source: github
+status: retired
+retired_at: 2026-09-14
+superseded_by: AGNIR.yaml
+activation: AGENTS.md
+note: >-
+  RPM is no longer the active durable-continuity system for this Project. Activate through
+  AGENTS.md -> AGNIR.md -> AGNIR.yaml. The files below are retained only as the final RPM
+  historical snapshot and migration evidence; do not publish new checkpoints to them.
 files:
   state: .chatgpt/state.yaml
   next_steps: .chatgpt/next-steps.md
   decisions: .chatgpt/decisions.md
 checkpoint:
+  status: superseded
+  handler: agnir
   triggers:
     - 收尾
     - 结束
