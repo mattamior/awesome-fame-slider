@@ -60,7 +60,7 @@ const MUSK_RANK_IMAGES = bianzu('musk', ['v2-00-nan.webp', 'v1-02-lao.webp', 'v1
 const HUANG_RANK_IMAGES = ['https://i.imgflip.com/8fdvq3.png', 'https://i.imgflip.com/619cwz.png', 'https://i.imgflip.com/9fxjcj.png', 'https://i.imgflip.com/4eh9y9.jpg', 'https://i.imgflip.com/9fvflj.jpg', 'https://i.imgflip.com/8z7k4x.png'];
 const ZUCK_RANK_IMAGES = ['https://i.kym-cdn.com/photos/images/original/001/875/863/04d.png', 'https://i.kym-cdn.com/photos/images/original/001/361/248/ce2.jpeg', 'https://i.imgflip.com/37gc2f.png', 'https://i.imgflip.com/4g9c0h.jpg', 'https://i.imgflip.com/7s77r8.jpg', 'https://i.imgflip.com/66fabj.jpg'];
 const ALTMAN_RANK_IMAGES = ['https://i.imgflip.com/86zdzo.png', 'https://i.imgflip.com/86ojl6.png', 'https://i.imgflip.com/80n9l4.jpg', 'https://i.imgflip.com/aetmra.png', 'https://i.imgflip.com/9ghfcx.png', 'https://i.imgflip.com/a2cbqu.jpg'];
-const DARIO_RANK_IMAGES = ['https://i.imgflip.com/2/aw0dpn.jpg', 'https://i.imgflip.com/ao4swp.png', 'https://i.imgflip.com/2/apqq2f.jpg', 'https://i.imgflip.com/2/avgcsc.jpg', 'https://i.imgflip.com/attuh6.png', 'https://i.imgflip.com/am7eh2.jpg'];
+const DARIO_RANK_IMAGES = ['https://i.imgflip.com/2/aw0dpn.jpg', 'https://i.imgflip.com/ao4swp.png', 'https://i.imgflip.com/2/apqq2f.jpg', 'https://upload.wikimedia.org/wikipedia/commons/d/d8/Dario_Amodei_at_TechCrunch_Disrupt_2023_02.jpg', 'https://i.imgflip.com/attuh6.png', 'https://i.imgflip.com/am7eh2.jpg'];
 const DEMIS_RANK_IMAGES = ['https://i.ytimg.com/vi/vcLU0DhDhi0/hqdefault.jpg', 'https://i.ytimg.com/vi/Gfr50f6ZBvo/hqdefault.jpg', 'https://i.ytimg.com/vi/DsewHeVbL-0/hqdefault.jpg', 'https://i.ytimg.com/vi/AJf23bIjS8w/hqdefault.jpg', 'https://i.ytimg.com/vi/nkb4qEuxoJc/hqdefault.jpg', 'https://i.ytimg.com/vi/-HzgcbRXUK8/hqdefault.jpg'];
 
 const people = [
@@ -70,7 +70,7 @@ const people = [
   { id: 'tibo', rankImageUrls: TIBO_RANK_IMAGES, sourceLabel: 'makerjackie/bianzu · tibo', name: 'Tibo Sottiaux', nameZh: 'Tibo', role: 'Codex', ranks: standard('Tibo', 'Tibo') },
   { id: 'huang', rankImageUrls: HUANG_RANK_IMAGES, sourceLabel: 'Imgflip · Jensen Huang meme templates', name: 'Jensen Huang', nameZh: '黄仁勋', role: 'NVIDIA', ranks: standard('黄', 'Huang') },
   { id: 'zuck', rankImageUrls: ZUCK_RANK_IMAGES, sourceLabel: 'Know Your Meme + Imgflip · Zuckerberg memes', name: 'Mark Zuckerberg', nameZh: '扎克伯格', role: 'Meta', ranks: standard('扎', 'Zuck') },
-  { id: 'dario', rankImageUrls: DARIO_RANK_IMAGES, sourceLabel: 'Imgflip · Dario Amodei / Anthropic memes', name: 'Dario Amodei', nameZh: 'Dario', role: 'Anthropic', ranks: standard('Dario', 'Dario') },
+  { id: 'dario', rankImageUrls: DARIO_RANK_IMAGES, sourceLabel: 'Imgflip + Wikimedia Commons · Dario Amodei visuals', name: 'Dario Amodei', nameZh: 'Dario', role: 'Anthropic', ranks: standard('Dario', 'Dario') },
   { id: 'demis', rankImageUrls: DEMIS_RANK_IMAGES, sourceLabel: 'YouTube · Demis Hassabis interview frames', name: 'Demis Hassabis', nameZh: '哈萨比斯', role: 'Google DeepMind', ranks: standard('哈', 'Hassabis') },
 ];
 
