@@ -55,7 +55,7 @@ const DARIO_RANK_IMAGES = [
   'https://i.imgflip.com/2/aw0dpn.jpg',
   'https://i.imgflip.com/ao4swp.png',
   'https://i.imgflip.com/2/apqq2f.jpg',
-  'https://i.imgflip.com/2/avgcsc.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/d/d8/Dario_Amodei_at_TechCrunch_Disrupt_2023_02.jpg',
   'https://i.imgflip.com/attuh6.png',
   'https://i.imgflip.com/am7eh2.jpg',
 ] as const;
